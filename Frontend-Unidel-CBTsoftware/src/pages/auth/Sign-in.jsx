@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { Eye, EyeOff, BookOpen, AlertCircle } from "lucide-react";
 import { Images } from "../../constants/image-strings";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 import { ButtonSpinner } from "../../components/Spinners";
 import { useAuthLogin } from "../../store/auth-store";
 import useAuthStore from "../../store/auth-store";
@@ -173,9 +173,9 @@ const SignIn = () => {
                 <label htmlFor="password" className="block text-sm font-medium text-gray-700">
                   Password
                 </label>
-                <a href="#forgot" className="text-sm text-orange-600 hover:text-orange-700 font-medium">
+                <Link to="/forgot-password" className="text-sm text-orange-600 hover:text-orange-700 font-medium">
                   Forgot password?
-                </a>
+                </Link>
               </div>
               <div className="relative">
                 <input

@@ -16,7 +16,7 @@ import {
   useUpdateAdmin,
   useDeleteAdmin,
   useGetUserStats,
-} from "../core/api/user-api";
+} from "../core/apis/user-api";
 
 const useUserStore = create((set) => ({
   // Client-side state

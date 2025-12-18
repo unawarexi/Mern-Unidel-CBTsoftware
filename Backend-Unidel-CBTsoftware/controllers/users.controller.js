@@ -3,6 +3,7 @@ import bcrypt from "bcryptjs";
 import Admin from "../models/admin.model.js";
 import Lecturer from "../models/lecturer.model.js";
 import Student from "../models/student.model.js";
+import { generateEmployeeId, generateLecturerId, generateMatricNumber, generateAdminId } from "../core/helpers/helper-functions.js";
 import * as Mailer from "../services/mailer.service.js";
 import EmailContentGenerator from "../core/mail/mail-content.js";
 
@@ -19,15 +20,20 @@ const getUserModel = (role) => {
 // @access  Private (Admin)
 export const createLecturer = async (req, res) => {
   try {
-    const { fullname, email, lecturerId, employeeId, department } = req.body;
+    let { fullname, email, lecturerId, employeeId, department } = req.body;
 
-    // Validate required fields
-    if (!fullname || !email || !lecturerId || !employeeId || !department) {
+    // Validate required fields (IDs can be generated)
+    if (!fullname || !email || !department) {
       return res.status(400).json({
         success: false,
         message: "Please provide all required fields",
       });
     }
+
+    // generate IDs if missing
+    const count = await Lecturer.countDocuments();
+    if (!lecturerId) lecturerId = generateLecturerId(count + 1);
+    if (!employeeId) employeeId = generateEmployeeId(count + 1);
 
     // Check if lecturer exists
     const existingLecturer = await Lecturer.findOne({
@@ -251,14 +257,20 @@ export const deleteLecturer = async (req, res) => {
 // @access  Private (Admin)
 export const createStudent = async (req, res) => {
   try {
-    const { fullname, email, matricNumber, department } = req.body;
+    let { fullname, email, matricNumber, department } = req.body;
 
-    // Validate required fields
-    if (!fullname || !email || !matricNumber || !department) {
+    // Validate required fields (matricNumber can be generated)
+    if (!fullname || !email || !department) {
       return res.status(400).json({
         success: false,
         message: "Please provide all required fields",
       });
+    }
+
+    // generate matric number if missing
+    if (!matricNumber) {
+      const count = await Student.countDocuments();
+      matricNumber = generateMatricNumber(count + 1);
     }
 
     // Check if student exists
@@ -479,14 +491,22 @@ export const deleteStudent = async (req, res) => {
 // @access  Private (Super Admin)
 export const createAdmin = async (req, res) => {
   try {
-    const { fullname, email, adminId, organisation, role = "admin" } = req.body;
+    let { fullname, email, adminId, organisation, role = "admin" } = req.body;
+    // accept 'organization' as synonym
+    organisation = organisation || req.body.organization;
 
-    // Validate required fields
-    if (!fullname || !email || !adminId || !organisation) {
+    // Validate required fields (adminId can be generated)
+    if (!fullname || !email || !organisation) {
       return res.status(400).json({
         success: false,
         message: "Please provide all required fields",
       });
+    }
+
+    // generate adminId if missing
+    if (!adminId) {
+      const count = await Admin.countDocuments();
+      adminId = generateAdminId(count + 1);
     }
 
     // Check if admin exists
@@ -514,6 +534,7 @@ export const createAdmin = async (req, res) => {
       adminId,
       organisation,
       role,
+      isFirstLogin: true,
     });
 
     // Create reset token for admin
@@ -739,4 +760,4 @@ export const getUserStats = async (req, res) => {
   } catch (error) {
     res.status(500).json({ success: false, message: error.message });
   }
-};
+}

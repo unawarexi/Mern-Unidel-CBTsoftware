@@ -5,6 +5,7 @@ import Admin from "../models/admin.model.js";
 import Lecturer from "../models/lecturer.model.js";
 import Student from "../models/student.model.js";
 import { generateToken } from "../core/helpers/helper-functions.js";
+import { generateAdminId } from "../core/helpers/helper-functions.js";
 import * as Mailer from "../services/mailer.service.js";
 import EmailContentGenerator from "../core/mail/mail-content.js";
 
@@ -17,6 +18,16 @@ const getUserModel = (role) => {
 // Send token response
 const sendTokenResponse = (user, statusCode, res) => {
   const token = generateToken(user._id, user.role);
+
+  // Set token as secure httpOnly cookie so browser sends it with subsequent requests
+  const cookieOptions = {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === "production",
+    sameSite: "lax",
+    maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
+  };
+
+  res.cookie("token", token, cookieOptions);
 
   res.status(statusCode).json({
     success: true,
@@ -36,7 +47,22 @@ const sendTokenResponse = (user, statusCode, res) => {
 // @access  Public (but should be protected in production)
 export const adminSignup = async (req, res) => {
   try {
-    const { fullname, email, password, adminId, organisation } = req.body;
+    // accept fullname or name; organisation or organization
+    const fullname = req.body.fullname || req.body.name;
+    const email = req.body.email;
+    const password = req.body.password;
+    let adminId = req.body.adminId;
+    const organisation = req.body.organisation || req.body.organization;
+
+    if (!fullname || !email || !password) {
+      return res.status(400).json({ success: false, message: "Please provide fullname, email and password" });
+    }
+
+    // generate adminId if not provided
+    if (!adminId) {
+      const count = await Admin.countDocuments();
+      adminId = generateAdminId(count + 1);
+    }
 
     // Check if admin exists
     const existingAdmin = await Admin.findOne({ email });
@@ -56,6 +82,7 @@ export const adminSignup = async (req, res) => {
       adminId,
       organisation,
       role: "admin",
+      isFirstLogin: false, // signup set by user, not forced to change
     });
 
     sendTokenResponse(admin, 201, res);

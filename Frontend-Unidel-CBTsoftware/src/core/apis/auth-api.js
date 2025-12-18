@@ -73,7 +73,9 @@ export const adminSignup = async (data) => {
   });
   if (!response.ok) {
     const error = await response.json();
+    console.log(error.message);
     throw new Error(error.message || "Signup failed");
+    
   }
   return response.json();
 };
@@ -84,10 +86,17 @@ export const getCurrentUser = async () => {
     method: "GET",
     credentials: "include",
   });
+
+  // If not authenticated, return null user instead of throwing
+  if (response.status === 401) {
+    return { user: null };
+  }
+
   if (!response.ok) {
     const error = await response.json();
     throw new Error(error.message || "Failed to fetch user");
   }
+
   return response.json();
 };
 
@@ -192,13 +201,14 @@ export const useAdminSignup = () => {
   });
 };
 
-// Get current user query
-export const useGetCurrentUser = () => {
+// Get current user query (accept options to control enabled)
+export const useGetCurrentUser = (options = {}) => {
   return useQuery({
     queryKey: ["currentUser"],
     queryFn: getCurrentUser,
     retry: false,
     staleTime: 5 * 60 * 1000, // 5 minutes
+    enabled: options.enabled ?? true,
   });
 };
 

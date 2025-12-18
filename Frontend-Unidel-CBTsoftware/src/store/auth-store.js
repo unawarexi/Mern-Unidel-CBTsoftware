@@ -1,5 +1,5 @@
 import { create } from "zustand";
-import { useLogin, useLogout, useChangePasswordFirstLogin, useForgotPassword, useResetPassword, useAdminSignup, useUpdateProfile, useChangePassword, useGetCurrentUser } from "../core/api/auth-api";
+import { useLogin, useLogout, useChangePasswordFirstLogin, useForgotPassword, useResetPassword, useAdminSignup, useUpdateProfile, useChangePassword, useGetCurrentUser } from "../core/apis/auth-api";
 
 const persistedUser = (() => {
   try {
@@ -237,6 +237,7 @@ export const useAuthAdminSignup = () => {
       showToast("Admin account created", "success");
       return data;
     } catch (error) {
+     console.log(error.message)
       setError(error.message);
       showToast(error.message || "Signup failed", "error");
       throw error;
@@ -312,11 +313,18 @@ export const useAuthChangePassword = () => {
 
 export const useAuthCurrentUser = () => {
   const { setUser, setError } = useAuthStore();
-  const { data, isLoading, error, refetch } = useGetCurrentUser();
+  // Only fetch on init when there's a persisted user locally
+  const shouldFetch = !!persistedUser;
+  const { data, isLoading, error, refetch } = useGetCurrentUser({ enabled: shouldFetch });
 
   // Sync TanStack Query data with Zustand store
-  if (data?.user) {
-    setUser(data.user);
+  if (data) {
+    if (data.user) {
+      setUser(data.user);
+    } else {
+      // server returned unauthenticated (e.g., token expired) - clear stored user
+      setUser(null);
+    }
   }
 
   if (error) {

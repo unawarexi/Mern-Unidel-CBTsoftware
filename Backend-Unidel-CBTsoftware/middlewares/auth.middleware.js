@@ -13,9 +13,14 @@ const getUserModel = (role) => {
 export const protect = async (req, res, next) => {
   let token;
 
-  // Check for token in headers
+  // Check for token in Authorization header
   if (req.headers.authorization && req.headers.authorization.startsWith("Bearer")) {
     token = req.headers.authorization.split(" ")[1];
+  }
+
+  // Also accept token from httpOnly cookie (if set)
+  if (!token && req.cookies && req.cookies.token) {
+    token = req.cookies.token;
   }
 
   // Make sure token exists

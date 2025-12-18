@@ -21,17 +21,17 @@ const AdminSignUp = () => {
 
   const [showPassword, setShowPassword] = useState(false);
   const [formData, setFormData] = useState({
-    name: "",
+    fullname: "",
     email: "",
     password: "",
-    organization: "",
+    organisation: "",
   });
   const [errors, setErrors] = useState({});
   const [touched, setTouched] = useState({});
 
   const validateField = (name, value) => {
     switch (name) {
-      case "name":
+      case "fullname":
         if (!value.trim()) return "Full name is required";
         return "";
       case "email":
@@ -42,7 +42,7 @@ const AdminSignUp = () => {
         if (!value) return "Password is required";
         if (value.length < 8) return "Password must be at least 8 characters";
         return "";
-      case "organization":
+      case "organisation":
         if (!value.trim()) return "Organization is required";
         return "";
       default:
@@ -80,6 +80,7 @@ const AdminSignUp = () => {
       // eslint-disable-next-line no-unused-vars
       } catch (error) {
         // handled by store toast
+        console.log(error.message);
       }
     }
   };
@@ -107,27 +108,27 @@ const AdminSignUp = () => {
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1.5">Full Name</label>
               <input
-                name="name"
-                value={formData.name}
+                name="fullname"
+                value={formData.fullname}
                 onChange={handleChange}
                 onBlur={handleBlur}
                 placeholder="Jane Doe"
-                className={`w-full px-4 py-3 bg-white border rounded-lg text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 transition-all ${errors.name && touched.name ? "border-red-500 focus:ring-red-200" : "border-gray-300 focus:ring-orange-200 focus:border-orange-500"}`}
+                className={`w-full px-4 py-3 bg-white border rounded-lg text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 transition-all ${errors.fullname && touched.fullname ? "border-red-500 focus:ring-red-200" : "border-gray-300 focus:ring-orange-200 focus:border-orange-500"}`}
               />
-              {errors.name && touched.name && <div className="flex items-center gap-1 mt-1.5 text-red-600 text-sm"><AlertCircle className="w-4 h-4" /><span>{errors.name}</span></div>}
+              {errors.fullname && touched.fullname && <div className="flex items-center gap-1 mt-1.5 text-red-600 text-sm"><AlertCircle className="w-4 h-4" /><span>{errors.fullname}</span></div>}
             </div>
 
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1.5">Organization</label>
               <input
-                name="organization"
-                value={formData.organization}
+                name="organisation"
+                value={formData.organisation}
                 onChange={handleChange}
                 onBlur={handleBlur}
                 placeholder="University of Delta"
-                className={`w-full px-4 py-3 bg-white border rounded-lg text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 transition-all ${errors.organization && touched.organization ? "border-red-500 focus:ring-red-200" : "border-gray-300 focus:ring-orange-200 focus:border-orange-500"}`}
+                className={`w-full px-4 py-3 bg-white border rounded-lg text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 transition-all ${errors.organisation && touched.organisation ? "border-red-500 focus:ring-red-200" : "border-gray-300 focus:ring-orange-200 focus:border-orange-500"}`}
               />
-              {errors.organization && touched.organization && <div className="flex items-center gap-1 mt-1.5 text-red-600 text-sm"><AlertCircle className="w-4 h-4" /><span>{errors.organization}</span></div>}
+              {errors.organisation && touched.organisation && <div className="flex items-center gap-1 mt-1.5 text-red-600 text-sm"><AlertCircle className="w-4 h-4" /><span>{errors.organisation}</span></div>}
             </div>
 
             <div>
