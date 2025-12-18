@@ -1,30 +1,110 @@
-import React from 'react'
+import React, { useState, useEffect } from "react";
+import { Search, Calendar, Flag, HelpCircle, Bell, MessageSquare, BarChart3, Maximize2, ChevronDown } from "lucide-react";
 
-const Navbar = () => {
+const AdminNavbar = () => {
+  const [currentDateTime, setCurrentDateTime] = useState(new Date());
+  const [profileDropdownOpen, setProfileDropdownOpen] = useState(false);
+
+  useEffect(() => {
+    const timer = setInterval(() => setCurrentDateTime(new Date()), 1000);
+    return () => clearInterval(timer);
+  }, []);
+
+  const formatDateTime = (date) => {
+    const options = { day: "2-digit", month: "short", year: "numeric" };
+    const dateStr = date.toLocaleDateString("en-GB", options);
+    const timeStr = date.toLocaleTimeString("en-US", {
+      hour: "2-digit",
+      minute: "2-digit",
+      second: "2-digit",
+      hour12: true,
+    });
+    return { dateStr, timeStr };
+  };
+
+  const { dateStr, timeStr } = formatDateTime(currentDateTime);
+
   return (
-    <header class="text-gray-600 body-font">
-      <div class="container mx-auto flex flex-wrap p-5 flex-col md:flex-row items-center">
-        <a class="flex title-font font-medium items-center text-gray-900 mb-4 md:mb-0">
-          <svg xmlns="http://www.w3.org/2000/svg" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" class="w-10 h-10 text-white p-2 bg-indigo-500 rounded-full" viewBox="0 0 24 24">
-            <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"></path>
-          </svg>
-          <span class="ml-3 text-xl">Tailblocks</span>
-        </a>
-        <nav class="md:ml-auto flex flex-wrap items-center text-base justify-center">
-          <a class="mr-5 hover:text-gray-900">First Link</a>
-          <a class="mr-5 hover:text-gray-900">Second Link</a>
-          <a class="mr-5 hover:text-gray-900">Third Link</a>
-          <a class="mr-5 hover:text-gray-900">Fourth Link</a>
-        </nav>
-        <button class="inline-flex items-center bg-gray-100 border-0 py-1 px-3 focus:outline-none hover:bg-gray-200 rounded text-base mt-4 md:mt-0">
-          Button
-          <svg fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" class="w-4 h-4 ml-1" viewBox="0 0 24 24">
-            <path d="M5 12h14M12 5l7 7-7 7"></path>
-          </svg>
-        </button>
-      </div>
-    </header>
-  );
-}
+    <nav className="bg-white border-b border-gray-200 sticky top-0 z-30 shadow-sm">
+      <div className="max-w-full px-4 sm:px-6 lg:px-8">
+        <div className="flex items-center justify-between h-20">
+          {/* Left Section - Search */}
+          <div className="flex items-center space-x-4 flex-1">
+            <div className="relative w-full max-w-xs">
+              <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                <Search className="h-4 w-4 text-gray-400" />
+              </div>
+              <input
+                type="text"
+                placeholder="Search"
+                className="block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-lg bg-gray-50 focus:ring-2 focus:ring-orange-500 focus:border-transparent outline-none text-sm transition-all"
+              />
+            </div>
+          </div>
 
-export default Navbar
+          {/* Center Section - Date & Time */}
+          <div className="hidden lg:flex items-center space-x-2 text-gray-700">
+            <Calendar className="h-4 w-4 text-gray-500" />
+            <div className="text-center">
+              <p className="text-xs text-gray-500 font-medium">Date & time</p>
+              <p className="text-sm font-semibold">
+                {dateStr} - {timeStr}
+              </p>
+            </div>
+          </div>
+
+          {/* Right Section - Icons & Profile */}
+          <div className="flex items-center justify-end space-x-3 flex-1">
+            <div className="hidden md:flex items-center space-x-1">
+              <button className="p-2 text-gray-600 hover:text-orange-600 hover:bg-orange-50 rounded-lg transition-all">
+                <Flag className="h-5 w-5" />
+              </button>
+              <button className="p-2 text-gray-600 hover:text-orange-600 hover:bg-orange-50 rounded-lg transition-all">
+                <HelpCircle className="h-5 w-5" />
+              </button>
+              <button className="p-2 text-gray-600 hover:text-orange-600 hover:bg-orange-50 rounded-lg transition-all">
+                <Bell className="h-5 w-5" />
+              </button>
+              <button className="p-2 text-gray-600 hover:text-orange-600 hover:bg-orange-50 rounded-lg transition-all">
+                <MessageSquare className="h-5 w-5" />
+              </button>
+              <button className="p-2 text-gray-600 hover:text-orange-600 hover:bg-orange-50 rounded-lg transition-all">
+                <BarChart3 className="h-5 w-5" />
+              </button>
+              <button className="p-2 text-gray-600 hover:text-orange-600 hover:bg-orange-50 rounded-lg transition-all">
+                <Maximize2 className="h-5 w-5" />
+              </button>
+            </div>
+
+            {/* Profile Section */}
+            <div className="relative ml-2">
+              <button onClick={() => setProfileDropdownOpen(!profileDropdownOpen)} className="flex items-center space-x-2 p-1 rounded-lg hover:bg-gray-50 transition-all">
+                <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-blue-400 to-blue-600 flex items-center justify-center overflow-hidden shadow-md">
+                  <div className="w-full h-full flex items-center justify-center text-white font-bold text-sm">AD</div>
+                </div>
+              </button>
+
+              {/* Dropdown Menu */}
+              {profileDropdownOpen && (
+                <div className="absolute right-0 mt-2 w-56 bg-white rounded-lg shadow-lg border border-gray-200 py-2 text-gray-700">
+                  <div className="px-4 py-3 border-b border-gray-200">
+                    <p className="text-sm font-semibold text-slate-800">Administrator</p>
+                    <p className="text-xs text-gray-500">admin@unidel.edu.ng</p>
+                  </div>
+                  <a href="#" className="block px-4 py-2 text-sm text-gray-700 hover:bg-orange-50 hover:text-orange-600 transition-all">Profile Settings</a>
+                  <a href="#" className="block px-4 py-2 text-sm text-gray-700 hover:bg-orange-50 hover:text-orange-600 transition-all">System Settings</a>
+                  <a href="#" className="block px-4 py-2 text-sm text-gray-700 hover:bg-orange-50 hover:text-orange-600 transition-all">User Management</a>
+                  <a href="#" className="block px-4 py-2 text-sm text-gray-700 hover:bg-orange-50 hover:text-orange-600 transition-all">Reports</a>
+                  <hr className="my-2 border-gray-200" />
+                  <a href="#" className="block px-4 py-2 text-sm text-red-600 hover:bg-red-50 transition-all">Logout</a>
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      </div>
+    </nav>
+  );
+};
+
+export default AdminNavbar;
