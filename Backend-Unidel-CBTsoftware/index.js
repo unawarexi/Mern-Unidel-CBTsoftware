@@ -3,13 +3,14 @@ import cors from "cors";
 import dotenv from "dotenv";
 import express from "express";
 import morgan from "morgan";
+import { connectDB, disconnectDB } from "./config/db-config.js";
 
 // Load environment variables
 dotenv.config();
 
 // Import routes
 
-import { disconnectPrisma } from "@config/lib/prisma.js";
+
 
 // Create Express app
 const app = express();
@@ -48,17 +49,48 @@ const errorHandler = (err, req, res, next) => {
 
 app.use(errorHandler);
 
-const PORT = process.env.PORT ?? 3000;
+// Remove direct app.listen here and use an async starter
+const startServer = async () => {
+  try {
+    await connectDB();
 
-app.listen(PORT, () => {
-  console.log(`Server started at port ${PORT}`);
-});
+    const PORT = process.env.PORT ?? 3000;
+    const server = app.listen(PORT, () => {
+      console.log(`Server started on port ${PORT}`);
+    });
 
-// Graceful shutdown
-process.on("SIGINT", async () => {
-  console.log("Shutting down...");
-  await disconnectPrisma();
-  process.exit(0);
-});
+    const gracefulShutdown = (signal) => {
+      console.log(`Received ${signal}. Shutting down gracefully...`);
+      server.close(async () => {
+        await disconnectDB();
+        console.log("Shutdown complete");
+        process.exit(0);
+      });
+
+      // Force exit if not closed within X ms
+      setTimeout(() => {
+        console.error("Forcing shutdown");
+        process.exit(1);
+      }, 10000);
+    };
+
+    process.on("SIGINT", () => gracefulShutdown("SIGINT"));
+    process.on("SIGTERM", () => gracefulShutdown("SIGTERM"));
+
+    process.on("unhandledRejection", (reason) => {
+      console.error("Unhandled Rejection:", reason);
+    });
+
+    process.on("uncaughtException", (err) => {
+      console.error("Uncaught Exception:", err);
+      gracefulShutdown("uncaughtException");
+    });
+  } catch (err) {
+    console.error("Failed to start server:", err);
+    process.exit(1);
+  }
+};
+
+startServer();
 
 export default app;
