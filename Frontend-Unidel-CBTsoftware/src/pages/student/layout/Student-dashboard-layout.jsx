@@ -4,20 +4,20 @@ import Navbar from './Student-navbar'
 import Footer from './Student-footer'
 import { Outlet } from "react-router-dom";
 
-const DashboardLayout = () => {
+const StudentDashboard = () => {
   return (
+    <div>
+      <Sidebar />
+
       <div>
-          <Sidebar />
-
-          <div>
-              {/* Navbar component can be added here */}
-              <Navbar />
-              {/* Main content can be added here */} 
-              <div>Main Content</div>
-              <Footer />
-          </div>
+        {/* Navbar component can be added here */}
+        <Navbar />
+        {/* Main content can be added here */}
+        <div>Main Content</div>
+        <Footer />
+      </div>
     </div>
-  )
-}
+  );
+};
 
-export default DashboardLayout
+export default StudentDashboard;

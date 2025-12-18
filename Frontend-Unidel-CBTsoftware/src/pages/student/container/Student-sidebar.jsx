@@ -3,6 +3,12 @@ import React from 'react'
 const Sidebar = () => {
   return (
     <div>
+      UX Tip (Important)
+      make Sidebar collapsible
+      Active route highlighted
+      lucide Icons + labels + drop downs
+      No clutter
+      
           Student Sidebar Items
           1.Dashboard - Exam status overview Upcoming / active exams Countdown indicator (if exam is active)
           2.My Courses - Enrolled courses Lecturer name Exam availability status

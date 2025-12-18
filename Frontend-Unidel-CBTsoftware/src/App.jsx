@@ -16,6 +16,9 @@ import Toast from "./components/ui/Toast-notifier";
 import { FullPageSpinner } from "./components/Spinners";
 import useAuthStore, { useAuthCurrentUser } from "./store/auth-store";
 import useUserStore from "./store/user-store";
+import StudentDashboard from "./pages/student/layout/Student-dashboard-layout";
+import LecturerDashboard from "./pages/lecturer/layout/Lecturer-dashboard-layout";
+import AdminDashboard from "./pages/admin/layout/Admin-dashboard-layout";
 
 // Small component to initialize auth-related queries inside the QueryClientProvider
 const AuthInitializer = () => {
@@ -166,6 +169,27 @@ const App = () => {
             element={
               <GuestOnly>
                 <ResetPassword />
+              </GuestOnly>
+            }
+          />
+
+          {/* ====================== DASHBOARD ROUTES ===================== */}
+          <Route path="/admin-dashboard" element={ <GuestOnly> <AdminDashboard /></GuestOnly>}/>
+
+          <Route
+            path="/lecturer-dashboard"
+            element={
+              <GuestOnly>
+                <LecturerDashboard />
+              </GuestOnly>
+            }
+          />
+
+          <Route
+            path="/student-dashboard"
+            element={
+              <GuestOnly>
+                <StudentDashboard />
               </GuestOnly>
             }
           />

@@ -4,7 +4,7 @@ import Navbar from "./Admin-navbar";
 import Footer from "./Admin-footer";
 import { Outlet } from "react-router-dom";
 
-const DashboardLayout = () => {
+const AdminDashboard = () => {
   return (
     <div>
       <Sidebar />
@@ -20,4 +20,4 @@ const DashboardLayout = () => {
   );
 };
 
-export default DashboardLayout;
+export default AdminDashboard;

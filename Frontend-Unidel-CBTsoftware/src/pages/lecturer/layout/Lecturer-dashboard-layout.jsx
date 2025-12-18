@@ -4,7 +4,7 @@ import Navbar from "./Lecturer-navbar";
 import Footer from "./Lecturer-footer";
 import { Outlet } from "react-router-dom";
 
-const DashboardLayout = () => {
+const LecturerDashboard = () => {
   return (
     <div>
       <Sidebar />
@@ -20,4 +20,4 @@ const DashboardLayout = () => {
   );
 };
 
-export default DashboardLayout;
+export default LecturerDashboard;
