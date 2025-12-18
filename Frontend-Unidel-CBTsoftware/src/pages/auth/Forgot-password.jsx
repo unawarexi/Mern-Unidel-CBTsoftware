@@ -2,6 +2,8 @@ import React, { useState } from "react";
 import { AlertCircle, Mail, User } from "lucide-react";
 import { Images } from "../../constants/image-strings";
 import { useNavigate, Link } from "react-router-dom";
+import { useAuthForgotPassword } from "../../store/auth-store";
+import { ButtonSpinner } from "../../components/Spinners";
 
 const ForgotPassword = () => {
   const [role, setRole] = useState("student");
@@ -9,6 +11,7 @@ const ForgotPassword = () => {
   const [email, setEmail] = useState("");
   const [errors, setErrors] = useState({});
   const navigate = useNavigate();
+  const { forgotPassword, isLoading } = useAuthForgotPassword();
 
   const validate = () => {
     const e = {};
@@ -18,14 +21,20 @@ const ForgotPassword = () => {
     return e;
   };
 
-  const handleSubmit = (ev) => {
+  const handleSubmit = async (ev) => {
     ev.preventDefault();
     const e = validate();
     setErrors(e);
     if (Object.keys(e).length === 0) {
-      // In real app: trigger reset email workflow. For demo, navigate to reset page.
-      console.log("Forgot password request", { role, identifier, email });
-      navigate("/reset-password", { state: { role, identifier, email } });
+      try {
+        const payload = { role, identifier, email };
+        const data = await forgotPassword(payload);
+        // backend might return token or confirmation; pass useful info to reset page
+        navigate("/reset-password", { state: { ...payload, token: data?.token || null } });
+      // eslint-disable-next-line no-unused-vars
+      } catch (_err) {
+        // toast shown by store; no-op here
+      }
     }
   };
 
@@ -94,7 +103,13 @@ const ForgotPassword = () => {
               )}
             </div>
 
-            <button type="submit" className="w-full bg-orange-600 text-white py-3 px-4 rounded-lg font-medium hover:bg-orange-700 transition-colors shadow-sm">Request Reset Link</button>
+            <button type="submit" disabled={isLoading} className="w-full bg-orange-600 text-white py-3 px-4 rounded-lg font-medium hover:bg-orange-700 transition-colors shadow-sm">
+              {isLoading ? (
+                <span className="flex items-center justify-center gap-2"><ButtonSpinner size={16} /> Requesting...</span>
+              ) : (
+                "Request Reset Link"
+              )}
+            </button>
           </form>
 
           <div className="mt-6 text-center">

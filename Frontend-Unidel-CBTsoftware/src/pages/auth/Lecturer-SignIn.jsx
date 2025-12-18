@@ -1,9 +1,24 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Eye, EyeOff, BookOpen, AlertCircle } from "lucide-react";
 import { Images } from "../../constants/image-strings";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
+import { ButtonSpinner } from "../../components/Spinners";
+import { useAuthLogin } from "../../store/auth-store";
+import useAuthStore from "../../store/auth-store";
 
 const LecturerSignIn = () => {
+  const navigate = useNavigate();
+  const { login, isLoading } = useAuthLogin();
+  const { isAuthenticated, user } = useAuthStore();
+
+  useEffect(() => {
+    if (isAuthenticated && user) {
+      const role = (user.role || user.type || "").toString().toLowerCase();
+      const target = role === "admin" ? "/admin-dashboard" : role === "lecturer" ? "/lecturer-dashboard" : "/student-dashboard";
+      navigate(target, { replace: true });
+    }
+  }, [isAuthenticated, user, navigate]);
+
   const [showPassword, setShowPassword] = useState(false);
   const [formData, setFormData] = useState({
     employeeId: "",
@@ -44,7 +59,7 @@ const LecturerSignIn = () => {
     setErrors((p) => ({ ...p, [name]: validateField(name, value) }));
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     const newErrors = {};
     Object.keys(formData).forEach((k) => {
@@ -54,8 +69,19 @@ const LecturerSignIn = () => {
     setTouched(Object.fromEntries(Object.keys(formData).map((k) => [k, true])));
     setErrors(newErrors);
     if (Object.keys(newErrors).length === 0) {
-      console.log("Lecturer sign in:", formData);
-      alert("Lecturer login (demo)");
+      try {
+        const data = await login(formData);
+        if (data.user?.isFirstLogin) {
+          navigate("/reset-password", { state: { message: "Please change your password" } });
+          return;
+        }
+        const role = (data.user.role || data.user.type || "").toString().toLowerCase();
+        const target = role === "admin" ? "/admin-dashboard" : role === "lecturer" ? "/lecturer-dashboard" : "/student-dashboard";
+        navigate(target, { replace: true });
+      // eslint-disable-next-line no-unused-vars
+      } catch (error) {
+        // handled by store toast
+      }
     }
   };
 
@@ -130,7 +156,9 @@ const LecturerSignIn = () => {
               {errors.password && touched.password && <div className="flex items-center gap-1 mt-1.5 text-red-600 text-sm"><AlertCircle className="w-4 h-4" /><span>{errors.password}</span></div>}
             </div>
 
-            <button type="submit" className="w-full bg-orange-600 text-white py-3 px-4 rounded-lg font-medium hover:bg-orange-700 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:ring-offset-2 transition-colors shadow-sm hover:shadow-md">Sign In</button>
+            <button type="submit" disabled={isLoading} className={`w-full bg-orange-600 text-white py-3 px-4 rounded-lg font-medium hover:bg-orange-700 ${isLoading ? "opacity-80 pointer-events-none" : ""}`}>
+              {isLoading ? <span className="flex items-center gap-2"><ButtonSpinner size={16} /> Sign In</span> : "Sign In"}
+            </button>
           </form>
 
           <div className="mt-6 text-center">

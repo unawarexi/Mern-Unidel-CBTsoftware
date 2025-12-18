@@ -1,7 +1,7 @@
-const jwt = require("jsonwebtoken");
-const Admin = require("../models/admin.model");
-const Lecturer = require("../models/lecturer.model");
-const Student = require("../models/student.model");
+import jwt from "jsonwebtoken";
+import Admin from "../models/admin.model.js";
+import Lecturer from "../models/lecturer.model.js";
+import Student from "../models/student.model.js";
 
 // Helper to get user model based on role
 const getUserModel = (role) => {
@@ -10,7 +10,7 @@ const getUserModel = (role) => {
 };
 
 // Protect routes - verify JWT token
-exports.protect = async (req, res, next) => {
+export const protect = async (req, res, next) => {
   let token;
 
   // Check for token in headers
@@ -59,7 +59,7 @@ exports.protect = async (req, res, next) => {
 };
 
 // Grant access to specific roles
-exports.authorize = (...roles) => {
+export const authorize = (...roles) => {
   return (req, res, next) => {
     if (!roles.includes(req.user.role)) {
       return res.status(403).json({

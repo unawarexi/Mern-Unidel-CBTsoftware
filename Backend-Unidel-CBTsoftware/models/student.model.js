@@ -17,6 +17,7 @@ const studentSchema = new mongoose.Schema(
     password: {
       type: String,
       required: true,
+      select: false, // Don't include password in queries by default
     },
     matricNumber: {
       type: String,
@@ -30,6 +31,10 @@ const studentSchema = new mongoose.Schema(
     },
     resetPasswordToken: String,
     resetPasswordExpires: Date,
+    isFirstLogin: {
+      type: Boolean,
+      default: true,
+    },
     role: {
       type: String,
       default: "student",
@@ -47,5 +52,6 @@ const studentSchema = new mongoose.Schema(
     timestamps: true,
   }
 );
+
 
 export default mongoose.model("Student", studentSchema);

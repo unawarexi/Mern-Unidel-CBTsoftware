@@ -1,7 +1,9 @@
 import React, { useState } from "react";
 import { Eye, EyeOff, AlertCircle } from "lucide-react";
 import { Images } from "../../constants/image-strings";
-import { useNavigate, useLocation, Link } from "react-router-dom";
+import { useAuthResetPassword, useAuthChangePasswordFirstLogin } from "../../store/auth-store";
+import { ButtonSpinner } from "../../components/Spinners";
+import { useLocation, useNavigate, Link } from "react-router-dom";
 
 const ResetPassword = () => {
   const [showPassword, setShowPassword] = useState(false);
@@ -12,6 +14,9 @@ const ResetPassword = () => {
   const location = useLocation();
   const prefill = location.state || {};
 
+  const { resetPassword, isLoading: isResetting } = useAuthResetPassword();
+  const { changePassword, isLoading: isChangingFirst } = useAuthChangePasswordFirstLogin();
+
   const validate = () => {
     const e = {};
     if (!password) e.password = "Password is required";
@@ -21,17 +26,34 @@ const ResetPassword = () => {
     return e;
   };
 
-  const handleSubmit = (ev) => {
+  const handleSubmit = async (ev) => {
     ev.preventDefault();
     const e = validate();
     setErrors(e);
     if (Object.keys(e).length === 0) {
-      // Real app: submit new password with token
-      console.log("Reset password for", prefill);
-      alert("Password reset successful (demo)");
-      navigate("/portal-signin");
+      try {
+        if (prefill?.firstLogin) {
+          // first login flow
+          const payload = { ...prefill, password };
+          const data = await changePassword(payload);
+          // store updates user; redirect to dashboard
+          const role = (data.user?.role || data.user?.type || "").toString().toLowerCase();
+          const target = role === "admin" ? "/admin-dashboard" : role === "lecturer" ? "/lecturer-dashboard" : "/student-dashboard";
+          navigate(target, { replace: true });
+        } else {
+          // normal reset - token or email in state
+          const payload = { ...prefill, password };
+          await resetPassword(payload);
+          navigate("/portal-signin", { replace: true });
+        }
+      // eslint-disable-next-line no-unused-vars
+      } catch (_err) {
+        // handled by store toasts
+      }
     }
   };
+
+  const isLoading = isResetting || isChangingFirst;
 
   return (
     <div className="min-h-screen bg-gray-50 flex">
@@ -84,7 +106,9 @@ const ResetPassword = () => {
               )}
             </div>
 
-            <button type="submit" className="w-full bg-orange-600 text-white py-3 px-4 rounded-lg font-medium hover:bg-orange-700 transition-colors shadow-sm">Reset Password</button>
+            <button type="submit" disabled={isLoading} className="w-full bg-orange-600 text-white py-3 px-4 rounded-lg font-medium hover:bg-orange-700 transition-colors shadow-sm">
+              {isLoading ? <span className="flex items-center gap-2"><ButtonSpinner size={16} /> Processing...</span> : "Reset Password"}
+            </button>
           </form>
 
           <div className="mt-6 text-center">

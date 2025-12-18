@@ -1,4 +1,4 @@
-const mongoose = require("mongoose");
+import mongoose from "mongoose";
 
 const lecturerSchema = new mongoose.Schema(
   {
@@ -17,6 +17,7 @@ const lecturerSchema = new mongoose.Schema(
     password: {
       type: String,
       required: true,
+      select: false, // Don't include password in queries by default
     },
     lecturerId: {
       type: String,
@@ -33,7 +34,11 @@ const lecturerSchema = new mongoose.Schema(
       required: true,
     },
     resetPasswordToken: String,
-resetPasswordExpires: Date,
+    resetPasswordExpires: Date,
+    isFirstLogin: {
+      type: Boolean,
+      default: true,
+    },
     role: {
       type: String,
       default: "lecturer",
