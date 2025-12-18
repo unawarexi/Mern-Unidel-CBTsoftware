@@ -49,4 +49,4 @@ const examSubmissionSchema = new mongoose.Schema(
 // Compound index to ensure one submission per student per exam
 examSubmissionSchema.index({ examId: 1, studentId: 1 }, { unique: true });
 
-module.exports = mongoose.model("ExamSubmission", examSubmissionSchema);
+export default mongoose.model("ExamSubmission", examSubmissionSchema);

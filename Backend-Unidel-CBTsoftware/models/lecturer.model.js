@@ -52,4 +52,4 @@ resetPasswordExpires: Date,
   }
 );
 
-module.exports = mongoose.model("Lecturer", lecturerSchema);
+export default mongoose.model("Lecturer", lecturerSchema);

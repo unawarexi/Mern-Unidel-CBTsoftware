@@ -1,8 +1,10 @@
-const crypto = require("crypto");
-const bcrypt = require("bcryptjs");
-const Admin = require("../models/admin.model");
-const Lecturer = require("../models/lecturer.model");
-const Student = require("../models/student.model");
+import crypto from "crypto";
+import bcrypt from "bcryptjs";
+import Admin from "../models/admin.model.js";
+import Lecturer from "../models/lecturer.model.js";
+import Student from "../models/student.model.js";
+import * as Mailer from "../services/mailer.service.js";
+import EmailContentGenerator from "../core/mail/mail-content.js";
 
 // Helper to get user model based on role
 const getUserModel = (role) => {
@@ -15,7 +17,7 @@ const getUserModel = (role) => {
 // @desc    Create Lecturer (Admin only)
 // @route   POST /api/users/lecturers
 // @access  Private (Admin)
-exports.createLecturer = async (req, res) => {
+export const createLecturer = async (req, res) => {
   try {
     const { fullname, email, lecturerId, employeeId, department } = req.body;
 
@@ -56,8 +58,29 @@ exports.createLecturer = async (req, res) => {
       isFirstLogin: true,
     });
 
-    // TODO: Send email with credentials
-    // await sendEmail(email, randomPassword);
+    // Generate reset token so lecturer is forced to set password via email
+    const resetToken = crypto.randomBytes(32).toString("hex");
+    const hashedToken = crypto.createHash("sha256").update(resetToken).digest("hex");
+    lecturer.resetPasswordToken = hashedToken;
+    lecturer.resetPasswordExpires = Date.now() + 15 * 60 * 1000; // 15 mins
+    await lecturer.save();
+
+    // Send account created email
+    try {
+      const mailGen = new EmailContentGenerator();
+      const resetUrl = `${process.env.FRONTEND_URL}/reset-password?token=${resetToken}&role=lecturer`;
+      const emailContent = mailGen.adminCreatedAccountEmail({
+        fullName: lecturer.fullname,
+        role: "lecturer",
+        email: lecturer.email,
+        tempPassword: randomPassword,
+        resetUrl,
+        userId: lecturer._id,
+      });
+      await Mailer.sendTemplatedMail(lecturer.email, emailContent);
+    } catch (err) {
+      console.error("Error sending lecturer account email:", err);
+    }
 
     res.status(201).json({
       success: true,
@@ -80,7 +103,7 @@ exports.createLecturer = async (req, res) => {
 // @desc    Get all Lecturers
 // @route   GET /api/users/lecturers
 // @access  Private (Admin)
-exports.getAllLecturers = async (req, res) => {
+export const getAllLecturers = async (req, res) => {
   try {
     const { page = 1, limit = 10, department, search } = req.query;
 
@@ -117,7 +140,7 @@ exports.getAllLecturers = async (req, res) => {
 // @desc    Get single Lecturer by ID
 // @route   GET /api/users/lecturers/:id
 // @access  Private (Admin)
-exports.getLecturerById = async (req, res) => {
+export const getLecturerById = async (req, res) => {
   try {
     const lecturer = await Lecturer.findById(req.params.id).select("-password -resetPasswordToken -resetPasswordExpires").populate("courses", "courseName courseCode");
 
@@ -140,7 +163,7 @@ exports.getLecturerById = async (req, res) => {
 // @desc    Update Lecturer
 // @route   PUT /api/users/lecturers/:id
 // @access  Private (Admin)
-exports.updateLecturer = async (req, res) => {
+export const updateLecturer = async (req, res) => {
   try {
     const { fullname, email, lecturerId, employeeId, department, courses } = req.body;
 
@@ -198,7 +221,7 @@ exports.updateLecturer = async (req, res) => {
 // @desc    Delete Lecturer
 // @route   DELETE /api/users/lecturers/:id
 // @access  Private (Admin)
-exports.deleteLecturer = async (req, res) => {
+export const deleteLecturer = async (req, res) => {
   try {
     const lecturer = await Lecturer.findById(req.params.id);
 
@@ -226,7 +249,7 @@ exports.deleteLecturer = async (req, res) => {
 // @desc    Create Student (Admin only)
 // @route   POST /api/users/students
 // @access  Private (Admin)
-exports.createStudent = async (req, res) => {
+export const createStudent = async (req, res) => {
   try {
     const { fullname, email, matricNumber, department } = req.body;
 
@@ -266,8 +289,29 @@ exports.createStudent = async (req, res) => {
       isFirstLogin: true,
     });
 
-    // TODO: Send email with credentials
-    // await sendEmail(email, randomPassword);
+    // Create reset token for student
+    const resetToken = crypto.randomBytes(32).toString("hex");
+    const hashedToken = crypto.createHash("sha256").update(resetToken).digest("hex");
+    student.resetPasswordToken = hashedToken;
+    student.resetPasswordExpires = Date.now() + 15 * 60 * 1000;
+    await student.save();
+
+    // Send account created email
+    try {
+      const mailGen = new EmailContentGenerator();
+      const resetUrl = `${process.env.FRONTEND_URL}/reset-password?token=${resetToken}&role=student`;
+      const emailContent = mailGen.adminCreatedAccountEmail({
+        fullName: student.fullname,
+        role: "student",
+        email: student.email,
+        tempPassword: randomPassword,
+        resetUrl,
+        userId: student._id,
+      });
+      await Mailer.sendTemplatedMail(student.email, emailContent);
+    } catch (err) {
+      console.error("Error sending student account email:", err);
+    }
 
     res.status(201).json({
       success: true,
@@ -289,7 +333,7 @@ exports.createStudent = async (req, res) => {
 // @desc    Get all Students
 // @route   GET /api/users/students
 // @access  Private (Admin)
-exports.getAllStudents = async (req, res) => {
+export const getAllStudents = async (req, res) => {
   try {
     const { page = 1, limit = 10, department, search } = req.query;
 
@@ -326,7 +370,7 @@ exports.getAllStudents = async (req, res) => {
 // @desc    Get single Student by ID
 // @route   GET /api/users/students/:id
 // @access  Private (Admin)
-exports.getStudentById = async (req, res) => {
+export const getStudentById = async (req, res) => {
   try {
     const student = await Student.findById(req.params.id).select("-password -resetPasswordToken -resetPasswordExpires").populate("courses", "courseName courseCode");
 
@@ -349,7 +393,7 @@ exports.getStudentById = async (req, res) => {
 // @desc    Update Student
 // @route   PUT /api/users/students/:id
 // @access  Private (Admin)
-exports.updateStudent = async (req, res) => {
+export const updateStudent = async (req, res) => {
   try {
     const { fullname, email, matricNumber, department, courses } = req.body;
 
@@ -405,7 +449,7 @@ exports.updateStudent = async (req, res) => {
 // @desc    Delete Student
 // @route   DELETE /api/users/students/:id
 // @access  Private (Admin)
-exports.deleteStudent = async (req, res) => {
+export const deleteStudent = async (req, res) => {
   try {
     const student = await Student.findById(req.params.id);
 
@@ -433,7 +477,7 @@ exports.deleteStudent = async (req, res) => {
 // @desc    Create Admin (Super Admin only)
 // @route   POST /api/users/admins
 // @access  Private (Super Admin)
-exports.createAdmin = async (req, res) => {
+export const createAdmin = async (req, res) => {
   try {
     const { fullname, email, adminId, organisation, role = "admin" } = req.body;
 
@@ -472,8 +516,29 @@ exports.createAdmin = async (req, res) => {
       role,
     });
 
-    // TODO: Send email with credentials
-    // await sendEmail(email, randomPassword);
+    // Create reset token for admin
+    const resetToken = crypto.randomBytes(32).toString("hex");
+    const hashedToken = crypto.createHash("sha256").update(resetToken).digest("hex");
+    admin.resetPasswordToken = hashedToken;
+    admin.resetPasswordExpires = Date.now() + 15 * 60 * 1000;
+    await admin.save();
+
+    // Send account created email
+    try {
+      const mailGen = new EmailContentGenerator();
+      const resetUrl = `${process.env.FRONTEND_URL}/reset-password?token=${resetToken}&role=${role}`;
+      const emailContent = mailGen.adminCreatedAccountEmail({
+        fullName: admin.fullname,
+        role,
+        email: admin.email,
+        tempPassword: randomPassword,
+        resetUrl,
+        userId: admin._id,
+      });
+      await Mailer.sendTemplatedMail(admin.email, emailContent);
+    } catch (err) {
+      console.error("Error sending admin account email:", err);
+    }
 
     res.status(201).json({
       success: true,
@@ -496,7 +561,7 @@ exports.createAdmin = async (req, res) => {
 // @desc    Get all Admins
 // @route   GET /api/users/admins
 // @access  Private (Super Admin)
-exports.getAllAdmins = async (req, res) => {
+export const getAllAdmins = async (req, res) => {
   try {
     const { page = 1, limit = 10, organisation, search } = req.query;
 
@@ -532,7 +597,7 @@ exports.getAllAdmins = async (req, res) => {
 // @desc    Get single Admin by ID
 // @route   GET /api/users/admins/:id
 // @access  Private (Super Admin)
-exports.getAdminById = async (req, res) => {
+export const getAdminById = async (req, res) => {
   try {
     const admin = await Admin.findById(req.params.id).select("-password -resetPasswordToken -resetPasswordExpires");
 
@@ -555,7 +620,7 @@ exports.getAdminById = async (req, res) => {
 // @desc    Update Admin
 // @route   PUT /api/users/admins/:id
 // @access  Private (Super Admin)
-exports.updateAdmin = async (req, res) => {
+export const updateAdmin = async (req, res) => {
   try {
     const { fullname, email, adminId, organisation, role } = req.body;
 
@@ -611,7 +676,7 @@ exports.updateAdmin = async (req, res) => {
 // @desc    Delete Admin
 // @route   DELETE /api/users/admins/:id
 // @access  Private (Super Admin)
-exports.deleteAdmin = async (req, res) => {
+export const deleteAdmin = async (req, res) => {
   try {
     const admin = await Admin.findById(req.params.id);
 
@@ -647,7 +712,7 @@ exports.deleteAdmin = async (req, res) => {
 // @desc    Get user statistics
 // @route   GET /api/users/stats
 // @access  Private (Admin)
-exports.getUserStats = async (req, res) => {
+export const getUserStats = async (req, res) => {
   try {
     const totalStudents = await Student.countDocuments();
     const totalLecturers = await Lecturer.countDocuments();

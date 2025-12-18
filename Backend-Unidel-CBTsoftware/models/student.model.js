@@ -1,4 +1,4 @@
-const mongoose = require("mongoose");
+import mongoose from "mongoose";
 
 const studentSchema = new mongoose.Schema(
   {
@@ -29,7 +29,7 @@ const studentSchema = new mongoose.Schema(
       required: true,
     },
     resetPasswordToken: String,
-resetPasswordExpires: Date,
+    resetPasswordExpires: Date,
     role: {
       type: String,
       default: "student",
@@ -48,4 +48,4 @@ resetPasswordExpires: Date,
   }
 );
 
-module.exports = mongoose.model("Student", studentSchema);
+export default mongoose.model("Student", studentSchema);

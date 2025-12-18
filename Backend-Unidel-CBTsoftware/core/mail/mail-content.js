@@ -282,5 +282,5 @@ class EmailContentGenerator {
   }
 }
 
-// Export using CommonJS for the backend
-module.exports = EmailContentGenerator;
+// Export using ES modules
+export default EmailContentGenerator;
