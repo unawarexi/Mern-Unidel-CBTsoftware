@@ -1,5 +1,5 @@
 import React, { useEffect } from "react";
-import { BrowserRouter as Router, Routes, Route, useNavigate } from "react-router-dom";
+import { BrowserRouter as Router, Routes, Route, useNavigate, Navigate } from "react-router-dom";
 import { QueryClientProvider } from "@tanstack/react-query";
 
 import MainLayout from "./layouts/MainLayout";
@@ -19,6 +19,9 @@ import useUserStore from "./store/user-store";
 import StudentDashboard from "./pages/student/layout/Student-dashboard-layout";
 import LecturerDashboard from "./pages/lecturer/layout/Lecturer-dashboard-layout";
 import AdminDashboard from "./pages/admin/layout/Admin-dashboard-layout";
+import AdminRoutes from "./pages/admin/Admin.routes";
+import LecturerRoutes from "./pages/lecturer/Lecturer.routes";
+import StudentRoutes from "./pages/student/Student.routes";
 
 // Small component to initialize auth-related queries inside the QueryClientProvider
 const AuthInitializer = () => {
@@ -45,12 +48,13 @@ const GuestOnly = ({ children }) => {
       const role = (user.role || user.type || "").toString().toLowerCase();
       let target = "/";
 
+      // Updated dashboard base paths
       if (role === "admin" || role === "superadmin") {
-        target = "/admin-dashboard";
+        target = "/admin";
       } else if (role === "lecturer") {
-        target = "/lecturer-dashboard";
+        target = "/lecturer";
       } else if (role === "student") {
-        target = "/student-dashboard";
+        target = "/student";
       }
 
       navigate(target, { replace: true });
@@ -58,6 +62,24 @@ const GuestOnly = ({ children }) => {
   }, [isAuthenticated, user, navigate]);
 
   return !isAuthenticated ? children : null;
+};
+
+// New: Protect routes by role (redirects to sign-in if not allowed)
+const ProtectedRoute = ({ children, allowedRoles = [] }) => {
+  const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
+  const user = useAuthStore((state) => state.user);
+
+  if (!isAuthenticated || !user) {
+    return <Navigate to="/portal-signin" replace />;
+  }
+
+  const role = (user.role || user.type || "").toString().toLowerCase();
+  if (allowedRoles.length > 0 && !allowedRoles.includes(role)) {
+    // block access if role isn't allowed
+    return <Navigate to="/" replace />;
+  }
+
+  return children;
 };
 
 const SectionsApp = () => {
@@ -164,35 +186,42 @@ const App = () => {
               </GuestOnly>
             }
           />
+          <Route path="/reset-password" element={<ResetPassword />} />
+
+          {/* ====================== DASHBOARD ROUTES (protected, mount route modules) ===================== */}
           <Route
-            path="/reset-password"
+            path="/admin/*"
             element={
-              <GuestOnly>
-                <ResetPassword />
-              </GuestOnly>
+              <ProtectedRoute allowedRoles={["admin", "superadmin"]}>
+                <AdminDashboard />
+              </ProtectedRoute>
             }
-          />
-
-          {/* ====================== DASHBOARD ROUTES ===================== */}
-          <Route path="/admin-dashboard" element={ <GuestOnly> <AdminDashboard /></GuestOnly>}/>
+          >
+            {/* Mount admin route module (will match /admin/... paths) */}
+            <Route path="*" element={<AdminRoutes />} />
+          </Route>
 
           <Route
-            path="/lecturer-dashboard"
+            path="/lecturer/*"
             element={
-              <GuestOnly>
+              <ProtectedRoute allowedRoles={["lecturer"]}>
                 <LecturerDashboard />
-              </GuestOnly>
+              </ProtectedRoute>
             }
-          />
+          >
+            <Route path="*" element={<LecturerRoutes />} />
+          </Route>
 
           <Route
-            path="/student-dashboard"
+            path="/student/*"
             element={
-              <GuestOnly>
+              <ProtectedRoute allowedRoles={["student"]}>
                 <StudentDashboard />
-              </GuestOnly>
+              </ProtectedRoute>
             }
-          />
+          >
+            <Route path="*" element={<StudentRoutes />} />
+          </Route>
 
           {/* Main layout wraps site pages (header/footer present) */}
           <Route element={<MainLayout />}>

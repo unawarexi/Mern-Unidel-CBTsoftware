@@ -46,7 +46,7 @@ const studentSchema = new mongoose.Schema(
       },
     ],
     documents: [String],
-    imagesAttachment: [String],
+    attachment: [String],
   },
   {
     timestamps: true,

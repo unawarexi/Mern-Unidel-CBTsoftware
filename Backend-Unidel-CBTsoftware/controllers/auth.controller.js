@@ -85,6 +85,20 @@ export const adminSignup = async (req, res) => {
       isFirstLogin: false, // signup set by user, not forced to change
     });
 
+    // Send a brief welcome/account email (non-blocking failure)
+    try {
+      const mailGen = new EmailContentGenerator();
+      const emailContent = mailGen.generalNotification({
+        title: "Welcome to UNIDEL CBT — Admin account created",
+        recipientName: admin.fullname,
+        message: `<p>Your administrator account has been created successfully.</p><p>You can sign in using your registered email.</p>`,
+        recipientId: admin._id,
+      });
+      await Mailer.sendTemplatedMail(admin.email, emailContent);
+    } catch (err) {
+      console.error("Error sending admin signup email:", err);
+    }
+
     sendTokenResponse(admin, 201, res);
   } catch (error) {
     res.status(500).json({ success: false, message: error.message });
@@ -96,12 +110,14 @@ export const adminSignup = async (req, res) => {
 // @access  Public
 export const login = async (req, res) => {
   try {
-    const { email, password, role } = req.body;
+    // accept email OR identifier fields plus role & password
+    const { email, password, role, studentId, employeeId, adminId } = req.body;
 
-    if (!email || !password || !role) {
+    // require at least role and password
+    if (!role || !password) {
       return res.status(400).json({
         success: false,
-        message: "Please provide all fields",
+        message: "Please provide role and password",
       });
     }
 
@@ -113,8 +129,21 @@ export const login = async (req, res) => {
       });
     }
 
-    // Find user
-    const user = await Model.findOne({ email }).select("+password");
+    // build flexible query: prefer email, fall back to role-specific identifier
+    const orQueries = [];
+    if (email) orQueries.push({ email });
+    if (role === "student" && studentId) orQueries.push({ studentId });
+    if (role === "lecturer" && employeeId) orQueries.push({ employeeId });
+    if (role === "admin" && adminId) orQueries.push({ adminId });
+
+    if (orQueries.length === 0) {
+      return res.status(400).json({
+        success: false,
+        message: "Please provide an email or identifier for the specified role",
+      });
+    }
+
+    const user = await Model.findOne({ $or: orQueries }).select("+password");
     if (!user) {
       return res.status(401).json({
         success: false,
@@ -218,23 +247,47 @@ export const forgotPassword = async (req, res) => {
 // @access  Public
 export const resetPassword = async (req, res) => {
   try {
-    const { token, role, newPassword } = req.body;
+    // accept token field under multiple names and allow role to be optional
+    const tokenRaw = req.body.token || req.body.resetToken;
+    const role = req.body.role;
+    const newPassword = req.body.newPassword;
 
-    if (!token || !role || !newPassword) {
+    if (!tokenRaw || !newPassword) {
       return res.status(400).json({
         success: false,
-        message: "Please provide all fields",
+        message: "Please provide token and newPassword",
       });
     }
 
     // Hash token to compare with DB
-    const hashedToken = crypto.createHash("sha256").update(token).digest("hex");
+    const hashedToken = crypto.createHash("sha256").update(tokenRaw).digest("hex");
 
-    const Model = getUserModel(role);
-    const user = await Model.findOne({
-      resetPasswordToken: hashedToken,
-      resetPasswordExpires: { $gt: Date.now() },
-    });
+    let user = null;
+    let Model = null;
+
+    // If role provided, search only that collection (faster). Otherwise search all models.
+    if (role) {
+      Model = getUserModel(role);
+      if (Model) {
+        user = await Model.findOne({
+          resetPasswordToken: hashedToken,
+          resetPasswordExpires: { $gt: Date.now() },
+        });
+      }
+    } else {
+      // fallback: try all known models
+      const potentialModels = [Admin, Lecturer, Student];
+      for (const M of potentialModels) {
+        const found = await M.findOne({
+          resetPasswordToken: hashedToken,
+          resetPasswordExpires: { $gt: Date.now() },
+        });
+        if (found) {
+          user = found;
+          break;
+        }
+      }
+    }
 
     if (!user) {
       return res.status(400).json({
@@ -280,9 +333,9 @@ export const resetPassword = async (req, res) => {
 // @access  Public
 export const changePasswordFirstLogin = async (req, res) => {
   try {
-    const { userId, role, oldPassword, newPassword } = req.body;
+    const { userId, role, newPassword } = req.body;
 
-    if (!userId || !role || !oldPassword || !newPassword) {
+    if (!userId || !role || !newPassword) {
       return res.status(400).json({
         success: false,
         message: "Please provide all required fields",
@@ -299,16 +352,7 @@ export const changePasswordFirstLogin = async (req, res) => {
       });
     }
 
-    // Verify old password
-    const isMatch = await bcrypt.compare(oldPassword, user.password);
-    if (!isMatch) {
-      return res.status(401).json({
-        success: false,
-        message: "Current password is incorrect",
-      });
-    }
-
-    // Hash new password
+    // First-login flow: set provided new password (no old password verification required)
     const salt = await bcrypt.genSalt(10);
     user.password = await bcrypt.hash(newPassword, salt);
     user.isFirstLogin = false;

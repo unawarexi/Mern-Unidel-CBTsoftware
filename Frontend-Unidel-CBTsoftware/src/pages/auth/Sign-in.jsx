@@ -15,7 +15,8 @@ const SignIn = () => {
   useEffect(() => {
     if (isAuthenticated && user) {
       const role = (user.role || user.type || "").toString().toLowerCase();
-      const target = role === "admin" ? "/admin-dashboard" : role === "lecturer" ? "/lecturer-dashboard" : "/student-dashboard";
+      // updated to new base paths
+      const target = role === "admin" ? "/admin" : role === "lecturer" ? "/lecturer" : "/student";
       navigate(target, { replace: true });
     }
   }, [isAuthenticated, user, navigate]);
@@ -83,16 +84,26 @@ const SignIn = () => {
 
     if (Object.keys(newErrors).length === 0) {
       try {
-        const data = await login(formData);
-        // If first login handled by store, navigate accordingly
-        if (data.user?.isFirstLogin) {
-          navigate("/reset-password", { state: { message: "Please change your password" } });
+        // build payload: student sign in must include role; prefer email if provided, otherwise include studentId
+        const payload = {
+          role: "student",
+          password: formData.password,
+        };
+        if (formData.email && formData.email.trim()) payload.email = formData.email.trim();
+        else payload.studentId = formData.studentId.trim();
+
+        const data = await login(payload);
+
+        // handle first-login shape returned by backend (either data.user?.isFirstLogin or data.requirePasswordChange)
+        if (data?.requirePasswordChange || data?.user?.isFirstLogin) {
+          navigate("/reset-password", { state: { message: "Please change your password", userId: data.user?.id || data?.userId, role: "student" } });
           return;
         }
+
         const role = (data.user.role || data.user.type || "").toString().toLowerCase();
-        const target = role === "admin" ? "/admin-dashboard" : role === "lecturer" ? "/lecturer-dashboard" : "/student-dashboard";
+        const target = role === "admin" ? "/admin" : role === "lecturer" ? "/lecturer" : "/student";
         navigate(target, { replace: true });
-      // eslint-disable-next-line no-unused-vars
+        // eslint-disable-next-line no-unused-vars
       } catch (error) {
         // errors are shown by store toasts
       }

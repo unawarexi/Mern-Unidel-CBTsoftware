@@ -2,11 +2,16 @@ import React, { useState } from "react";
 // eslint-disable-next-line no-unused-vars
 import { motion, AnimatePresence } from "framer-motion";
 import { LayoutDashboard, Users, Building2, BookOpen, FileText, BarChart3, Upload, Shield, Settings, User, LogOut, ChevronDown, ChevronRight, Menu, X, GraduationCap } from "lucide-react";
+import { useNavigate } from "react-router-dom";
+import { useAuthLogout } from "../../../store/auth-store";
 
 const Sidebar = () => {
   const [isCollapsed, setIsCollapsed] = useState(false);
   const [isMobileOpen, setIsMobileOpen] = useState(false);
   const [expandedMenus, setExpandedMenus] = useState({});
+
+  const { logout } = useAuthLogout();
+  const navigate = useNavigate();
 
   const menuItems = [
     {
@@ -133,6 +138,16 @@ const Sidebar = () => {
     collapsed: { opacity: 0, transitionEnd: { display: "none" } },
   };
 
+  const handleLogout = async () => {
+    try {
+      await logout();
+    } catch (err) {
+      console.error(err);
+    } finally {
+      navigate("/admin-signin", { replace: true });
+    }
+  };
+
   return (
     <>
       {/* Mobile Menu Button */}
@@ -212,19 +227,31 @@ const Sidebar = () => {
 
         {/* Bottom Menu */}
         <div className="border-t border-gray-200 p-3 space-y-1 bg-gray-50">
-          {bottomMenuItems.map((item) => (
-            <a
-              key={item.id}
-              href={item.href}
-              className={`flex items-center gap-3 px-3 py-3 rounded-lg transition-colors
-                ${item.id === "logout" ? "text-red-600 hover:bg-red-50" : "text-gray-600 hover:bg-gray-100"}`}
-            >
-              <item.icon className="w-5 h-5" />
-              <motion.span animate={isCollapsed ? "collapsed" : "expanded"} variants={contentVariants} className="font-medium text-sm">
-                {item.title}
-              </motion.span>
-            </a>
-          ))}
+          {bottomMenuItems.map((item) =>
+            item.id === "logout" ? (
+              <button
+                key={item.id}
+                onClick={handleLogout}
+                className="flex items-center gap-3 px-3 py-3 rounded-lg transition-colors text-red-600 hover:bg-red-50"
+              >
+                <item.icon className="w-5 h-5" />
+                <motion.span animate={isCollapsed ? "collapsed" : "expanded"} variants={contentVariants} className="font-medium text-sm">
+                  {item.title}
+                </motion.span>
+              </button>
+            ) : (
+              <a
+                key={item.id}
+                href={item.href}
+                className="flex items-center gap-3 px-3 py-3 rounded-lg transition-colors text-gray-600 hover:bg-gray-100"
+              >
+                <item.icon className="w-5 h-5" />
+                <motion.span animate={isCollapsed ? "collapsed" : "expanded"} variants={contentVariants} className="font-medium text-sm">
+                  {item.title}
+                </motion.span>
+              </a>
+            )
+          )}
         </div>
       </motion.aside>
 

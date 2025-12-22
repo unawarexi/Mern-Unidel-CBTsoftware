@@ -1,3 +1,4 @@
+import React, { useEffect } from "react";
 import { create } from "zustand";
 import { useLogin, useLogout, useChangePasswordFirstLogin, useForgotPassword, useResetPassword, useAdminSignup, useUpdateProfile, useChangePassword, useGetCurrentUser } from "../core/apis/auth-api";
 
@@ -71,11 +72,11 @@ export const useAuthLogin = () => {
     try {
       const data = await loginMutation.mutateAsync(credentials);
 
-      // Check if it's first login
-      if (data.user?.isFirstLogin) {
+      // Handle backend "requirePasswordChange" response or user.isFirstLogin
+      if (data?.requirePasswordChange || data.user?.isFirstLogin) {
         setFirstLogin(true);
         showToast("First login detected. Please change your password.", "info");
-      } else {
+      } else if (data.user) {
         setUser(data.user);
         showToast("Login successful", "success");
       }
@@ -313,23 +314,27 @@ export const useAuthChangePassword = () => {
 
 export const useAuthCurrentUser = () => {
   const { setUser, setError } = useAuthStore();
-  // Only fetch on init when there's a persisted user locally
-  const shouldFetch = !!persistedUser;
+  // Use a dynamic check against localStorage so auth fetch is enabled after login
+  const shouldFetch = !!localStorage.getItem("authUser");
   const { data, isLoading, error, refetch } = useGetCurrentUser({ enabled: shouldFetch });
 
-  // Sync TanStack Query data with Zustand store
-  if (data) {
-    if (data.user) {
-      setUser(data.user);
-    } else {
-      // server returned unauthenticated (e.g., token expired) - clear stored user
-      setUser(null);
+  // Sync TanStack Query data with Zustand store inside effects to avoid render-time state updates
+  useEffect(() => {
+    if (data) {
+      if (data.user) {
+        setUser(data.user);
+      } else {
+        // server returned unauthenticated (e.g., token expired) - clear stored user
+        setUser(null);
+      }
     }
-  }
+  }, [data, setUser]);
 
-  if (error) {
-    setError(error.message);
-  }
+  useEffect(() => {
+    if (error) {
+      setError(error.message);
+    }
+  }, [error, setError]);
 
   return {
     user: data?.user,

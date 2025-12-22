@@ -164,7 +164,8 @@ export const useLogin = () => {
   return useMutation({
     mutationFn: loginUser,
     onSuccess: (data) => {
-      queryClient.setQueryData(["currentUser"], data.user);
+      // wrap cache value same shape as getCurrentUser -> { user: ... }
+      queryClient.setQueryData(["currentUser"], { user: data.user });
     },
   });
 };
@@ -196,7 +197,8 @@ export const useAdminSignup = () => {
   return useMutation({
     mutationFn: adminSignup,
     onSuccess: (data) => {
-      queryClient.setQueryData(["currentUser"], data.user);
+      // keep consistent shape
+      queryClient.setQueryData(["currentUser"], { user: data.user });
     },
   });
 };
@@ -218,7 +220,8 @@ export const useUpdateProfile = () => {
   return useMutation({
     mutationFn: updateProfile,
     onSuccess: (data) => {
-      queryClient.setQueryData(["currentUser"], data.user);
+      // ensure we set shape { user }
+      queryClient.setQueryData(["currentUser"], { user: data.user });
     },
   });
 };
@@ -248,7 +251,8 @@ export const useRefreshToken = () => {
   return useMutation({
     mutationFn: refreshToken,
     onSuccess: (data) => {
-      queryClient.setQueryData(["currentUser"], data.user);
+      // ensure consistent shape
+      queryClient.setQueryData(["currentUser"], { user: data.user });
     },
   });
 };

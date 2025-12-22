@@ -88,7 +88,7 @@ export const useGetAllLecturersAction = () => {
   }
 
   return {
-    lecturers: data?.lecturers || [],
+    lecturers: data?.data || [], // <- backend returns { data: [...] }
     isLoading,
     error,
     refetch,
@@ -99,9 +99,9 @@ export const useGetLecturerByIdAction = (id) => {
   const { setSelectedUser, setError } = useUserStore();
   const { data, isLoading, error, refetch } = useGetLecturerById(id);
 
-  if (data?.lecturer) {
-    setSelectedUser(data.lecturer, "lecturer");
-    console.log("✅ Lecturer fetched successfully", data.lecturer);
+  if (data?.data) {
+    setSelectedUser(data.data, "lecturer");
+    console.log("✅ Lecturer fetched successfully", data.data);
   }
 
   if (error) {
@@ -110,7 +110,7 @@ export const useGetLecturerByIdAction = (id) => {
   }
 
   return {
-    lecturer: data?.lecturer,
+    lecturer: data?.data,
     isLoading,
     error,
     refetch,
@@ -223,7 +223,7 @@ export const useGetAllStudentsAction = () => {
   }
 
   return {
-    students: data?.students || [],
+    students: data?.data || [], // <- fix
     isLoading,
     error,
     refetch,
@@ -234,9 +234,9 @@ export const useGetStudentByIdAction = (id) => {
   const { setSelectedUser, setError } = useUserStore();
   const { data, isLoading, error, refetch } = useGetStudentById(id);
 
-  if (data?.student) {
-    setSelectedUser(data.student, "student");
-    console.log("✅ Student fetched successfully", data.student);
+  if (data?.data) {
+    setSelectedUser(data.data, "student");
+    console.log("✅ Student fetched successfully", data.data);
   }
 
   if (error) {
@@ -245,7 +245,7 @@ export const useGetStudentByIdAction = (id) => {
   }
 
   return {
-    student: data?.student,
+    student: data?.data,
     isLoading,
     error,
     refetch,
@@ -339,7 +339,7 @@ export const useCreateAdminAction = () => {
 
   return {
     createAdmin,
-    isLoading: createAdminMutation.isPending,
+    isLoading: createAdminMutation.isLoading, // <- use isLoading
     error: createAdminMutation.error,
   };
 };
@@ -358,7 +358,7 @@ export const useGetAllAdminsAction = () => {
   }
 
   return {
-    admins: data?.admins || [],
+    admins: data?.data || [], // <- fix
     isLoading,
     error,
     refetch,
@@ -369,9 +369,9 @@ export const useGetAdminByIdAction = (id) => {
   const { setSelectedUser, setError } = useUserStore();
   const { data, isLoading, error, refetch } = useGetAdminById(id);
 
-  if (data?.admin) {
-    setSelectedUser(data.admin, "admin");
-    console.log("✅ Admin fetched successfully", data.admin);
+  if (data?.data) {
+    setSelectedUser(data.data, "admin");
+    console.log("✅ Admin fetched successfully", data.data);
   }
 
   if (error) {
@@ -380,7 +380,7 @@ export const useGetAdminByIdAction = (id) => {
   }
 
   return {
-    admin: data?.admin,
+    admin: data?.data,
     isLoading,
     error,
     refetch,
@@ -412,7 +412,7 @@ export const useUpdateAdminAction = () => {
 
   return {
     updateAdmin,
-    isLoading: updateAdminMutation.isPending,
+    isLoading: updateAdminMutation.isLoading, // <- use isLoading
     error: updateAdminMutation.error,
   };
 };
@@ -442,7 +442,7 @@ export const useDeleteAdminAction = () => {
 
   return {
     deleteAdmin,
-    isLoading: deleteAdminMutation.isPending,
+    isLoading: deleteAdminMutation.isLoading, // <- use isLoading
     error: deleteAdminMutation.error,
   };
 };
@@ -463,7 +463,7 @@ export const useGetUserStatsAction = () => {
   }
 
   return {
-    stats: data?.stats || {},
+    stats: data?.data || {}, // <- fix
     isLoading,
     error,
     refetch,

@@ -2,6 +2,8 @@ import React, { useState } from "react";
 // eslint-disable-next-line no-unused-vars
 import { motion, AnimatePresence } from "framer-motion";
 import { LayoutDashboard, BookOpen, FileText, Trophy, User, LogOut, ChevronDown, ChevronRight, Menu, X, GraduationCap, Bell, Clock, CheckCircle2, AlertCircle } from "lucide-react";
+import { useNavigate } from "react-router-dom";
+import { useAuthLogout } from "../../../store/auth-store";
 
 const Sidebar = () => {
   const [isCollapsed, setIsCollapsed] = useState(false);
@@ -83,6 +85,19 @@ const Sidebar = () => {
     },
     { id: "logout", title: "Logout", icon: LogOut, href: "/logout" },
   ];
+
+  const { logout } = useAuthLogout();
+  const navigate = useNavigate();
+
+  const handleLogout = async () => {
+    try {
+      await logout();
+    } catch (err) {
+      console.error(err);
+    } finally {
+      navigate("/portal-signin", { replace: true });
+    }
+  };
 
   const toggleMenu = (menuId) => {
     setExpandedMenus((prev) => ({
@@ -192,7 +207,7 @@ const Sidebar = () => {
           {bottomMenuItems.map((item) => (
             <div key={item.id}>
               <button
-                onClick={() => item.subItems && toggleMenu(item.id)}
+                onClick={() => (item.id === "logout" ? handleLogout() : item.subItems && toggleMenu(item.id))}
                 className={`w-full flex items-center justify-between px-3 py-3 rounded-xl transition-all
                   ${item.id === "logout" ? "text-red-600 hover:bg-red-50 hover:shadow-sm" : "text-gray-600 hover:bg-white hover:shadow-sm"}`}
               >

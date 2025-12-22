@@ -11,6 +11,9 @@ dotenv.config();
 // Import routes
 import authRoutes from "./routes/auth.routes.js";
 import userRoutes from "./routes/user.routes.js";
+import attachmentRoutes from "./routes/attachment.routes.js";
+import courseRoutes from "./routes/course.routes.js";
+import examRoutes from "./routes/exam.routes.js";
 
 // Create Express app
 const app = express();
@@ -34,6 +37,9 @@ if (process.env.NODE_ENV === "development") {
 // --- API ROUTES ---
 app.use("/api/auth", authRoutes);
 app.use("/api/users", userRoutes);
+app.use("/api/attachments", attachmentRoutes);
+app.use("/api/courses", courseRoutes)
+app.use("/api/exams", examRoutes);
 
 // 404 handler middleware
 app.use((req, res, next) => {

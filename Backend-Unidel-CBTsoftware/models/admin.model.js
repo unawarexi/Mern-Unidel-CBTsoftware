@@ -39,7 +39,7 @@ const adminSchema = new mongoose.Schema(
       enum: ["admin", "superadmin"],
     },
     documents: [String],
-    imagesAttachment: [String],
+    attachment: [String],
   },
   {
     timestamps: true,

@@ -2,11 +2,16 @@ import React, { useState } from "react";
 // eslint-disable-next-line no-unused-vars
 import { motion, AnimatePresence } from "framer-motion";
 import { LayoutDashboard, BookOpen, Database, FileText, Send, BarChart3, User, LogOut, ChevronDown, ChevronRight, Menu, X, GraduationCap, Eye, ShieldCheck } from "lucide-react";
+import { useNavigate } from "react-router-dom";
+import { useAuthLogout } from "../../../store/auth-store";
 
 const Sidebar = () => {
   const [isCollapsed, setIsCollapsed] = useState(false);
   const [isMobileOpen, setIsMobileOpen] = useState(false);
   const [expandedMenus, setExpandedMenus] = useState({});
+
+  const { logout } = useAuthLogout();
+  const navigate = useNavigate();
 
   const menuItems = [
     {
@@ -117,6 +122,16 @@ const Sidebar = () => {
     collapsed: { opacity: 0, transitionEnd: { display: "none" } },
   };
 
+  const handleLogout = async () => {
+    try {
+      await logout();
+    } catch (err) {
+      console.error(err);
+    } finally {
+      navigate("/lecturer-signin", { replace: true });
+    }
+  };
+
   return (
     <>
       {/* Mobile Menu Button */}
@@ -204,7 +219,7 @@ const Sidebar = () => {
           {bottomMenuItems.map((item) => (
             <div key={item.id}>
               <button
-                onClick={() => item.subItems && toggleMenu(item.id)}
+                onClick={() => (item.id === "logout" ? handleLogout() : item.subItems && toggleMenu(item.id))}
                 className={`w-full flex items-center justify-between px-3 py-3 rounded-lg transition-colors
                   ${item.id === "logout" ? "text-red-600 hover:bg-red-50" : "text-gray-600 hover:bg-gray-100"}`}
               >

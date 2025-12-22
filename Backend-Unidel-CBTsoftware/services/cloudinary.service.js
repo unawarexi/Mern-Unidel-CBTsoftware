@@ -83,7 +83,7 @@ const getResourceType = (filename) => {
  * @returns Promise resolving to the Cloudinary upload result with metadata
  */
 
-export const uploadToCloudinary = async (fileBuffer, originalName, folder = "/projects/workspace") => {
+export const uploadToCloudinary = async (fileBuffer, originalName, folder = "/projects/unidel") => {
   try {
     const resourceType = getResourceType(originalName);
     const fileExtension = originalName.split(".").pop();

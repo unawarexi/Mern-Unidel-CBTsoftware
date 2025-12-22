@@ -35,9 +35,29 @@ export const protect = async (req, res, next) => {
     // Verify token
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
 
+    // support different token payload shapes
+    const userId = decoded.userId || decoded.id || decoded._id || (decoded.user && decoded.user.userId);
+    const role = decoded.role || decoded.roleName || (decoded.user && decoded.user.role);
+
+    if (!userId || !role) {
+      console.error("Invalid token payload:", decoded);
+      return res.status(401).json({
+        success: false,
+        message: "Invalid authentication token",
+      });
+    }
+
     // Get user from token
-    const Model = getUserModel(decoded.role);
-    const user = await Model.findById(decoded.userId).select("-password");
+    const Model = getUserModel(role);
+    if (!Model) {
+      console.error("No model found for role from token:", role);
+      return res.status(401).json({
+        success: false,
+        message: "Invalid user role in token",
+      });
+    }
+
+    const user = await Model.findById(userId).select("-password");
 
     if (!user) {
       return res.status(401).json({
@@ -46,9 +66,11 @@ export const protect = async (req, res, next) => {
       });
     }
 
-    // Attach user to request object
+    // Attach user to request object (provide multiple id shapes for compatibility)
     req.user = {
+      _id: user._id,
       userId: user._id,
+      id: user._id,
       role: user.role,
       email: user.email,
       fullname: user.fullname,
@@ -56,6 +78,7 @@ export const protect = async (req, res, next) => {
 
     next();
   } catch (error) {
+    console.error("Auth protect error:", error);
     return res.status(401).json({
       success: false,
       message: "Not authorized to access this route",

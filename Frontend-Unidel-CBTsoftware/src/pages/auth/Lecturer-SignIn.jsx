@@ -14,7 +14,7 @@ const LecturerSignIn = () => {
   useEffect(() => {
     if (isAuthenticated && user) {
       const role = (user.role || user.type || "").toString().toLowerCase();
-      const target = role === "admin" ? "/admin-dashboard" : role === "lecturer" ? "/lecturer-dashboard" : "/student-dashboard";
+      const target = role === "admin" ? "/admin" : role === "lecturer" ? "/lecturer" : "/student";
       navigate(target, { replace: true });
     }
   }, [isAuthenticated, user, navigate]);
@@ -70,13 +70,16 @@ const LecturerSignIn = () => {
     setErrors(newErrors);
     if (Object.keys(newErrors).length === 0) {
       try {
-        const data = await login(formData);
-        if (data.user?.isFirstLogin) {
-          navigate("/reset-password", { state: { message: "Please change your password" } });
+        const payload = { ...formData, role: "lecturer" };
+        const data = await login(payload);
+
+        if (data?.requirePasswordChange || data?.user?.isFirstLogin) {
+          navigate("/reset-password", { state: { message: "Please change your password", userId: data.user?.id || data?.userId, role: "lecturer" } });
           return;
         }
+
         const role = (data.user.role || data.user.type || "").toString().toLowerCase();
-        const target = role === "admin" ? "/admin-dashboard" : role === "lecturer" ? "/lecturer-dashboard" : "/student-dashboard";
+        const target = role === "admin" ? "/admin" : role === "lecturer" ? "/lecturer" : "/student";
         navigate(target, { replace: true });
       // eslint-disable-next-line no-unused-vars
       } catch (error) {

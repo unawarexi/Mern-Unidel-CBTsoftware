@@ -72,6 +72,7 @@ export const createLecturer = async (req, res) => {
     await lecturer.save();
 
     // Send account created email
+    let emailSent = false;
     try {
       const mailGen = new EmailContentGenerator();
       const resetUrl = `${process.env.FRONTEND_URL}/reset-password?token=${resetToken}&role=lecturer`;
@@ -84,13 +85,16 @@ export const createLecturer = async (req, res) => {
         userId: lecturer._id,
       });
       await Mailer.sendTemplatedMail(lecturer.email, emailContent);
+      emailSent = true;
     } catch (err) {
+      // Log error and continue - admin creation itself succeeded
       console.error("Error sending lecturer account email:", err);
     }
 
     res.status(201).json({
       success: true,
-      message: "Lecturer created successfully. Credentials sent to email.",
+      message: `Lecturer created successfully.${emailSent ? " Credentials sent to email." : " Failed to send credentials email."}`,
+      emailSent,
       data: {
         id: lecturer._id,
         fullname: lecturer.fullname,
@@ -139,6 +143,7 @@ export const getAllLecturers = async (req, res) => {
       data: lecturers,
     });
   } catch (error) {
+    console.error("Error in getAllLecturers:", error);
     res.status(500).json({ success: false, message: error.message });
   }
 };
@@ -309,6 +314,7 @@ export const createStudent = async (req, res) => {
     await student.save();
 
     // Send account created email
+    let emailSent = false;
     try {
       const mailGen = new EmailContentGenerator();
       const resetUrl = `${process.env.FRONTEND_URL}/reset-password?token=${resetToken}&role=student`;
@@ -321,13 +327,15 @@ export const createStudent = async (req, res) => {
         userId: student._id,
       });
       await Mailer.sendTemplatedMail(student.email, emailContent);
+      emailSent = true;
     } catch (err) {
       console.error("Error sending student account email:", err);
     }
 
     res.status(201).json({
       success: true,
-      message: "Student created successfully. Credentials sent to email.",
+      message: `Student created successfully.${emailSent ? " Credentials sent to email." : " Failed to send credentials email."}`,
+      emailSent,
       data: {
         id: student._id,
         fullname: student.fullname,
@@ -375,6 +383,7 @@ export const getAllStudents = async (req, res) => {
       data: students,
     });
   } catch (error) {
+    console.error("Error in getAllStudents:", error);
     res.status(500).json({ success: false, message: error.message });
   }
 };
@@ -545,6 +554,7 @@ export const createAdmin = async (req, res) => {
     await admin.save();
 
     // Send account created email
+    let emailSent = false;
     try {
       const mailGen = new EmailContentGenerator();
       const resetUrl = `${process.env.FRONTEND_URL}/reset-password?token=${resetToken}&role=${role}`;
@@ -557,13 +567,15 @@ export const createAdmin = async (req, res) => {
         userId: admin._id,
       });
       await Mailer.sendTemplatedMail(admin.email, emailContent);
+      emailSent = true;
     } catch (err) {
       console.error("Error sending admin account email:", err);
     }
 
     res.status(201).json({
       success: true,
-      message: "Admin created successfully. Credentials sent to email.",
+      message: `Admin created successfully.${emailSent ? " Credentials sent to email." : " Failed to send credentials email."}`,
+      emailSent,
       data: {
         id: admin._id,
         fullname: admin.fullname,
@@ -761,3 +773,142 @@ export const getUserStats = async (req, res) => {
     res.status(500).json({ success: false, message: error.message });
   }
 }
+
+// @desc    Get current user profile
+// @route   GET /api/users/profile
+// @access  Private (All users)
+export const getCurrentUser = async (req, res) => {
+  try {
+    const Model = getUserModel(req.user.role);
+    const user = await Model.findById(req.user.userId).select("-password -resetPasswordToken -resetPasswordExpires").populate("courses", "courseName courseCode");
+
+    if (!user) {
+      return res.status(404).json({
+        success: false,
+        message: "User not found",
+      });
+    }
+
+    res.status(200).json({
+      success: true,
+      data: user,
+    });
+  } catch (error) {
+    console.error("Error in getCurrentUser:", error);
+    res.status(500).json({ success: false, message: error.message });
+  }
+};
+
+// @desc    Update current user profile
+// @route   PUT /api/users/profile
+// @access  Private (All users)
+export const updateProfile = async (req, res) => {
+  try {
+    const { fullname, email, password, department, courses } = req.body;
+
+    const Model = getUserModel(req.user.role);
+    const user = await Model.findById(req.user.userId);
+
+    if (!user) {
+      return res.status(404).json({
+        success: false,
+        message: "User not found",
+      });
+    }
+
+    // Check for duplicate email (excluding current user)
+    if (email) {
+      const duplicate = await Model.findOne({ email, _id: { $ne: req.user.userId } });
+      if (duplicate) {
+        return res.status(400).json({
+          success: false,
+          message: "Email already in use",
+        });
+      }
+    }
+
+    // Update fields
+    if (fullname) user.fullname = fullname;
+    if (email) user.email = email;
+    if (department) user.department = department;
+    if (courses) user.courses = courses;
+
+    // Hash password if provided
+    if (password) {
+      const salt = await bcrypt.genSalt(10);
+      user.password = await bcrypt.hash(password, salt);
+    }
+
+    await user.save();
+
+    res.status(200).json({
+      success: true,
+      message: "Profile updated successfully",
+      data: user,
+    });
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+};
+
+// @desc    Upload profile picture
+// @route   POST /api/users/profile/picture
+// @access  Private (All users)
+export const uploadProfilePicture = async (req, res) => {
+  try {
+    const Model = getUserModel(req.user.role);
+    const user = await Model.findById(req.user.userId);
+
+    if (!user) {
+      return res.status(404).json({
+        success: false,
+        message: "User not found",
+      });
+    }
+
+    // Assuming req.file is set by multer
+    if (!req.file) {
+      return res.status(400).json({
+        success: false,
+        message: "Please upload a file",
+      });
+    }
+
+    // TODO: Add image processing and storage logic here
+
+    // For now, just echo back the uploaded file info
+    res.status(200).json({
+      success: true,
+      message: "Profile picture uploaded successfully",
+      file: req.file,
+    });
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+};
+
+// @desc    Delete profile picture
+// @route   DELETE /api/users/profile/picture
+// @access  Private (All users)
+export const deleteProfilePicture = async (req, res) => {
+  try {
+    const Model = getUserModel(req.user.role);
+    const user = await Model.findById(req.user.userId);
+
+    if (!user) {
+      return res.status(404).json({
+        success: false,
+        message: "User not found",
+      });
+    }
+
+    // TODO: Add logic to delete profile picture
+
+    res.status(200).json({
+      success: true,
+      message: "Profile picture deleted successfully",
+    });
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+};
