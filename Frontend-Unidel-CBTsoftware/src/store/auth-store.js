@@ -1,3 +1,4 @@
+/* eslint-disable no-unused-vars */
 import React, { useEffect } from "react";
 import { create } from "zustand";
 import { useLogin, useLogout, useChangePasswordFirstLogin, useForgotPassword, useResetPassword, useAdminSignup, useUpdateProfile, useChangePassword, useGetCurrentUser } from "../core/apis/auth-api";
@@ -33,7 +34,6 @@ const useAuthStore = create((set) => ({
     try {
       if (user) localStorage.setItem("authUser", JSON.stringify(user));
       else localStorage.removeItem("authUser");
-    // eslint-disable-next-line no-unused-vars
     } catch (e) {
       // ignore
     }
@@ -48,13 +48,19 @@ const useAuthStore = create((set) => ({
 
   setFirstLogin: (isFirstLogin) => set({ isFirstLogin }),
 
-  clearAuth: () =>
+  clearAuth: () => {
+    try {
+      localStorage.removeItem("authUser");
+    } catch (e) {
+      // ignore
+    }
     set({
       user: null,
       isAuthenticated: false,
       error: null,
       isFirstLogin: false,
-    }),
+    });
+  },
 }));
 
 // ========== WRAPPER HOOKS FOR COMPONENTS ==========
@@ -111,11 +117,12 @@ export const useAuthLogout = () => {
     try {
       await logoutMutation.mutateAsync();
       clearAuth();
-      localStorage.removeItem("authUser");
       showToast("Logged out successfully", "success");
     } catch (error) {
       setError(error.message);
       showToast(error.message || "Logout failed", "error");
+      // Clear auth anyway even if logout API fails
+      clearAuth();
       throw error;
     } finally {
       setLoading(false);
@@ -238,7 +245,7 @@ export const useAuthAdminSignup = () => {
       showToast("Admin account created", "success");
       return data;
     } catch (error) {
-     console.log(error.message)
+      console.log(error.message);
       setError(error.message);
       showToast(error.message || "Signup failed", "error");
       throw error;
@@ -313,7 +320,7 @@ export const useAuthChangePassword = () => {
 };
 
 export const useAuthCurrentUser = () => {
-  const { setUser, setError } = useAuthStore();
+  const { setUser, setError, clearAuth } = useAuthStore();
   // Use a dynamic check against localStorage so auth fetch is enabled after login
   const shouldFetch = !!localStorage.getItem("authUser");
   const { data, isLoading, error, refetch } = useGetCurrentUser({ enabled: shouldFetch });
@@ -321,20 +328,34 @@ export const useAuthCurrentUser = () => {
   // Sync TanStack Query data with Zustand store inside effects to avoid render-time state updates
   useEffect(() => {
     if (data) {
-      if (data.user) {
-        setUser(data.user);
+      // Accept both { user } and { data } shapes from backend
+      const userObj = data.user || data.data;
+      if (userObj) {
+        setUser(userObj);
+        console.log("✅ User synced from API:", userObj);
       } else {
         // server returned unauthenticated (e.g., token expired) - clear stored user
-        setUser(null);
+        console.log("⚠️ No user data returned, clearing auth");
+        clearAuth();
       }
     }
-  }, [data, setUser]);
+  }, [data, setUser, clearAuth]);
 
   useEffect(() => {
     if (error) {
+      console.error("❌ Auth error:", error.message);
       setError(error.message);
+
+      // If it's an authentication error (token expired, invalid, etc), clear auth
+      const authErrors = ["unauthorized", "token", "expired", "invalid", "forbidden", "401", "403"];
+      const isAuthError = authErrors.some((keyword) => error.message?.toLowerCase().includes(keyword));
+
+      if (isAuthError) {
+        console.log("🔒 Token expired or invalid, clearing auth");
+        clearAuth();
+      }
     }
-  }, [error, setError]);
+  }, [error, setError, clearAuth]);
 
   return {
     user: data?.user,

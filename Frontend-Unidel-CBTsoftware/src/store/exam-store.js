@@ -23,6 +23,7 @@ import {
   useUpdateExam,
   usePublishExam,
   useDeleteExam,
+  useGenerateImageForQuestion,
 } from "../core/apis/exam-api";
 
 const useExamStore = create((set) => ({
@@ -176,13 +177,8 @@ export const useGetLecturerQuestionBanksAction = (filters = {}) => {
 };
 
 export const useGetQuestionBankByIdAction = (id) => {
-  const { setSelectedQuestionBank, setError } = useExamStore();
+  const { setError } = useExamStore();
   const { data, isLoading, error, refetch } = useGetQuestionBankById(id);
-
-  if (data?.questionBank) {
-    setSelectedQuestionBank(data.questionBank);
-    console.log("✅ Question bank fetched successfully", data.questionBank);
-  }
 
   if (error) {
     setError(error.message);
@@ -694,6 +690,33 @@ export const useDeleteExamAction = () => {
     deleteExam,
     isLoading: deleteExamMutation.isLoading,
     error: deleteExamMutation.error,
+  };
+};
+
+export const useGenerateImageForQuestionAction = () => {
+  const { showToast, showLoader, hideLoader, setError } = useExamStore();
+  const mutation = useGenerateImageForQuestion();
+
+  const generateImage = async ({ question, questionBankId, questionId }) => {
+    setError(null);
+    showLoader();
+    try {
+      const result = await mutation.mutateAsync({ question, questionBankId, questionId });
+      showToast("Image generated successfully", "success");
+      return result;
+    } catch (error) {
+      setError(error.message);
+      showToast(error.message || "Failed to generate image", "error");
+      throw error;
+    } finally {
+      hideLoader();
+    }
+  };
+
+  return {
+    generateImage,
+    isLoading: mutation.isLoading,
+    error: mutation.error,
   };
 };
 

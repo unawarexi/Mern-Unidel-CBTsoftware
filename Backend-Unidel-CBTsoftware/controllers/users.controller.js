@@ -3,6 +3,9 @@ import bcrypt from "bcryptjs";
 import Admin from "../models/admin.model.js";
 import Lecturer from "../models/lecturer.model.js";
 import Student from "../models/student.model.js";
+import Course from "../models/course.model.js"; // Add this import
+import Exam from "../models/exam.model.js";
+import QuestionBank from "../models/question.model.js";
 import { generateEmployeeId, generateLecturerId, generateMatricNumber, generateAdminId } from "../core/helpers/helper-functions.js";
 import * as Mailer from "../services/mailer.service.js";
 import EmailContentGenerator from "../core/mail/mail-content.js";
@@ -153,7 +156,9 @@ export const getAllLecturers = async (req, res) => {
 // @access  Private (Admin)
 export const getLecturerById = async (req, res) => {
   try {
-    const lecturer = await Lecturer.findById(req.params.id).select("-password -resetPasswordToken -resetPasswordExpires").populate("courses", "courseName courseCode");
+    const lecturer = await Lecturer.findById(req.params.id)
+      .select("-password -resetPasswordToken -resetPasswordExpires")
+      .populate("courses", "courseCode courseTitle department"); // Always populate courses
 
     if (!lecturer) {
       return res.status(404).json({
@@ -165,6 +170,28 @@ export const getLecturerById = async (req, res) => {
     res.status(200).json({
       success: true,
       data: lecturer,
+    });
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+};
+
+// ========== NEW: Get all courses for the logged-in lecturer ==========
+export const getLecturerCourses = async (req, res) => {
+  try {
+    // Only allow lecturers to access their own courses
+    if (req.user.role !== "lecturer") {
+      return res.status(403).json({ success: false, message: "Forbidden" });
+    }
+    const lecturer = await Lecturer.findById(req.user.userId);
+    if (!lecturer) {
+      return res.status(404).json({ success: false, message: "Lecturer not found" });
+    }
+    // Populate courses
+    const courses = await Course.find({ _id: { $in: lecturer.courses } });
+    res.status(200).json({
+      success: true,
+      data: courses,
     });
   } catch (error) {
     res.status(500).json({ success: false, message: error.message });
@@ -740,6 +767,32 @@ export const deleteAdmin = async (req, res) => {
   }
 };
 
+// ========== NEW: Get all exams for the logged-in lecturer ==========
+export const getLecturerExams = async (req, res) => {
+  try {
+    if (req.user.role !== "lecturer") {
+      return res.status(403).json({ success: false, message: "Forbidden" });
+    }
+    const exams = await Exam.find({ lecturerId: req.user.userId }).populate("courseId", "courseCode courseTitle");
+    res.status(200).json({ success: true, data: exams });
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+};
+
+// ========== NEW: Get all question banks for the logged-in lecturer ==========
+export const getLecturerQuestionBanks = async (req, res) => {
+  try {
+    if (req.user.role !== "lecturer") {
+      return res.status(403).json({ success: false, message: "Forbidden" });
+    }
+    const banks = await QuestionBank.find({ lecturerId: req.user.userId }).populate("courseId", "courseCode courseTitle");
+    res.status(200).json({ success: true, data: banks });
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+};
+
 // ========== UTILITY ENDPOINTS ==========
 
 // @desc    Get user statistics
@@ -780,7 +833,12 @@ export const getUserStats = async (req, res) => {
 export const getCurrentUser = async (req, res) => {
   try {
     const Model = getUserModel(req.user.role);
-    const user = await Model.findById(req.user.userId).select("-password -resetPasswordToken -resetPasswordExpires").populate("courses", "courseName courseCode");
+    let query = Model.findById(req.user.userId).select("-password -resetPasswordToken -resetPasswordExpires");
+    // Populate courses for lecturer
+    if (req.user.role === "lecturer") {
+      query = query.populate("courses", "courseCode courseTitle department");
+    }
+    const user = await query;
 
     if (!user) {
       return res.status(404).json({
@@ -789,9 +847,19 @@ export const getCurrentUser = async (req, res) => {
       });
     }
 
+    // Fetch exams and question banks for lecturers
+    let exams = [];
+    let questionBanks = [];
+    if (req.user.role === "lecturer") {
+      exams = await Exam.find({ lecturerId: req.user.userId }).populate("courseId", "courseCode courseTitle");
+      questionBanks = await QuestionBank.find({ lecturerId: req.user.userId }).populate("courseId", "courseCode courseTitle");
+    }
+
     res.status(200).json({
       success: true,
       data: user,
+      exams,
+      questionBanks,
     });
   } catch (error) {
     console.error("Error in getCurrentUser:", error);

@@ -44,6 +44,7 @@ const questionBankSchema = new mongoose.Schema(
           default: "medium",
         },
         topic: String,
+        imageUrl: String, // <-- Add this line
       },
     ],
     status: {

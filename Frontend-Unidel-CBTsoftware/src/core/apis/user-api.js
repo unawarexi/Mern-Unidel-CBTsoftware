@@ -214,6 +214,20 @@ export const getUserStats = async () => {
   return response.json();
 };
 
+// ========== LECTURER UTILITY API FUNCTIONS ==========
+
+export const getLecturerCourses = async () => {
+  const response = await fetch(`${BASE_URL}/lecturers/me/courses`, {
+    method: "GET",
+    credentials: "include",
+  });
+  if (!response.ok) {
+    const error = await response.json();
+    throw new Error(error.message || "Failed to fetch lecturer courses");
+  }
+  return response.json();
+};
+
 // ========== REACT QUERY HOOKS - LECTURERS ==========
 
 export const useCreateLecturer = () => {
@@ -261,6 +275,13 @@ export const useDeleteLecturer = () => {
       queryClient.invalidateQueries({ queryKey: ["lecturers"] });
       queryClient.invalidateQueries({ queryKey: ["userStats"] });
     },
+  });
+};
+
+export const useGetLecturerCourses = () => {
+  return useQuery({
+    queryKey: ["lecturerCourses"],
+    queryFn: getLecturerCourses,
   });
 };
 

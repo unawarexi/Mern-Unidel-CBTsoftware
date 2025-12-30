@@ -1,9 +1,11 @@
 import React, { useState, useEffect } from "react";
 import { Search, Calendar, Flag, HelpCircle, Bell, MessageSquare, BarChart3, Maximize2, ChevronDown } from "lucide-react";
+import useAuthStore from "../../../store/auth-store"; // Add this import
 
 const AdminNavbar = () => {
   const [currentDateTime, setCurrentDateTime] = useState(new Date());
   const [profileDropdownOpen, setProfileDropdownOpen] = useState(false);
+  const { user } = useAuthStore(); // Get current user
 
   useEffect(() => {
     const timer = setInterval(() => setCurrentDateTime(new Date()), 1000);
@@ -23,6 +25,17 @@ const AdminNavbar = () => {
   };
 
   const { dateStr, timeStr } = formatDateTime(currentDateTime);
+
+  // Helper to get initials from fullname
+  const getInitials = (name) => {
+    if (!name) return "";
+    return name
+      .split(" ")
+      .map((n) => n[0])
+      .join("")
+      .toUpperCase()
+      .slice(0, 2);
+  };
 
   return (
     <nav className="bg-white border-b border-gray-200 sticky top-0 z-30 shadow-sm">
@@ -80,7 +93,9 @@ const AdminNavbar = () => {
             <div className="relative ml-2">
               <button onClick={() => setProfileDropdownOpen(!profileDropdownOpen)} className="flex items-center space-x-2 p-1 rounded-lg hover:bg-gray-50 transition-all">
                 <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-blue-400 to-blue-600 flex items-center justify-center overflow-hidden shadow-md">
-                  <div className="w-full h-full flex items-center justify-center text-white font-bold text-sm">AD</div>
+                  <div className="w-full h-full flex items-center justify-center text-white font-bold text-sm">
+                    {getInitials(user?.fullname)}
+                  </div>
                 </div>
               </button>
 
@@ -88,8 +103,8 @@ const AdminNavbar = () => {
               {profileDropdownOpen && (
                 <div className="absolute right-0 mt-2 w-56 bg-white rounded-lg shadow-lg border border-gray-200 py-2 text-gray-700">
                   <div className="px-4 py-3 border-b border-gray-200">
-                    <p className="text-sm font-semibold text-slate-800">Administrator</p>
-                    <p className="text-xs text-gray-500">admin@unidel.edu.ng</p>
+                    <p className="text-sm font-semibold text-slate-800">{user?.fullname || "Administrator"}</p>
+                    <p className="text-xs text-gray-500">{user?.email || "admin@unidel.edu.ng"}</p>
                   </div>
                   <a href="#" className="block px-4 py-2 text-sm text-gray-700 hover:bg-orange-50 hover:text-orange-600 transition-all">Profile Settings</a>
                   <a href="#" className="block px-4 py-2 text-sm text-gray-700 hover:bg-orange-50 hover:text-orange-600 transition-all">System Settings</a>

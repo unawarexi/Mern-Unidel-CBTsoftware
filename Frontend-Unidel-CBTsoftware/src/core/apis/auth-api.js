@@ -97,7 +97,9 @@ export const getCurrentUser = async () => {
     throw new Error(error.message || "Failed to fetch user");
   }
 
-  return response.json();
+  const data = await response.json();
+  // Accept both { user } and { data } shapes, always return { user }
+  return { user: data.user || data.data || null };
 };
 
 // Update profile

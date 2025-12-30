@@ -16,6 +16,9 @@ import {
   updateAdmin,
   deleteAdmin,
   getUserStats,
+  getLecturerCourses,
+  getLecturerExams,
+  getLecturerQuestionBanks,
 } from "../controllers/users.controller.js";
 import { protect, authorize } from "../middlewares/auth.middleware.js";
 
@@ -24,6 +27,11 @@ const router = express.Router();
 // ========== LECTURER ROUTES ==========
 router.route("/lecturers").post(protect, authorize("admin"), createLecturer).get(protect, authorize("admin"), getAllLecturers);
 router.route("/lecturers/:id").get(protect, authorize("admin"), getLecturerById).put(protect, authorize("admin"), updateLecturer).delete(protect, authorize("admin"), deleteLecturer);
+
+// NEW: Lecturer fetch their own courses, exams, question banks
+router.get("/lecturers/me/courses", protect, authorize("lecturer"), getLecturerCourses);
+router.get("/lecturers/me/exams", protect, authorize("lecturer"), getLecturerExams);
+router.get("/lecturers/me/question-banks", protect, authorize("lecturer"), getLecturerQuestionBanks);
 
 // ========== STUDENT ROUTES ==========
 router.route("/students").post(protect, authorize("admin"), createStudent).get(protect, authorize("admin"), getAllStudents);

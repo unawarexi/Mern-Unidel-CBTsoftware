@@ -2,7 +2,7 @@ import React, { useState } from "react";
 // eslint-disable-next-line no-unused-vars
 import { motion, AnimatePresence } from "framer-motion";
 import { LayoutDashboard, Users, Building2, BookOpen, FileText, BarChart3, Upload, Shield, Settings, User, LogOut, ChevronDown, ChevronRight, Menu, X, GraduationCap } from "lucide-react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 import { useAuthLogout } from "../../../store/auth-store";
 
 const Sidebar = () => {
@@ -190,7 +190,7 @@ const Sidebar = () => {
           {menuItems.map((item) => (
             <div key={item.id}>
               <button
-                onClick={() => item.subItems && toggleMenu(item.id)}
+                onClick={() => (item.subItems ? toggleMenu(item.id) : navigate(item.href))}
                 className={`w-full flex items-center justify-between px-3 py-3 rounded-lg transition-all group
                   ${expandedMenus[item.id] ? "bg-orange-50 text-orange-600" : "text-gray-600 hover:bg-gray-50 hover:text-gray-900"}`}
               >
@@ -213,9 +213,9 @@ const Sidebar = () => {
                   <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: "auto", opacity: 1 }} exit={{ height: 0, opacity: 0 }} transition={{ duration: 0.2 }} className="overflow-hidden">
                     <div className="ml-8 mt-1 space-y-1 border-l-2 border-gray-200 pl-3">
                       {item.subItems.map((subItem, index) => (
-                        <a key={index} href={subItem.href} className="block px-3 py-2 text-sm text-gray-600 hover:text-orange-600 hover:bg-orange-50 rounded-lg transition-colors">
+                        <Link key={index} to={subItem.href} className="block px-3 py-2 text-sm text-gray-600 hover:text-orange-600 hover:bg-orange-50 rounded-lg transition-colors">
                           {subItem.title}
-                        </a>
+                        </Link>
                       ))}
                     </div>
                   </motion.div>
@@ -240,16 +240,16 @@ const Sidebar = () => {
                 </motion.span>
               </button>
             ) : (
-              <a
+              <Link
                 key={item.id}
-                href={item.href}
+                to={item.href}
                 className="flex items-center gap-3 px-3 py-3 rounded-lg transition-colors text-gray-600 hover:bg-gray-100"
               >
                 <item.icon className="w-5 h-5" />
                 <motion.span animate={isCollapsed ? "collapsed" : "expanded"} variants={contentVariants} className="font-medium text-sm">
                   {item.title}
                 </motion.span>
-              </a>
+              </Link>
             )
           )}
         </div>

@@ -16,6 +16,7 @@ import {
   useUpdateAdmin,
   useDeleteAdmin,
   useGetUserStats,
+  useGetLecturerCourses,
 } from "../core/apis/user-api";
 
 const useUserStore = create((set) => ({
@@ -174,6 +175,23 @@ export const useDeleteLecturerAction = () => {
     deleteLecturer,
     isLoading: deleteLecturerMutation.isLoading,
     error: deleteLecturerMutation.error,
+  };
+};
+
+export const useGetLecturerCoursesAction = () => {
+  const { setError } = useUserStore();
+  const { data, isLoading, error, refetch } = useGetLecturerCourses();
+
+  if (error) {
+    setError(error.message);
+    console.log("❌ Failed to fetch lecturer courses:", error.message);
+  }
+
+  return {
+    courses: data?.data || [],
+    isLoading,
+    error,
+    refetch,
   };
 };
 

@@ -4,6 +4,7 @@ import {
   // File extraction and AI generation
   extractTextFromFile,
   generateQuestionsFromFile,
+  generateImageForQuestion,
 
   // Question Bank CRUD
   createQuestionBank,
@@ -113,5 +114,8 @@ router.post("/exams/:id/publish", protect, authorize("lecturer"), publishExam);
 
 // Delete exam
 router.delete("/exams/:id", protect, authorize("lecturer"), deleteExam);
+
+// Generate image/illustration for a question (AI)
+router.post("/question-image", protect, authorize("lecturer"), generateImageForQuestion);
 
 export default router;

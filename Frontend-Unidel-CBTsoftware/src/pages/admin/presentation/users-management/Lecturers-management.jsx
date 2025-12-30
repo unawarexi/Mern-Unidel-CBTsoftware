@@ -9,6 +9,7 @@ import {
   useDeleteLecturerAction,
 } from "../../../../store/user-store";
 import { useUploadAttachmentAction, useGetUserAttachmentsAction } from "../../../../store/attachment-store";
+import { useGetAllCoursesAction } from "../../../../store/course-store"; // already imported
 
 const LecturersManagement = () => {
   const [showModal, setShowModal] = useState(false);
@@ -22,7 +23,8 @@ const LecturersManagement = () => {
     lecturerId: "",
     employeeId: "",
     department: "",
-    courses: "", // comma-separated
+    courses: [], // now an array of course IDs
+    role: "Lecturer",
   });
 
   const departments = ["Computer Science", "Software Engineering", "Data Science", "Information Technology"];
@@ -38,6 +40,9 @@ const LecturersManagement = () => {
   // eslint-disable-next-line no-unused-vars
   const { attachments, refetch: refetchAttachments } = useGetUserAttachmentsAction();
 
+  // Fetch all courses for the course selection dropdown and for display
+  const { courses: allCourses = [] } = useGetAllCoursesAction();
+
   useEffect(() => {
     // initial fetch (refetch from hook if available)
     if (refetch) refetch();
@@ -50,7 +55,8 @@ const LecturersManagement = () => {
       lecturerId: formData.lecturerId || undefined,
       employeeId: formData.employeeId || undefined,
       department: formData.department,
-      courses: formData.courses ? formData.courses.split(",").map((s) => s.trim()).filter(Boolean) : undefined,
+      courses: formData.courses, // array of course IDs
+      role: formData.role,
     };
 
     try {
@@ -62,7 +68,7 @@ const LecturersManagement = () => {
       if (refetch) refetch();
       setShowModal(false);
       setEditingLecturer(null);
-      setFormData({ fullname: "", email: "", lecturerId: "", employeeId: "", department: "", courses: "" });
+      setFormData({ fullname: "", email: "", lecturerId: "", employeeId: "", department: "", courses: [], role: "Lecturer" });
     } catch (err) {
       // create/update action already triggers toast via store
       console.error(err);
@@ -77,7 +83,8 @@ const LecturersManagement = () => {
       lecturerId: lecturer.lecturerId || "",
       employeeId: lecturer.employeeId || "",
       department: lecturer.department || "",
-      courses: Array.isArray(lecturer.courses) ? lecturer.courses.join(", ") : (lecturer.courses || ""),
+      courses: Array.isArray(lecturer.courses) ? lecturer.courses.map(c => typeof c === "object" && c?._id ? c._id : c) : [],
+      role: lecturer.role || "Lecturer",
     });
     setShowModal(true);
   };
@@ -116,6 +123,17 @@ const LecturersManagement = () => {
     const matchesDept = filterDepartment === "All" || lecturer.department === filterDepartment;
     return matchesSearch && matchesDept;
   });
+
+  // Helper to map course IDs to course code/title for display
+  const getCourseLabels = (courseIds) => {
+    if (!Array.isArray(courseIds) || !courseIds.length) return [];
+    return courseIds
+      .map((cid) => {
+        const course = allCourses.find((c) => c._id === cid || c._id === cid?._id);
+        return course ? `${course.courseCode} - ${course.courseTitle}` : null;
+      })
+      .filter(Boolean);
+  };
 
   return (
     <div className="min-h-screen bg-white p-6">
@@ -180,45 +198,64 @@ const LecturersManagement = () => {
               </thead>
               <tbody>
                 <AnimatePresence>
-                  {filteredLecturers.map((lecturer, index) => (
-                    <motion.tr key={lecturer._id} initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: 20 }} transition={{ delay: index * 0.05 }} className="border-b border-slate-100 hover:bg-slate-50 transition-colors">
-                      <td className="px-6 py-4">
-                        <div className="flex items-center gap-3">
-                          <div className="w-10 h-10 rounded-full bg-blue-900 flex items-center justify-center text-white font-bold text-sm">
-                            {(lecturer.fullname || "")
-                              .split(" ")
-                              .map((n) => n[0])
-                              .join("")}
+                  {filteredLecturers.map((lecturer, index) => {
+                    // Get course labels for this lecturer
+                    const courseLabels = getCourseLabels(
+                      Array.isArray(lecturer.courses)
+                        ? lecturer.courses.map((c) =>
+                            typeof c === "object" && c?._id ? c._id : c
+                          )
+                        : []
+                    );
+                    // Limit display to 2 courses, show ... if more
+                    const displayCourses = courseLabels.slice(0, 2).join(", ");
+                    const hasMore = courseLabels.length > 2;
+                    return (
+                      <motion.tr key={lecturer._id} initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: 20 }} transition={{ delay: index * 0.05 }} className="border-b border-slate-100 hover:bg-slate-50 transition-colors">
+                        <td className="px-6 py-4">
+                          <div className="flex items-center gap-3">
+                            <div className="w-10 h-10 rounded-full bg-blue-900 flex items-center justify-center text-white font-bold text-sm">
+                              {(lecturer.fullname || "")
+                                .split(" ")
+                                .map((n) => n[0])
+                                .join("")}
+                            </div>
+                            <span className="text-slate-900 font-medium">{lecturer.fullname}</span>
                           </div>
-                          <span className="text-slate-900 font-medium">{lecturer.fullname}</span>
-                        </div>
-                      </td>
-                      <td className="px-6 py-4 text-slate-600">{lecturer.email}</td>
-                      <td className="px-6 py-4">
-                        <span className="inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-900 border border-blue-200">
-                          <Award size={14} />
-                          {lecturer.role}
-                        </span>
-                      </td>
-                      <td className="px-6 py-4 text-slate-600">{lecturer.department}</td>
-                      <td className="px-6 py-4">
-                        <span className="inline-flex items-center gap-1 text-slate-600 text-sm">
-                          <BookOpen size={14} />
-                          {Array.isArray(lecturer.courses) ? lecturer.courses.join(", ") : lecturer.courses}
-                        </span>
-                      </td>
-                      <td className="px-6 py-4">
-                        <div className="flex gap-2">
-                          <motion.button whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.9 }} onClick={() => handleEdit(lecturer)} className="p-2 hover:bg-blue-100 rounded-lg text-blue-900 transition-colors">
-                            <Edit2 size={18} />
-                          </motion.button>
-                          <motion.button whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.9 }} onClick={() => handleDelete(lecturer._id)} className="p-2 hover:bg-red-100 rounded-lg text-red-600 transition-colors">
-                            <Trash2 size={18} />
-                          </motion.button>
-                        </div>
-                      </td>
-                    </motion.tr>
-                  ))}
+                        </td>
+                        <td className="px-6 py-4 text-slate-600">{lecturer.email}</td>
+                        <td className="px-6 py-4">
+                          <span className="inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-900 border border-blue-200">
+                            <Award size={14} />
+                            {lecturer.role}
+                          </span>
+                        </td>
+                        <td className="px-6 py-4 text-slate-600">{lecturer.department}</td>
+                        <td className="px-6 py-4">
+                          <span className="inline-flex items-center gap-1 text-slate-600 text-sm">
+                            <BookOpen size={14} />
+                            {courseLabels.length === 0 && <span className="text-xs text-gray-400 italic">No courses</span>}
+                            {courseLabels.length > 0 && (
+                              <>
+                                {displayCourses}
+                                {hasMore && <span className="text-xs text-blue-600 font-medium">&nbsp;... </span>}
+                              </>
+                            )}
+                          </span>
+                        </td>
+                        <td className="px-6 py-4">
+                          <div className="flex gap-2">
+                            <motion.button whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.9 }} onClick={() => handleEdit(lecturer)} className="p-2 hover:bg-blue-100 rounded-lg text-blue-900 transition-colors">
+                              <Edit2 size={18} />
+                            </motion.button>
+                            <motion.button whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.9 }} onClick={() => handleDelete(lecturer._id)} className="p-2 hover:bg-red-100 rounded-lg text-red-600 transition-colors">
+                              <Trash2 size={18} />
+                            </motion.button>
+                          </div>
+                        </td>
+                      </motion.tr>
+                    );
+                  })}
                 </AnimatePresence>
               </tbody>
             </table>
@@ -236,17 +273,23 @@ const LecturersManagement = () => {
               onClick={() => {
                 setShowModal(false);
                 setEditingLecturer(null);
-                setFormData({ fullname: "", email: "", lecturerId: "", employeeId: "", department: "", courses: "" });
+                setFormData({ fullname: "", email: "", lecturerId: "", employeeId: "", department: "", courses: [], role: "Lecturer" });
               }}
             >
-              <motion.div initial={{ scale: 0.9, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0.9, opacity: 0 }} onClick={(e) => e.stopPropagation()} className="bg-white rounded-xl p-6 w-full max-w-md border border-slate-200 shadow-xl">
+              <motion.div
+                initial={{ scale: 0.9, opacity: 0 }}
+                animate={{ scale: 1, opacity: 1 }}
+                exit={{ scale: 0.9, opacity: 0 }}
+                onClick={(e) => e.stopPropagation()}
+                className="bg-white rounded-xl p-6 w-full max-w-md border border-slate-200 shadow-xl"
+              >
                 <div className="flex items-center justify-between mb-6">
                   <h2 className="text-2xl font-bold text-slate-900">{editingLecturer ? "Edit Lecturer" : "Add New Lecturer"}</h2>
                   <button
                     onClick={() => {
                       setShowModal(false);
                       setEditingLecturer(null);
-                      setFormData({ fullname: "", email: "", lecturerId: "", employeeId: "", department: "", courses: "" });
+                      setFormData({ fullname: "", email: "", lecturerId: "", employeeId: "", department: "", courses: [], role: "Lecturer" });
                     }}
                     className="text-gray-400 hover:text-slate-900 transition-colors"
                   >
@@ -308,15 +351,32 @@ const LecturersManagement = () => {
                     </select>
                   </div>
 
+                  {/* Redesigned Course selection */}
                   <div>
-                    <label className="block text-slate-700 mb-2 font-medium">Course IDs (comma-separated)</label>
-                    <input
-                      type="text"
-                      value={formData.courses}
-                      onChange={(e) => setFormData({ ...formData, courses: e.target.value })}
-                      className="w-full px-4 py-2 bg-white border border-slate-300 rounded-lg text-slate-900 focus:outline-none focus:border-blue-900 focus:ring-2 focus:ring-blue-900/20 transition-colors"
-                      placeholder="e.g., CS101, CS102"
-                    />
+                    <label className="block text-slate-700 mb-2 font-medium">Assign Courses</label>
+                    <div className="max-h-40 overflow-y-auto border border-slate-300 rounded-lg p-2 bg-slate-50">
+                      {allCourses.map((course) => (
+                        <label key={course._id} className="flex items-center gap-2 p-2 hover:bg-white rounded cursor-pointer">
+                          <input
+                            type="checkbox"
+                            checked={formData.courses.includes(course._id)}
+                            onChange={() => {
+                              setFormData((prev) => ({
+                                ...prev,
+                                courses: prev.courses.includes(course._id)
+                                  ? prev.courses.filter((id) => id !== course._id)
+                                  : [...prev.courses, course._id],
+                              }));
+                            }}
+                            className="rounded border-slate-300 text-blue-900 focus:ring-blue-900"
+                          />
+                          <span className="text-sm text-slate-700">{course.courseCode} - {course.courseTitle}</span>
+                        </label>
+                      ))}
+                      {allCourses.length === 0 && (
+                        <span className="text-xs text-gray-400 italic block p-2">No courses available</span>
+                      )}
+                    </div>
                   </div>
 
                   <div className="flex gap-3 pt-4">
@@ -329,7 +389,7 @@ const LecturersManagement = () => {
                       onClick={() => {
                         setShowModal(false);
                         setEditingLecturer(null);
-                        setFormData({ fullname: "", email: "", lecturerId: "", employeeId: "", department: "", courses: "" });
+                        setFormData({ fullname: "", email: "", lecturerId: "", employeeId: "", department: "", courses: [], role: "Lecturer" });
                       }}
                       className="flex-1 bg-gray-200 hover:bg-gray-300 text-slate-900 px-4 py-2 rounded-lg font-medium transition-colors"
                     >

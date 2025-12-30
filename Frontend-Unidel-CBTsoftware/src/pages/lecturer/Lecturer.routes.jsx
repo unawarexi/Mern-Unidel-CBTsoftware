@@ -1,6 +1,10 @@
 import React from "react";
 import { Routes, Route } from "react-router-dom";
 import NotAvailableYet from "../../components/Not-available";
+import CreateQuestions from "./presentation/question-bank/Create-questions";
+import ImportExport from "./presentation/question-bank/Import-export"; // added
+import QuestionTypes from "./presentation/question-bank/Question-types"; // add this import
+import UploadedDocs from "./presentation/question-bank/Uploaded-docs";
 
 // Main user routes based on UserLeftContainer menuItems
 export default function LecturerRoutes() {
@@ -19,9 +23,10 @@ export default function LecturerRoutes() {
 
       {/* Question Bank */}
       <Route path="questions" element={<NotAvailableYet />} />
-      <Route path="questions/manage" element={<NotAvailableYet />} />
-      <Route path="questions/types" element={<NotAvailableYet />} />
-      <Route path="questions/import-export" element={<NotAvailableYet />} />
+      <Route path="questions/manage" element={<CreateQuestions />} />
+      <Route path="questions/types/:id" element={<QuestionTypes />} />
+      <Route path="questions/import-export" element={<ImportExport />} />
+      <Route path="questions/docs" element={<UploadedDocs />} />
 
       {/* Exams */}
       <Route path="exams" element={<NotAvailableYet />} />
@@ -49,7 +54,6 @@ export default function LecturerRoutes() {
       <Route path="profile" element={<NotAvailableYet />} />
       <Route path="profile/settings" element={<NotAvailableYet />} />
       <Route path="profile/password" element={<NotAvailableYet />} />
-
 
       {/* Fallback */}
       <Route path="*" element={<NotAvailableYet />} />

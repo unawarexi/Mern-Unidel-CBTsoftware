@@ -345,6 +345,20 @@ export const deleteExam = async (id) => {
   return response.json();
 };
 
+export const generateImageForQuestion = async ({ question, questionBankId, questionId }) => {
+  const response = await fetch(`${BASE_URL}/question-image`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    credentials: "include",
+    body: JSON.stringify({ question, questionBankId, questionId }),
+  });
+  if (!response.ok) {
+    const error = await response.json();
+    throw new Error(error.message || "Failed to generate image for question");
+  }
+  return response.json();
+};
+
 // ========== REACT QUERY HOOKS - FILE EXTRACTION & AI ==========
 
 export const useExtractTextFromFile = () => {
@@ -383,6 +397,8 @@ export const useGetQuestionBankById = (id) => {
     queryKey: ["questionBank", id],
     queryFn: () => getQuestionBankById(id),
     enabled: !!id,
+    staleTime: 1000 * 60 * 5, // 5 minutes - prevents constant refetching
+    gcTime: 1000 * 60 * 10, // 10 minutes - cache retention
   });
 };
 
@@ -566,5 +582,11 @@ export const useDeleteExam = () => {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["exams"] });
     },
+  });
+};
+
+export const useGenerateImageForQuestion = () => {
+  return useMutation({
+    mutationFn: generateImageForQuestion,
   });
 };

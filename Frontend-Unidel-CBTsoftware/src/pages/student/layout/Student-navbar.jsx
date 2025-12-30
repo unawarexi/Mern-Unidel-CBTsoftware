@@ -1,9 +1,22 @@
 import React, { useState } from "react";
 import { Search, Settings, Bell, ChevronDown, Menu, X } from "lucide-react";
+import useAuthStore from "../../../store/auth-store"; // Add this import
 
 const StudentNavbar = () => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [profileDropdownOpen, setProfileDropdownOpen] = useState(false);
+  const { user } = useAuthStore(); // Get current user
+
+  // Helper to get initials from fullname
+  const getInitials = (name) => {
+    if (!name) return "";
+    return name
+      .split(" ")
+      .map((n) => n[0])
+      .join("")
+      .toUpperCase()
+      .slice(0, 2);
+  };
 
   return (
     <nav className="bg-white border-b border-gray-200 sticky top-0 z-30 shadow-sm">
@@ -48,10 +61,12 @@ const StudentNavbar = () => {
             {/* Profile Section */}
             <div className="relative">
               <button onClick={() => setProfileDropdownOpen(!profileDropdownOpen)} className="flex items-center space-x-3 p-1 pr-3 rounded-lg hover:bg-gray-50 transition-all">
-                <div className="w-10 h-10 rounded-full bg-gradient-to-br from-slate-700 to-slate-900 flex items-center justify-center text-white font-semibold shadow-md">AM</div>
+                <div className="w-10 h-10 rounded-full bg-gradient-to-br from-slate-700 to-slate-900 flex items-center justify-center text-white font-semibold shadow-md">
+                  {getInitials(user?.fullname)}
+                </div>
                 <div className="hidden lg:block text-left">
-                  <p className="text-sm font-semibold text-slate-800">Anna Mironova</p>
-                  <p className="text-xs text-gray-500">Student</p>
+                  <p className="text-sm font-semibold text-slate-800">{user?.fullname || "Student"}</p>
+                  <p className="text-xs text-gray-500">{user?.role ? user.role.charAt(0).toUpperCase() + user.role.slice(1) : "Student"}</p>
                 </div>
                 <ChevronDown className="hidden sm:block h-4 w-4 text-gray-600" />
               </button>

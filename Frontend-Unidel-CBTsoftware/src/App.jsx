@@ -23,21 +23,24 @@ import AdminRoutes from "./pages/admin/Admin.routes";
 import LecturerRoutes from "./pages/lecturer/Lecturer.routes";
 import StudentRoutes from "./pages/student/Student.routes";
 
-// Small component to initialize auth-related queries inside the QueryClientProvider
+// Component to initialize auth on app load
 const AuthInitializer = () => {
   // eslint-disable-next-line no-unused-vars
   const { user, isLoading, error } = useAuthCurrentUser();
 
-  // This hook will automatically run on mount and sync user to the store
   useEffect(() => {
     if (error) {
       console.log("❌ Failed to fetch current user on app init");
     }
-  }, [error]);
+    if (user) {
+      console.log("✅ Current user loaded:", user);
+    }
+  }, [user, error]);
 
   return null;
 };
 
+// Guest-only routes (redirect to dashboard if authenticated)
 const GuestOnly = ({ children }) => {
   const navigate = useNavigate();
   const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
@@ -48,7 +51,6 @@ const GuestOnly = ({ children }) => {
       const role = (user.role || user.type || "").toString().toLowerCase();
       let target = "/";
 
-      // Updated dashboard base paths
       if (role === "admin" || role === "superadmin") {
         target = "/admin";
       } else if (role === "lecturer") {
@@ -57,6 +59,7 @@ const GuestOnly = ({ children }) => {
         target = "/student";
       }
 
+      console.log(`🔄 Redirecting authenticated ${role} to ${target}`);
       navigate(target, { replace: true });
     }
   }, [isAuthenticated, user, navigate]);
@@ -64,47 +67,48 @@ const GuestOnly = ({ children }) => {
   return !isAuthenticated ? children : null;
 };
 
-// New: Protect routes by role (redirects to sign-in if not allowed)
+// Protected routes (redirect to signin if not authenticated)
 const ProtectedRoute = ({ children, allowedRoles = [] }) => {
   const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
   const user = useAuthStore((state) => state.user);
+  const isLoading = useAuthStore((state) => state.isLoading);
 
+  // Show loading while checking auth state on initial mount
+  if (isLoading) {
+    return <FullPageSpinner message="Loading..." />;
+  }
+
+  // Redirect to signin if not authenticated
   if (!isAuthenticated || !user) {
+    console.log("🔒 Not authenticated, redirecting to signin");
     return <Navigate to="/portal-signin" replace />;
   }
 
+  // Check role permissions
   const role = (user.role || user.type || "").toString().toLowerCase();
   if (allowedRoles.length > 0 && !allowedRoles.includes(role)) {
-    // block access if role isn't allowed
+    console.log(`⛔ Role ${role} not allowed, redirecting to home`);
     return <Navigate to="/" replace />;
   }
 
   return children;
 };
 
+// Landing page sections
 const SectionsApp = () => {
   return (
     <div>
-      {/* Sections with IDs for navigation */}
       <section id="home">
         <HeroSection />
       </section>
       <section id="about">
         <Overview />
       </section>
-      {/* <section id="experience">
-        <Experience />
-      </section>
-      <section id="portfolio">
-        <Portfolio />
-      </section>
-      <section id="contact">
-        <Contact />
-      </section> */}
     </div>
   );
 };
 
+// Main App Component
 const App = () => {
   // Get toast state from both stores
   const authToast = useAuthStore((state) => state.toast);
@@ -116,8 +120,8 @@ const App = () => {
   const toastToShow = authToast?.visible ? authToast : userToast?.visible ? userToast : { visible: false, message: "", type: "info", duration: 3000 };
 
   // Global loader if any store indicates
-  const authLoading = useAuthStore((state) => state.globalLoader || state.isLoading);
-  const userLoading = useUserStore((state) => state.globalLoader || state.isLoading);
+  const authLoading = useAuthStore((state) => state.globalLoader);
+  const userLoading = useUserStore((state) => state.globalLoader);
   const showGlobalLoader = authLoading || userLoading;
 
   return (
@@ -145,7 +149,7 @@ const App = () => {
         {showGlobalLoader && <FullPageSpinner message="Please wait..." />}
 
         <Routes>
-          {/* Auth routes rendered outside MainLayout (no header/footer) */}
+          {/* Auth routes (no header/footer) */}
           <Route
             path="/portal-signin"
             element={
@@ -188,7 +192,7 @@ const App = () => {
           />
           <Route path="/reset-password" element={<ResetPassword />} />
 
-          {/* ====================== DASHBOARD ROUTES (protected, mount route modules) ===================== */}
+          {/* Protected Dashboard Routes */}
           <Route
             path="/admin/*"
             element={
@@ -197,7 +201,6 @@ const App = () => {
               </ProtectedRoute>
             }
           >
-            {/* Mount admin route module (will match /admin/... paths) */}
             <Route path="*" element={<AdminRoutes />} />
           </Route>
 
@@ -223,13 +226,9 @@ const App = () => {
             <Route path="*" element={<StudentRoutes />} />
           </Route>
 
-          {/* Main layout wraps site pages (header/footer present) */}
+          {/* Main layout (header/footer) */}
           <Route element={<MainLayout />}>
             <Route path="/" element={<SectionsApp />} />
-            {/* <Route path="/about" element={<About />} />
-            <Route path="/experience" element={<Experience />} />
-            <Route path="/portfolio" element={<Portfolio />} />
-            <Route path="/contact" element={<Contact />} /> */}
           </Route>
         </Routes>
       </Router>
