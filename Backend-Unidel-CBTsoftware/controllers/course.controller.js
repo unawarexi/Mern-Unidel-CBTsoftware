@@ -1,5 +1,6 @@
 import Course from "../models/course.model.js";
 import Lecturer from "../models/lecturer.model.js";
+import { uploadToCloudinary, deleteFromCloudinary } from "../services/cloudinary.service.js";
 
 // Generate unique course code
 const generateCourseCode = async (department) => {
@@ -294,5 +295,100 @@ export const removeLecturers = async (req, res) => {
       message: "Error removing lecturers",
       error: error.message,
     });
+  }
+};
+
+// @desc    Upload course material (lecturer only)
+// @route   POST /api/courses/:id/materials
+// @access  Lecturer only
+export const uploadCourseMaterial = async (req, res) => {
+  try {
+    const courseId = req.params.id;
+    const lecturerId = req.user.userId;
+    const course = await Course.findById(courseId);
+
+    if (!course) {
+      return res.status(404).json({ success: false, message: "Course not found" });
+    }
+
+    // Only allow lecturers assigned to this course
+    if (!course.lecturers.some((l) => l.toString() === lecturerId)) {
+      return res.status(403).json({ success: false, message: "You are not assigned to this course" });
+    }
+
+    // Only allow document files
+    if (!req.file) {
+      return res.status(400).json({ success: false, message: "No file uploaded" });
+    }
+    const allowedDocs = [".pdf", ".doc", ".docx", ".ppt", ".pptx", ".xls", ".xlsx", ".txt"];
+    const ext = req.file.originalname.split(".").pop().toLowerCase();
+    if (!allowedDocs.includes(`.${ext}`)) {
+      return res.status(400).json({ success: false, message: "Only document files are allowed" });
+    }
+
+    // Upload to Cloudinary
+    const uploadResult = await uploadToCloudinary(req.file.buffer, req.file.originalname, `/courses/${course.courseCode}/materials`);
+
+    // Add to courseMaterials array
+    course.courseMaterials.push({
+      filename: req.file.originalname,
+      url: uploadResult.url,
+      uploadedBy: lecturerId,
+      public_id: uploadResult.public_id,
+      type: ext,
+      description: req.body.description || "",
+    });
+    await course.save();
+
+    res.status(201).json({
+      success: true,
+      message: "Course material uploaded",
+      material: course.courseMaterials[course.courseMaterials.length - 1],
+    });
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+};
+
+// @desc    Delete course material (lecturer only)
+// @route   DELETE /api/courses/:id/materials/:materialId
+// @access  Lecturer only
+export const deleteCourseMaterial = async (req, res) => {
+  try {
+    const courseId = req.params.id;
+    const materialId = req.params.materialId;
+    const lecturerId = req.user.userId;
+    const course = await Course.findById(courseId);
+
+    if (!course) {
+      return res.status(404).json({ success: false, message: "Course not found" });
+    }
+
+    // Only allow lecturers assigned to this course
+    if (!course.lecturers.some((l) => l.toString() === lecturerId)) {
+      return res.status(403).json({ success: false, message: "You are not assigned to this course" });
+    }
+
+    const material = course.courseMaterials.id(materialId);
+    if (!material) {
+      return res.status(404).json({ success: false, message: "Material not found" });
+    }
+
+    // Only allow uploader or course lecturer to delete
+    if (material.uploadedBy.toString() !== lecturerId) {
+      return res.status(403).json({ success: false, message: "You can only delete your own uploads" });
+    }
+
+    // Delete from Cloudinary
+    if (material.public_id) {
+      await deleteFromCloudinary(material.public_id, "raw");
+    }
+
+    material.remove();
+    await course.save();
+
+    res.status(200).json({ success: true, message: "Material deleted" });
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
   }
 };

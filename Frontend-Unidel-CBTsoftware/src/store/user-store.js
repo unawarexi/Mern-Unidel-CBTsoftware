@@ -15,9 +15,10 @@ import {
   useGetAdminById,
   useUpdateAdmin,
   useDeleteAdmin,
-  useGetUserStats,
+  useGetCurrentUserStats, // <-- only use this for user stats
   useGetLecturerCourses,
 } from "../core/apis/user-api";
+import { useEffect } from "react";
 
 const useUserStore = create((set) => ({
   // Client-side state
@@ -467,21 +468,29 @@ export const useDeleteAdminAction = () => {
 
 // ========== UTILITY HOOKS ==========
 
+// ========== UTILITY HOOKS ==========
+
+// Fixed version - no more infinite refetching
 export const useGetUserStatsAction = () => {
   const { setError } = useUserStore();
-  const { data, isLoading, error, refetch } = useGetUserStats();
+  const { data, isLoading, error, refetch } = useGetCurrentUserStats();
 
-  if (error) {
-    setError(error.message);
-    console.log("❌ Failed to fetch user stats:", error.message);
-  }
+  // Move the if statements inside useEffect to prevent infinite loops
+  useEffect(() => {
+    if (error) {
+      setError(error.message);
+      console.log("❌ Failed to fetch user stats:", error.message);
+    }
+  }, [error, setError]);
 
-  if (data) {
-    console.log("✅ User stats fetched successfully", data);
-  }
+  useEffect(() => {
+    if (data) {
+      console.log("✅ User stats fetched successfully", data);
+    }
+  }, [data]);
 
   return {
-    stats: data?.data || {}, // <- fix
+    stats: data?.data || {},
     isLoading,
     error,
     refetch,

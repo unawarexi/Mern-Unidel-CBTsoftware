@@ -8,6 +8,7 @@ import useAuthStore from "../../../../store/auth-store";
 import EditQuestions from "./Edit-questions.jsx";
 import { useNavigate, useLocation } from "react-router-dom";
 import useExamStore from "../../../../store/exam-store";
+import BulkUpload from "./Bulk-upload.jsx";
 
 const CreateQuestions = () => {
   const [activeTab, setActiveTab] = useState("create");
@@ -163,6 +164,14 @@ const CreateQuestions = () => {
     });
   };
 
+  // --- Bulk Upload Handler (now handled in BulkUpload component) ---
+  const handleBulkUploadParsed = (parsedQuestions) => {
+    setFormData((prev) => ({
+      ...prev,
+      questions: [...prev.questions, ...(parsedQuestions || [])],
+    }));
+  };
+
   // --- UI ---
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 p-6">
@@ -172,6 +181,9 @@ const CreateQuestions = () => {
           <h1 className="text-4xl font-bold text-slate-800 mb-2">Question Bank Management</h1>
           <p className="text-slate-600">Create, edit, and manage your exam questions</p>
         </motion.div>
+
+        {/* Bulk Upload Feature */}
+        <BulkUpload onQuestionsParsed={handleBulkUploadParsed} />
 
         {/* Tabs */}
         <div className="flex gap-4 mb-6">

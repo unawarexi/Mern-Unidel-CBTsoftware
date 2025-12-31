@@ -1,5 +1,5 @@
 import { create } from "zustand";
-import { useCreateCourse, useGetAllCourses, useGetCourseById, useUpdateCourse, useDeleteCourse, useAssignLecturers, useRemoveLecturers } from "../core/apis/course-api";
+import { useCreateCourse, useGetAllCourses, useGetCourseById, useUpdateCourse, useDeleteCourse, useAssignLecturers, useRemoveLecturers, useUploadCourseMaterial, useDeleteCourseMaterial } from "../core/apis/course-api";
 
 const useCourseStore = create((set) => ({
   // Client-side state
@@ -216,6 +216,56 @@ export const useRemoveLecturersAction = () => {
     removeLecturers,
     isLoading: removeLecturersMutation.isLoading,
     error: removeLecturersMutation.error,
+  };
+};
+
+export const useUploadCourseMaterialAction = () => {
+  const { showToast, showLoader, hideLoader } = useCourseStore();
+  const uploadMaterialMutation = useUploadCourseMaterial();
+
+  const uploadMaterial = async ({ courseId, file, description }) => {
+    showLoader();
+    try {
+      const data = await uploadMaterialMutation.mutateAsync({ courseId, file, description });
+      showToast("Course material uploaded", "success");
+      return data;
+    } catch (error) {
+      showToast(error.message || "Failed to upload material", "error");
+      throw error;
+    } finally {
+      hideLoader();
+    }
+  };
+
+  return {
+    uploadMaterial,
+    isLoading: uploadMaterialMutation.isLoading,
+    error: uploadMaterialMutation.error,
+  };
+};
+
+export const useDeleteCourseMaterialAction = () => {
+  const { showToast, showLoader, hideLoader } = useCourseStore();
+  const deleteMaterialMutation = useDeleteCourseMaterial();
+
+  const deleteMaterial = async ({ courseId, materialId }) => {
+    showLoader();
+    try {
+      const data = await deleteMaterialMutation.mutateAsync({ courseId, materialId });
+      showToast("Course material deleted", "success");
+      return data;
+    } catch (error) {
+      showToast(error.message || "Failed to delete material", "error");
+      throw error;
+    } finally {
+      hideLoader();
+    }
+  };
+
+  return {
+    deleteMaterial,
+    isLoading: deleteMaterialMutation.isLoading,
+    error: deleteMaterialMutation.error,
   };
 };
 

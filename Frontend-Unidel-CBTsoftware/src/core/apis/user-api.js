@@ -214,6 +214,19 @@ export const getUserStats = async () => {
   return response.json();
 };
 
+// NEW: Get stats for current user (all roles)
+export const getCurrentUserStats = async () => {
+  const response = await fetch(`${BASE_URL}/me/stats`, {
+    method: "GET",
+    credentials: "include",
+  });
+  if (!response.ok) {
+    const error = await response.json();
+    throw new Error(error.message || "Failed to fetch user stats");
+  }
+  return response.json();
+};
+
 // ========== LECTURER UTILITY API FUNCTIONS ==========
 
 export const getLecturerCourses = async () => {
@@ -226,6 +239,13 @@ export const getLecturerCourses = async () => {
     throw new Error(error.message || "Failed to fetch lecturer courses");
   }
   return response.json();
+};
+
+// ========== DRY: Standard Query Options ==========
+const STANDARD_QUERY_OPTIONS = {
+  staleTime: 5 * 60 * 1000, // 5 minutes
+  refetchOnWindowFocus: false,
+  refetchOnReconnect: false,
 };
 
 // ========== REACT QUERY HOOKS - LECTURERS ==========
@@ -245,6 +265,7 @@ export const useGetAllLecturers = () => {
   return useQuery({
     queryKey: ["lecturers"],
     queryFn: getAllLecturers,
+    ...STANDARD_QUERY_OPTIONS,
   });
 };
 
@@ -253,6 +274,7 @@ export const useGetLecturerById = (id) => {
     queryKey: ["lecturer", id],
     queryFn: () => getLecturerById(id),
     enabled: !!id,
+    ...STANDARD_QUERY_OPTIONS,
   });
 };
 
@@ -282,6 +304,7 @@ export const useGetLecturerCourses = () => {
   return useQuery({
     queryKey: ["lecturerCourses"],
     queryFn: getLecturerCourses,
+    ...STANDARD_QUERY_OPTIONS,
   });
 };
 
@@ -302,6 +325,7 @@ export const useGetAllStudents = () => {
   return useQuery({
     queryKey: ["students"],
     queryFn: getAllStudents,
+    ...STANDARD_QUERY_OPTIONS,
   });
 };
 
@@ -310,6 +334,7 @@ export const useGetStudentById = (id) => {
     queryKey: ["student", id],
     queryFn: () => getStudentById(id),
     enabled: !!id,
+    ...STANDARD_QUERY_OPTIONS,
   });
 };
 
@@ -352,6 +377,7 @@ export const useGetAllAdmins = () => {
   return useQuery({
     queryKey: ["admins"],
     queryFn: getAllAdmins,
+    ...STANDARD_QUERY_OPTIONS,
   });
 };
 
@@ -360,6 +386,7 @@ export const useGetAdminById = (id) => {
     queryKey: ["admin", id],
     queryFn: () => getAdminById(id),
     enabled: !!id,
+    ...STANDARD_QUERY_OPTIONS,
   });
 };
 
@@ -391,5 +418,15 @@ export const useGetUserStats = () => {
   return useQuery({
     queryKey: ["userStats"],
     queryFn: getUserStats,
+    ...STANDARD_QUERY_OPTIONS,
+  });
+};
+
+// NEW: React Query hook for current user stats
+export const useGetCurrentUserStats = () => {
+  return useQuery({
+    queryKey: ["currentUserStats"],
+    queryFn: getCurrentUserStats,
+    ...STANDARD_QUERY_OPTIONS,
   });
 };

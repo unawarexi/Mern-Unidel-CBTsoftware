@@ -19,6 +19,7 @@ import {
   getLecturerCourses,
   getLecturerExams,
   getLecturerQuestionBanks,
+  getCurrentUserStats,
 } from "../controllers/users.controller.js";
 import { protect, authorize } from "../middlewares/auth.middleware.js";
 
@@ -43,5 +44,8 @@ router.route("/admins/:id").get(protect, authorize("admin", "superadmin"), getAd
 
 // ========== UTILITY ROUTES ==========
 router.get("/stats", protect, authorize("admin", "superadmin"), getUserStats);
+
+// NEW: Current user stats (all roles)
+router.get("/me/stats", protect, getCurrentUserStats);
 
 export default router;

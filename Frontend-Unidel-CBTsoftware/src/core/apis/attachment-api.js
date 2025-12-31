@@ -54,10 +54,17 @@ export const useUploadAttachment = () => {
   });
 };
 
+const STANDARD_QUERY_OPTIONS = {
+  staleTime: 5 * 60 * 1000,
+  refetchOnWindowFocus: false,
+  refetchOnReconnect: false,
+};
+
 export const useGetUserAttachments = () => {
   return useQuery({
     queryKey: ["attachments"],
     queryFn: getUserAttachments,
+    ...STANDARD_QUERY_OPTIONS,
   });
 };
 

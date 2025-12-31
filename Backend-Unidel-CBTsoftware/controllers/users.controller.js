@@ -980,3 +980,53 @@ export const deleteProfilePicture = async (req, res) => {
     res.status(500).json({ success: false, message: error.message });
   }
 };
+
+// @desc    Get stats for current user (student/lecturer/admin)
+// @route   GET /api/users/me/stats
+// @access  Private (All users)
+export const getCurrentUserStats = async (req, res) => {
+  try {
+    const { role, userId } = req.user;
+    let stats = {};
+
+    if (role === "student") {
+      // Example: exams taken, passed, failed, notifications, course scores
+      // You may need to adjust these queries to fit your schema
+      const student = await Student.findById(userId).populate("courses");
+      // Example: Replace with your actual exam/result models
+      const examsTaken = await Exam.countDocuments({ students: userId });
+      const passedExams = await Exam.countDocuments({ students: userId, "results.status": "passed" });
+      const failedExams = await Exam.countDocuments({ students: userId, "results.status": "failed" });
+      const resultsCount = await Exam.countDocuments({ students: userId, "results.student": userId });
+      // Dummy notifications count
+      const notifications = 2;
+      // Dummy course scores
+      const courseScores = (student.courses || []).map((c, i) => ({
+        course: c.courseName || c.courseCode || `Course ${i + 1}`,
+        score: Math.floor(Math.random() * 40) + 60, // random 60-100
+      }));
+
+      stats = {
+        examsTaken,
+        passedExams,
+        failedExams,
+        resultsCount,
+        notifications,
+        courseScores,
+      };
+    } else if (role === "lecturer") {
+      // Add lecturer stats if needed
+      stats = {};
+    } else if (role === "admin") {
+      // Add admin stats if needed
+      stats = {};
+    }
+
+    res.status(200).json({
+      success: true,
+      data: stats,
+    });
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+};

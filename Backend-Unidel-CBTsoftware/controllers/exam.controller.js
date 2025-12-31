@@ -10,6 +10,7 @@ import {
   extractTextFromPDFBuffer,
   extractTextFromDocxBuffer,
   extractTextFromDocxPath,
+  extractQuestionsFromFile,
 } from "../core/utils/pdf-docx-export.js";
 
 // ==================== FILE EXTRACTION ====================
@@ -949,5 +950,32 @@ export const generateImageForQuestion = async (req, res) => {
   } catch (error) {
     console.error("Generate image for question error:", error);
     res.status(500).json({ message: "Failed to generate image", error: error.message });
+  }
+};
+
+/**
+ * Bulk upload questions from file (CSV, XLSX, DOCX, PDF)
+ * POST /api/exams/question-bank/bulk-upload
+ * Body: file (multipart)
+ * Returns: { questions: [...] }
+ */
+export const bulkUploadQuestions = async (req, res) => {
+  try {
+    if (!req.file) {
+      return res.status(400).json({ message: "No file uploaded" });
+    }
+    let questions = [];
+    try {
+      questions = await extractQuestionsFromFile(req.file);
+    } catch (err) {
+      return res.status(400).json({ message: err.message });
+    }
+
+    res.status(200).json({
+      message: `Parsed ${questions.length} questions from file`,
+      questions,
+    });
+  } catch (error) {
+    res.status(500).json({ message: "Failed to parse questions from file", error: error.message });
   }
 };

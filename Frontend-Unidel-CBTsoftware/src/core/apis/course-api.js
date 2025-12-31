@@ -96,6 +96,12 @@ export const removeLecturersFromCourse = async ({ id, lecturers }) => {
   return response.json();
 };
 
+const STANDARD_QUERY_OPTIONS = {
+  staleTime: 5 * 60 * 1000,
+  refetchOnWindowFocus: false,
+  refetchOnReconnect: false,
+};
+
 // ========== REACT QUERY HOOKS - COURSES ==========
 
 export const useCreateCourse = () => {
@@ -112,6 +118,7 @@ export const useGetAllCourses = () => {
   return useQuery({
     queryKey: ["courses"],
     queryFn: getAllCourses,
+    ...STANDARD_QUERY_OPTIONS,
   });
 };
 
@@ -120,6 +127,7 @@ export const useGetCourseById = (id) => {
     queryKey: ["course", id],
     queryFn: () => getCourseById(id),
     enabled: !!id,
+    ...STANDARD_QUERY_OPTIONS,
   });
 };
 
@@ -162,6 +170,63 @@ export const useRemoveLecturers = () => {
     onSuccess: (data, variables) => {
       queryClient.invalidateQueries({ queryKey: ["courses"] });
       queryClient.invalidateQueries({ queryKey: ["course", variables.id] });
+    },
+  });
+};
+
+// ========== COURSE MATERIALS API FUNCTIONS ==========
+
+// Upload course material (document) for a course
+export const uploadCourseMaterial = async ({ courseId, file, description }) => {
+  const formData = new FormData();
+  formData.append("file", file);
+  if (description) formData.append("description", description);
+
+  const response = await fetch(`${BASE_URL}/${courseId}/materials`, {
+    method: "POST",
+    credentials: "include",
+    body: formData,
+  });
+  if (!response.ok) {
+    const error = await response.json();
+    throw new Error(error.message || "Failed to upload course material");
+  }
+  return response.json();
+};
+
+// Delete course material
+export const deleteCourseMaterial = async ({ courseId, materialId }) => {
+  const response = await fetch(`${BASE_URL}/${courseId}/materials/${materialId}`, {
+    method: "DELETE",
+    credentials: "include",
+  });
+  if (!response.ok) {
+    const error = await response.json();
+    throw new Error(error.message || "Failed to delete course material");
+  }
+  return response.json();
+};
+
+// ========== REACT QUERY HOOKS - COURSE MATERIALS ==========
+
+export const useUploadCourseMaterial = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: uploadCourseMaterial,
+    onSuccess: (data, variables) => {
+      queryClient.invalidateQueries({ queryKey: ["course", variables.courseId] });
+      queryClient.invalidateQueries({ queryKey: ["courses"] });
+    },
+  });
+};
+
+export const useDeleteCourseMaterial = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: deleteCourseMaterial,
+    onSuccess: (data, variables) => {
+      queryClient.invalidateQueries({ queryKey: ["course", variables.courseId] });
+      queryClient.invalidateQueries({ queryKey: ["courses"] });
     },
   });
 };

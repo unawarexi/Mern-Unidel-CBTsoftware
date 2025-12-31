@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 // eslint-disable-next-line no-unused-vars
 import { motion, AnimatePresence } from "framer-motion";
-import { LayoutDashboard, BookOpen, FileText, Trophy, User, LogOut, ChevronDown, ChevronRight, Menu, X, GraduationCap, Bell, Clock, CheckCircle2, AlertCircle } from "lucide-react";
+import { LayoutDashboard, BookOpen, FileText, Trophy, User, LogOut, ChevronDown, ChevronRight, Menu, X, GraduationCap, Bell, Upload, BarChart3, Shield } from "lucide-react";
 import { useNavigate, Link } from "react-router-dom";
 import { useAuthLogout } from "../../../store/auth-store";
 
@@ -20,42 +20,54 @@ const Sidebar = () => {
       icon: LayoutDashboard,
       href: "/student/dashboard",
       subItems: [
-        { title: "Exam Status Overview", href: "/student/dashboard/overview", icon: Clock },
-        { title: "Upcoming Exams", href: "/student/dashboard/upcoming", icon: AlertCircle },
-        { title: "Active Exams", href: "/student/dashboard/active", icon: Clock, badge: "Live" },
+        { title: "Overview", href: "/student/dashboard/overview" },
+        { title: "Active Exams", href: "/student/dashboard/active" },
+        { title: "Recent Results", href: "/student/dashboard/results" },
+        { title: "System Notices", href: "/student/dashboard/notices" },
       ],
     },
     {
       id: "courses",
-      title: "My Courses",
+      title: "Courses",
       icon: BookOpen,
       href: "/student/courses",
       subItems: [
-        { title: "Enrolled Courses", href: "/student/courses/enrolled" },
-        { title: "Course Details", href: "/student/courses/details" },
-        { title: "Exam Availability", href: "/student/courses/exams" },
+        { title: "My Enrollments", href: "/student/courses/enrolled" },
+        { title: "Course Materials", href: "/student/courses/materials" },
+        { title: "Lecturer Info", href: "/student/courses/lecturers" },
       ],
     },
     {
       id: "exams",
-      title: "Exams / Assessments",
+      title: "Exams",
       icon: FileText,
       href: "/student/exams",
       subItems: [
-        { title: "Available Exams", href: "/student/exams/available", icon: FileText },
-        { title: "Completed Exams", href: "/student/exams/completed", icon: CheckCircle2 },
-        { title: "Attempt History", href: "/student/exams/history" },
+        { title: "Upcoming Exams", href: "/student/exams/upcoming" },
+        { title: "Active Exams", href: "/student/exams/active" },
+        { title: "Completed Exams", href: "/student/exams/completed" },
+        { title: "Exam History", href: "/student/exams/history" },
       ],
     },
     {
       id: "results",
-      title: "Results",
-      icon: Trophy,
+      title: "Results & Analytics",
+      icon: BarChart3,
       href: "/student/results",
       subItems: [
-        { title: "All Scores", href: "/student/results/all" },
-        { title: "Scores per Course", href: "/student/results/courses" },
-        { title: "Exam Breakdown", href: "/student/results/breakdown" },
+        { title: "All Results", href: "/student/results/all" },
+        { title: "By Course", href: "/student/results/courses" },
+        { title: "Performance Analytics", href: "/student/results/analytics" },
+      ],
+    },
+    {
+      id: "documents",
+      title: "Documents",
+      icon: Upload,
+      href: "/student/documents",
+      subItems: [
+        { title: "My Uploads", href: "/student/documents/uploads" },
+        { title: "Exam Attachments", href: "/student/documents/attachments" },
       ],
     },
     {
@@ -65,9 +77,19 @@ const Sidebar = () => {
       href: "/student/notifications",
       badge: notificationsCount > 0 ? notificationsCount : null,
       subItems: [
-        { title: "Exam Reminders", href: "/student/notifications/reminders" },
+        { title: "Reminders", href: "/student/notifications/reminders" },
         { title: "System Messages", href: "/student/notifications/system" },
         { title: "Announcements", href: "/student/notifications/announcements" },
+      ],
+    },
+    {
+      id: "support",
+      title: "Support & Integrity",
+      icon: Shield,
+      href: "/student/support",
+      subItems: [
+        { title: "Exam Integrity Policy", href: "/student/support/integrity" },
+        { title: "Help & Support", href: "/student/support/help" },
       ],
     },
   ];
@@ -79,8 +101,9 @@ const Sidebar = () => {
       icon: User,
       href: "/student/profile",
       subItems: [
-        { title: "Student Information", href: "/student/profile/info" },
+        { title: "Account Info", href: "/student/profile/info" },
         { title: "Change Password", href: "/student/profile/password" },
+        { title: "Settings", href: "/student/profile/settings" },
       ],
     },
     { id: "logout", title: "Logout", icon: LogOut, href: "/logout" },

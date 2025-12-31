@@ -359,6 +359,24 @@ export const generateImageForQuestion = async ({ question, questionBankId, quest
   return response.json();
 };
 
+// ========== BULK UPLOAD QUESTIONS API FUNCTION ==========
+export const bulkUploadQuestions = async (file) => {
+  const formData = new FormData();
+  formData.append("file", file);
+
+  const response = await fetch(`${BASE_URL}/question-bank/bulk-upload`, {
+    method: "POST",
+    credentials: "include",
+    body: formData,
+  });
+
+  const result = await response.json();
+  if (!response.ok) {
+    throw new Error(result.message || "Failed to parse file");
+  }
+  return result;
+};
+
 // ========== REACT QUERY HOOKS - FILE EXTRACTION & AI ==========
 
 export const useExtractTextFromFile = () => {
@@ -389,6 +407,9 @@ export const useGetLecturerQuestionBanks = (filters = {}) => {
   return useQuery({
     queryKey: ["questionBanks", filters],
     queryFn: () => getLecturerQuestionBanks(filters),
+    staleTime: 5 * 60 * 1000,
+    refetchOnWindowFocus: false,
+    refetchOnReconnect: false,
   });
 };
 
@@ -397,7 +418,7 @@ export const useGetQuestionBankById = (id) => {
     queryKey: ["questionBank", id],
     queryFn: () => getQuestionBankById(id),
     enabled: !!id,
-    staleTime: 1000 * 60 * 5, // 5 minutes - prevents constant refetching
+    staleTime: 5 * 60 * 1000,
     gcTime: 1000 * 60 * 10, // 10 minutes - cache retention
   });
 };
@@ -535,6 +556,9 @@ export const useGetLecturerExams = (filters = {}) => {
   return useQuery({
     queryKey: ["exams", filters],
     queryFn: () => getLecturerExams(filters),
+    staleTime: 5 * 60 * 1000,
+    refetchOnWindowFocus: false,
+    refetchOnReconnect: false,
   });
 };
 
@@ -542,6 +566,9 @@ export const useGetActiveExamsForStudent = () => {
   return useQuery({
     queryKey: ["activeExams"],
     queryFn: getActiveExamsForStudent,
+    staleTime: 5 * 60 * 1000,
+    refetchOnWindowFocus: false,
+    refetchOnReconnect: false,
   });
 };
 
@@ -550,6 +577,9 @@ export const useGetExamById = (id) => {
     queryKey: ["exam", id],
     queryFn: () => getExamById(id),
     enabled: !!id,
+    staleTime: 5 * 60 * 1000,
+    refetchOnWindowFocus: false,
+    refetchOnReconnect: false,
   });
 };
 
@@ -588,5 +618,12 @@ export const useDeleteExam = () => {
 export const useGenerateImageForQuestion = () => {
   return useMutation({
     mutationFn: generateImageForQuestion,
+  });
+};
+
+// ========== REACT QUERY HOOKS - BULK UPLOAD QUESTIONS ==========
+export const useBulkUploadQuestions = () => {
+  return useMutation({
+    mutationFn: bulkUploadQuestions,
   });
 };

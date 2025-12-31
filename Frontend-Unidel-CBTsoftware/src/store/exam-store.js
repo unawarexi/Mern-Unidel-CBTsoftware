@@ -24,6 +24,7 @@ import {
   usePublishExam,
   useDeleteExam,
   useGenerateImageForQuestion,
+  useBulkUploadQuestions,
 } from "../core/apis/exam-api";
 
 const useExamStore = create((set) => ({
@@ -717,6 +718,34 @@ export const useGenerateImageForQuestionAction = () => {
     generateImage,
     isLoading: mutation.isLoading,
     error: mutation.error,
+  };
+};
+
+export const useBulkUploadQuestionsAction = () => {
+  const { setGeneratedQuestions, showToast, showLoader, hideLoader, setError } = useExamStore();
+  const bulkUploadMutation = useBulkUploadQuestions();
+
+  const bulkUpload = async (file) => {
+    setError(null);
+    showLoader();
+    try {
+      const result = await bulkUploadMutation.mutateAsync(file);
+      setGeneratedQuestions(result.questions || []);
+      showToast(`Imported ${result.questions?.length || 0} questions from file`, "success");
+      return result;
+    } catch (err) {
+      setError(err.message);
+      showToast(err.message || "Failed to parse file", "error");
+      throw err;
+    } finally {
+      hideLoader();
+    }
+  };
+
+  return {
+    bulkUpload,
+    isLoading: bulkUploadMutation.isLoading,
+    error: bulkUploadMutation.error,
   };
 };
 

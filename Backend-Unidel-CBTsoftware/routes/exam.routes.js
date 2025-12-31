@@ -17,6 +17,7 @@ import {
   submitForApproval,
   deleteQuestionBank,
   improveQuestionsWithAI,
+  bulkUploadQuestions, // <-- new import for bulk upload
 
   // Admin approval
   getPendingApprovals,
@@ -77,6 +78,9 @@ router.delete("/question-bank/:id", protect, authorize("lecturer"), deleteQuesti
 
 // Use AI to improve questions in question bank
 router.post("/question-bank/:id/improve", protect, authorize("lecturer"), improveQuestionsWithAI);
+
+// Bulk upload questions from file (CSV, XLSX, DOCX, PDF)
+router.post("/question-bank/bulk-upload", protect, authorize("lecturer"), upload.single("file"), bulkUploadQuestions);
 
 // ==================== ADMIN APPROVAL ROUTES ====================
 
