@@ -96,6 +96,34 @@ export const removeLecturersFromCourse = async ({ id, lecturers }) => {
   return response.json();
 };
 
+export const assignToCourse = async ({ id, students = [], lecturers = [] }) => {
+  const response = await fetch(`${BASE_URL}/${id}/assign`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    credentials: "include",
+    body: JSON.stringify({ students, lecturers }),
+  });
+  if (!response.ok) {
+    const error = await response.json();
+    throw new Error(error.message || "Failed to assign to course");
+  }
+  return response.json();
+};
+
+export const removeFromCourse = async ({ id, students = [], lecturers = [] }) => {
+  const response = await fetch(`${BASE_URL}/${id}/remove`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    credentials: "include",
+    body: JSON.stringify({ students, lecturers }),
+  });
+  if (!response.ok) {
+    const error = await response.json();
+    throw new Error(error.message || "Failed to remove from course");
+  }
+  return response.json();
+};
+
 const STANDARD_QUERY_OPTIONS = {
   staleTime: 5 * 60 * 1000,
   refetchOnWindowFocus: false,
@@ -170,6 +198,26 @@ export const useRemoveLecturers = () => {
     onSuccess: (data, variables) => {
       queryClient.invalidateQueries({ queryKey: ["courses"] });
       queryClient.invalidateQueries({ queryKey: ["course", variables.id] });
+    },
+  });
+};
+
+export const useAssignToCourse = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: assignToCourse,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["courses"] });
+    },
+  });
+};
+
+export const useRemoveFromCourse = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: removeFromCourse,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["courses"] });
     },
   });
 };

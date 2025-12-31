@@ -1,4 +1,5 @@
 import Course from "../models/course.model.js";
+import Student from "../models/student.model.js";
 import Lecturer from "../models/lecturer.model.js";
 import { uploadToCloudinary, deleteFromCloudinary } from "../services/cloudinary.service.js";
 
@@ -390,5 +391,85 @@ export const deleteCourseMaterial = async (req, res) => {
     res.status(200).json({ success: true, message: "Material deleted" });
   } catch (error) {
     res.status(500).json({ success: false, message: error.message });
+  }
+};
+
+/**
+ * Assign students and lecturers to a course
+ */
+export const assignToCourse = async (req, res) => {
+  try {
+    const { id } = req.params; // course id
+    const { students = [], lecturers = [] } = req.body;
+
+    const course = await Course.findById(id);
+    if (!course) return res.status(404).json({ message: "Course not found" });
+
+    // Add lecturers
+    if (lecturers.length) {
+      course.lecturers = Array.from(new Set([...course.lecturers.map(String), ...lecturers]));
+      // Update each lecturer's courses
+      await Lecturer.updateMany(
+        { _id: { $in: lecturers } },
+        { $addToSet: { courses: course._id } }
+      );
+    }
+
+    // Add students
+    if (students.length) {
+      course.students = Array.from(new Set([...course.students.map(String), ...students]));
+      // Update each student's courses
+      await Student.updateMany(
+        { _id: { $in: students } },
+        { $addToSet: { courses: course._id } }
+      );
+    }
+
+    await course.save();
+    res.status(200).json({ message: "Assigned successfully", course });
+  } catch (error) {
+    res.status(500).json({ message: "Failed to assign", error: error.message });
+  }
+};
+
+/**
+ * Remove students and lecturers from a course
+ */
+export const removeFromCourse = async (req, res) => {
+  try {
+    const { id } = req.params; // course id
+    const { students = [], lecturers = [] } = req.body;
+
+    const course = await Course.findById(id);
+    if (!course) return res.status(404).json({ message: "Course not found" });
+
+    // Remove lecturers
+    if (lecturers.length) {
+      course.lecturers = course.lecturers.filter(
+        (lid) => !lecturers.includes(lid.toString())
+      );
+      // Remove course from each lecturer's courses
+      await Lecturer.updateMany(
+        { _id: { $in: lecturers } },
+        { $pull: { courses: course._id } }
+      );
+    }
+
+    // Remove students
+    if (students.length) {
+      course.students = course.students.filter(
+        (sid) => !students.includes(sid.toString())
+      );
+      // Remove course from each student's courses
+      await Student.updateMany(
+        { _id: { $in: students } },
+        { $pull: { courses: course._id } }
+      );
+    }
+
+    await course.save();
+    res.status(200).json({ message: "Removed successfully", course });
+  } catch (error) {
+    res.status(500).json({ message: "Failed to remove", error: error.message });
   }
 };

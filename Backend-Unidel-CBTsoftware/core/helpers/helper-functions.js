@@ -26,3 +26,13 @@ export const generateMatricNumber = (count) => {
 export const generateLecturerId = (count) => {
   return `LEC${String(count).padStart(6, "0")}`;
 };
+
+// Generate Department ID: DEPT000001
+export const generateDepartmentId = (count) => {
+  return `DEPT${String(count).padStart(6, "0")}`;
+};
+
+// Generate Department Code: DPT001, DPT002, etc.
+export const generateDepartmentCode = (count) => {
+  return `DPT${String(count).padStart(3, "0")}`;
+};

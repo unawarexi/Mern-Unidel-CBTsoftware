@@ -9,7 +9,7 @@ export const createLecturer = async (data) => {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     credentials: "include",
-    body: JSON.stringify(data),
+    body: JSON.stringify({ ...data, level: data.level }),
   });
   if (!response.ok) {
     const error = await response.json();
@@ -47,7 +47,7 @@ export const updateLecturer = async ({ id, data }) => {
     method: "PUT",
     headers: { "Content-Type": "application/json" },
     credentials: "include",
-    body: JSON.stringify(data),
+    body: JSON.stringify({ ...data, level: data.level }),
   });
   if (!response.ok) {
     const error = await response.json();
@@ -75,7 +75,7 @@ export const createStudent = async (data) => {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     credentials: "include",
-    body: JSON.stringify(data),
+    body: JSON.stringify({ ...data, level: data.level }),
   });
   if (!response.ok) {
     const error = await response.json();
@@ -113,7 +113,7 @@ export const updateStudent = async ({ id, data }) => {
     method: "PUT",
     headers: { "Content-Type": "application/json" },
     credentials: "include",
-    body: JSON.stringify(data),
+    body: JSON.stringify({ ...data, level: data.level }),
   });
   if (!response.ok) {
     const error = await response.json();

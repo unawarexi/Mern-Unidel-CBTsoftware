@@ -47,11 +47,14 @@ const studentSchema = new mongoose.Schema(
     ],
     documents: [String],
     attachment: [String],
+    level: {
+      type: Number,
+      default: 100,
+    },
   },
   {
     timestamps: true,
   }
 );
-
 
 export default mongoose.model("Student", studentSchema);

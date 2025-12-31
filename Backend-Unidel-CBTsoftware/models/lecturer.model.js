@@ -51,6 +51,10 @@ const lecturerSchema = new mongoose.Schema(
     ],
     documents: [String],
     attachment: [String],
+    level: {
+      type: Number,
+      default: 100,
+    },
   },
   {
     timestamps: true,

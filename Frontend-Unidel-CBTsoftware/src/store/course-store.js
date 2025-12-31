@@ -1,5 +1,5 @@
 import { create } from "zustand";
-import { useCreateCourse, useGetAllCourses, useGetCourseById, useUpdateCourse, useDeleteCourse, useAssignLecturers, useRemoveLecturers, useUploadCourseMaterial, useDeleteCourseMaterial } from "../core/apis/course-api";
+import { useCreateCourse, useGetAllCourses, useGetCourseById, useUpdateCourse, useDeleteCourse, useAssignLecturers, useRemoveLecturers, useUploadCourseMaterial, useDeleteCourseMaterial, useAssignToCourse, useRemoveFromCourse } from "../core/apis/course-api";
 
 const useCourseStore = create((set) => ({
   // Client-side state
@@ -266,6 +266,64 @@ export const useDeleteCourseMaterialAction = () => {
     deleteMaterial,
     isLoading: deleteMaterialMutation.isLoading,
     error: deleteMaterialMutation.error,
+  };
+};
+
+export const useAssignToCourseAction = () => {
+  const { setLoading, setError, showToast, showLoader, hideLoader } = useCourseStore();
+  const assignToCourseMutation = useAssignToCourse();
+
+  const assignToCourse = async (courseId, { students = [], lecturers = [] }) => {
+    setLoading(true);
+    setError(null);
+    showLoader();
+    try {
+      const data = await assignToCourseMutation.mutateAsync({ id: courseId, students, lecturers });
+      showToast("Assigned successfully", "success");
+      return data;
+    } catch (error) {
+      setError(error.message);
+      showToast(error.message || "Failed to assign", "error");
+      throw error;
+    } finally {
+      setLoading(false);
+      hideLoader();
+    }
+  };
+
+  return {
+    assignToCourse,
+    isLoading: assignToCourseMutation.isLoading,
+    error: assignToCourseMutation.error,
+  };
+};
+
+export const useRemoveFromCourseAction = () => {
+  const { setLoading, setError, showToast, showLoader, hideLoader } = useCourseStore();
+  const removeFromCourseMutation = useRemoveFromCourse();
+
+  const removeFromCourse = async (courseId, { students = [], lecturers = [] }) => {
+    setLoading(true);
+    setError(null);
+    showLoader();
+    try {
+      const data = await removeFromCourseMutation.mutateAsync({ id: courseId, students, lecturers });
+      showToast("Removed successfully", "success");
+      return data;
+    } catch (error) {
+      setError(error.message);
+      showToast(error.message || "Failed to remove", "error");
+      throw error;
+    } finally {
+      setLoading(false);
+      hideLoader();
+    }
+  };
+
+  return {
+    removeFromCourse,
+    isLoading: removeFromCourseMutation.isLoading,
+    error: removeFromCourseMutation.error,
   };
 };
 

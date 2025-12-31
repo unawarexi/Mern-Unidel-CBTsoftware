@@ -9,12 +9,15 @@ import {
   useDeleteStudentAction,
 } from "../../../../store/user-store";
 import { useUploadAttachmentAction, useGetUserAttachmentsAction } from "../../../../store/attachment-store";
+import { useGetAllCoursesAction } from "../../../../store/course-store";
 
 const StudentsManagement = () => {
   const [showModal, setShowModal] = useState(false);
   const [showUploadModal, setShowUploadModal] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
   const [filterDepartment, setFilterDepartment] = useState("All");
+  const [filterLevel, setFilterLevel] = useState("All");
+  const [filterCourse, setFilterCourse] = useState("All");
   const [editingStudent, setEditingStudent] = useState(null);
   const [formData, setFormData] = useState({
     fullname: "",
@@ -24,7 +27,7 @@ const StudentsManagement = () => {
     courses: "", // comma-separated
   });
 
-//   const courses = ["CS101", "CS102", "CS103", "CS104"];
+  //   const courses = ["CS101", "CS102", "CS103", "CS104"];
   const departments = ["Computer Science", "Software Engineering", "Data Science", "Information Technology"];
 
   // store hooks
@@ -36,18 +39,34 @@ const StudentsManagement = () => {
   const { uploadAttachment } = useUploadAttachmentAction();
   // eslint-disable-next-line no-unused-vars
   const { attachments, refetch: refetchAttachments } = useGetUserAttachmentsAction();
+  const { courses: allCourses = [] } = useGetAllCoursesAction();
 
   useEffect(() => {
     if (refetch) refetch();
   }, []);
 
   const handleAddStudent = async () => {
+    // Ensure courses is always an array of course ObjectIds (not courseCode)
+    let selectedCourseId = null;
+    if (formData.courses) {
+      // If courses is an array, take the first value; if string, use as is
+      const selected = Array.isArray(formData.courses)
+        ? formData.courses[0]
+        : formData.courses;
+      // Find the course object by courseCode
+      const found = allCourses.find(
+        (c) => c.courseCode === selected || c._id === selected
+      );
+      selectedCourseId = found ? found._id : null;
+    }
+
     const payload = {
       fullname: formData.fullname,
       email: formData.email,
       matricNumber: formData.matricNumber || undefined,
       department: formData.department,
-      courses: formData.courses ? formData.courses.split(",").map((s) => s.trim()).filter(Boolean) : undefined,
+      courses: selectedCourseId ? [selectedCourseId] : [],
+      level: formData.level,
     };
 
     try {
@@ -108,8 +127,28 @@ const StudentsManagement = () => {
   const filteredStudents = (students || []).filter((student) => {
     const matchesSearch = (student.fullname || "").toLowerCase().includes(searchTerm.toLowerCase()) || (student.email || "").toLowerCase().includes(searchTerm.toLowerCase()) || (student.matricNumber || "").toLowerCase().includes(searchTerm.toLowerCase());
     const matchesDept = filterDepartment === "All" || student.department === filterDepartment;
-    return matchesSearch && matchesDept;
+    const matchesLevel = filterLevel === "All" || student.level === Number(filterLevel);
+    const matchesCourse =
+      filterCourse === "All" ||
+      (Array.isArray(student.courses) &&
+        student.courses.some((c) =>
+          typeof c === "object"
+            ? c.courseCode === filterCourse || c._id === filterCourse
+            : c === filterCourse
+        ));
+    return matchesSearch && matchesDept && matchesLevel && matchesCourse;
   });
+
+  // Helper to map course IDs to course code/title for display
+  const getCourseLabels = (courseIds) => {
+    if (!Array.isArray(courseIds) || !courseIds.length) return [];
+    return courseIds
+      .map((cid) => {
+        const course = allCourses.find((c) => c._id === cid || c._id === cid?._id);
+        return course ? `${course.courseCode} - ${course.courseTitle}` : null;
+      })
+      .filter(Boolean);
+  };
 
   return (
     <div className="min-h-screen bg-white p-6">
@@ -154,6 +193,20 @@ const StudentsManagement = () => {
                   <option key={dept}>{dept}</option>
                 ))}
               </select>
+              <select value={filterLevel} onChange={(e) => setFilterLevel(e.target.value)} className="px-4 py-2 bg-white border border-slate-300 rounded-lg text-slate-900">
+                <option>All</option>
+                {[100, 200, 300, 400, 500, 600, 700, 800, 900].map((lvl) => (
+                  <option key={lvl} value={lvl}>{lvl}</option>
+                ))}
+              </select>
+              <select value={filterCourse} onChange={(e) => setFilterCourse(e.target.value)} className="px-4 py-2 bg-white border border-slate-300 rounded-lg text-slate-900">
+                <option>All</option>
+                {allCourses.map((course) => (
+                  <option key={course._id} value={course.courseCode}>
+                    {course.courseCode} - {course.courseTitle}
+                  </option>
+                ))}
+              </select>
             </div>
           </div>
         </div>
@@ -168,31 +221,54 @@ const StudentsManagement = () => {
                   <th className="text-left px-6 py-4 text-slate-700 font-semibold">Email</th>
                   <th className="text-left px-6 py-4 text-slate-700 font-semibold">Matric Number</th>
                   <th className="text-left px-6 py-4 text-slate-700 font-semibold">Department</th>
+                  <th className="text-left px-6 py-4 text-slate-700 font-semibold">Level</th>
                   <th className="text-left px-6 py-4 text-slate-700 font-semibold">Courses</th>
                   <th className="text-left px-6 py-4 text-slate-700 font-semibold">Actions</th>
                 </tr>
               </thead>
               <tbody>
                 <AnimatePresence>
-                  {filteredStudents.map((student, index) => (
-                    <motion.tr key={student._id} initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: 20 }} transition={{ delay: index * 0.05 }} className="border-b border-slate-100 hover:bg-slate-50 transition-colors">
-                      <td className="px-6 py-4 text-slate-900 font-medium">{student.fullname}</td>
-                      <td className="px-6 py-4 text-slate-600">{student.email}</td>
-                      <td className="px-6 py-4 text-slate-600">{student.matricNumber}</td>
-                      <td className="px-6 py-4 text-slate-600">{student.department}</td>
-                      <td className="px-6 py-4 text-slate-600">{Array.isArray(student.courses) ? student.courses.join(", ") : student.courses}</td>
-                      <td className="px-6 py-4">
-                        <div className="flex gap-2">
-                          <motion.button whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.9 }} onClick={() => handleEdit(student)} className="p-2 hover:bg-blue-100 rounded-lg text-blue-900 transition-colors">
-                            <Edit2 size={18} />
-                          </motion.button>
-                          <motion.button whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.9 }} onClick={() => handleDelete(student._id)} className="p-2 hover:bg-red-100 rounded-lg text-red-600 transition-colors">
-                            <Trash2 size={18} />
-                          </motion.button>
-                        </div>
-                      </td>
-                    </motion.tr>
-                  ))}
+                  {filteredStudents.map((student, index) => {
+                    // Get course labels for this student
+                    const courseLabels = getCourseLabels(
+                      Array.isArray(student.courses)
+                        ? student.courses.map((c) =>
+                            typeof c === "object" && c?._id ? c._id : c
+                          )
+                        : []
+                    );
+                    // Limit display to 2 courses, show ... if more
+                    const displayCourses = courseLabels.slice(0, 2).join(", ");
+                    const hasMore = courseLabels.length > 2;
+                    return (
+                      <motion.tr key={student._id} initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: 20 }} transition={{ delay: index * 0.05 }} className="border-b border-slate-100 hover:bg-slate-50 transition-colors">
+                        <td className="px-6 py-4 text-slate-900 font-medium">{student.fullname}</td>
+                        <td className="px-6 py-4 text-slate-600">{student.email}</td>
+                        <td className="px-6 py-4 text-slate-600">{student.matricNumber}</td>
+                        <td className="px-6 py-4 text-slate-600">{student.department}</td>
+                        <td className="px-6 py-4 text-slate-600">{student.level || "-"}</td>
+                        <td className="px-6 py-4 text-slate-600">
+                          {courseLabels.length === 0 && <span className="text-xs text-gray-400 italic">No courses</span>}
+                          {courseLabels.length > 0 && (
+                            <>
+                              {displayCourses}
+                              {hasMore && <span className="text-xs text-blue-600 font-medium">&nbsp;... </span>}
+                            </>
+                          )}
+                        </td>
+                        <td className="px-6 py-4">
+                          <div className="flex gap-2">
+                            <motion.button whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.9 }} onClick={() => handleEdit(student)} className="p-2 hover:bg-blue-100 rounded-lg text-blue-900 transition-colors">
+                              <Edit2 size={18} />
+                            </motion.button>
+                            <motion.button whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.9 }} onClick={() => handleDelete(student._id)} className="p-2 hover:bg-red-100 rounded-lg text-red-600 transition-colors">
+                              <Trash2 size={18} />
+                            </motion.button>
+                          </div>
+                        </td>
+                      </motion.tr>
+                    );
+                  })}
                 </AnimatePresence>
               </tbody>
             </table>
@@ -275,14 +351,40 @@ const StudentsManagement = () => {
                   </div>
 
                   <div>
-                    <label className="block text-gray-300 mb-2 font-medium">Courses</label>
+                    <label className="block text-gray-300 mb-2 font-medium">Level</label>
                     <input
-                      type="text"
-                      value={formData.courses}
-                      onChange={(e) => setFormData({ ...formData, courses: e.target.value })}
-                      className="w-full px-4 py-2 bg-white border border-slate-300 rounded-lg text-slate-900 focus:outline-none focus:border-blue-900 focus:ring-2 focus:ring-blue-900/20 transition-colors"
-                      placeholder="Enter optional courses, comma-separated"
+                      type="number"
+                      value={formData.level || ""}
+                      onChange={(e) => setFormData({ ...formData, level: Number(e.target.value) })}
+                      min={100}
+                      max={900}
+                      step={100}
+                      className="w-full px-4 py-2 bg-white border border-slate-300 rounded-lg text-slate-900"
+                      placeholder="e.g. 100, 200, 300"
                     />
+                  </div>
+
+                  <div>
+                    <label className="block text-gray-300 mb-2 font-medium">Courses</label>
+                    <div className="flex flex-col gap-2">
+                      {allCourses.map((course) => (
+                        <label key={course._id} className="flex items-center gap-2">
+                          <input
+                            type="radio"
+                            name="student-course"
+                            value={course.courseCode}
+                            checked={
+                              Array.isArray(formData.courses)
+                                ? formData.courses.includes(course.courseCode)
+                                : formData.courses === course.courseCode
+                            }
+                            onChange={(e) => setFormData({ ...formData, courses: e.target.value })}
+                            className="accent-blue-900"
+                          />
+                          <span className="text-sm text-slate-700">{course.courseCode} - {course.courseTitle}</span>
+                        </label>
+                      ))}
+                    </div>
                   </div>
 
                   <div className="flex gap-3 pt-4">

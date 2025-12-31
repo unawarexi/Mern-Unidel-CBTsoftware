@@ -16,6 +16,8 @@ const LecturersManagement = () => {
   const [showUploadModal, setShowUploadModal] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
   const [filterDepartment, setFilterDepartment] = useState("All");
+  const [filterLevel, setFilterLevel] = useState("All");
+  const [filterCourse, setFilterCourse] = useState("All");
   const [editingLecturer, setEditingLecturer] = useState(null);
   const [formData, setFormData] = useState({
     fullname: "",
@@ -121,7 +123,15 @@ const LecturersManagement = () => {
       (lecturer.email || "").toLowerCase().includes(searchTerm.toLowerCase()) ||
       (lecturer.lecturerId || "").toLowerCase().includes(searchTerm.toLowerCase());
     const matchesDept = filterDepartment === "All" || lecturer.department === filterDepartment;
-    return matchesSearch && matchesDept;
+    const matchesLevel = filterLevel === "All" || lecturer.level === Number(filterLevel);
+    const matchesCourse =
+      filterCourse === "All" ||
+      (Array.isArray(lecturer.courses) &&
+        lecturer.courses.some((cid) => {
+          const course = allCourses.find((c) => c._id === cid || c._id === cid?._id);
+          return course && (course.courseCode === filterCourse || course.courseTitle === filterCourse);
+        }));
+    return matchesSearch && matchesDept && matchesLevel && matchesCourse;
   });
 
   // Helper to map course IDs to course code/title for display
@@ -178,6 +188,18 @@ const LecturersManagement = () => {
                   <option key={dept}>{dept}</option>
                 ))}
               </select>
+              <select value={filterLevel} onChange={(e) => setFilterLevel(e.target.value)} className="px-4 py-2 bg-white border border-slate-300 rounded-lg text-slate-900">
+                <option>All</option>
+                {[100, 200, 300, 400, 500, 600, 700, 800, 900].map((lvl) => (
+                  <option key={lvl} value={lvl}>{lvl}</option>
+                ))}
+              </select>
+              <select value={filterCourse} onChange={(e) => setFilterCourse(e.target.value)} className="px-4 py-2 bg-white border border-slate-300 rounded-lg text-slate-900">
+                <option>All</option>
+                {allCourses.map((course) => (
+                  <option key={course._id} value={course.courseCode}>{course.courseCode} - {course.courseTitle}</option>
+                ))}
+              </select>
             </div>
           </div>
         </div>
@@ -192,6 +214,7 @@ const LecturersManagement = () => {
                   <th className="text-left px-6 py-4 text-slate-700 font-semibold">Email</th>
                   <th className="text-left px-6 py-4 text-slate-700 font-semibold">Role</th>
                   <th className="text-left px-6 py-4 text-slate-700 font-semibold">Department</th>
+                  <th className="text-left px-6 py-4 text-slate-700 font-semibold">Level</th>
                   <th className="text-left px-6 py-4 text-slate-700 font-semibold">Courses</th>
                   <th className="text-left px-6 py-4 text-slate-700 font-semibold">Actions</th>
                 </tr>
@@ -231,6 +254,7 @@ const LecturersManagement = () => {
                           </span>
                         </td>
                         <td className="px-6 py-4 text-slate-600">{lecturer.department}</td>
+                        <td className="px-6 py-4 text-slate-600">{lecturer.level || "-"}</td>
                         <td className="px-6 py-4">
                           <span className="inline-flex items-center gap-1 text-slate-600 text-sm">
                             <BookOpen size={14} />
@@ -349,6 +373,20 @@ const LecturersManagement = () => {
                         </option>
                       ))}
                     </select>
+                  </div>
+
+                  <div>
+                    <label className="block text-slate-700 mb-2 font-medium">Level</label>
+                    <input
+                      type="number"
+                      value={formData.level || ""}
+                      onChange={(e) => setFormData({ ...formData, level: Number(e.target.value) })}
+                      min={100}
+                      max={900}
+                      step={100}
+                      className="w-full px-4 py-2 bg-white border border-slate-300 rounded-lg text-slate-900"
+                      placeholder="e.g. 100, 200, 300"
+                    />
                   </div>
 
                   {/* Redesigned Course selection */}

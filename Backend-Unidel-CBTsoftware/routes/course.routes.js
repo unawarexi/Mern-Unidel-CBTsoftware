@@ -1,5 +1,5 @@
 import express from "express";
-import { createCourse, getAllCourses, getCourse, updateCourse, deleteCourse, assignLecturers, removeLecturers, uploadCourseMaterial, deleteCourseMaterial } from "../controllers/course.controller.js";
+import { createCourse, getAllCourses, getCourse, updateCourse, deleteCourse, assignLecturers, removeLecturers, uploadCourseMaterial, deleteCourseMaterial, assignToCourse, removeFromCourse } from "../controllers/course.controller.js";
 import { protect, authorize } from "../middlewares/auth.middleware.js";
 import { upload } from "../services/cloudinary.service.js";
 
@@ -28,5 +28,9 @@ router.post("/:id/materials", protect, authorize("lecturer"), upload.single("fil
 
 // Delete course material (lecturer only)
 router.delete("/:id/materials/:materialId", protect, authorize("lecturer"), deleteCourseMaterial);
+
+// Assign and remove students - admin only
+router.post("/:id/assign", protect, authorize("admin", "superadmin"), assignToCourse);
+router.post("/:id/remove", protect, authorize("admin", "superadmin"), removeFromCourse);
 
 export default router;

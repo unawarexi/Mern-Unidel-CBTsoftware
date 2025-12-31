@@ -14,21 +14,22 @@ const Sidebar = () => {
   const navigate = useNavigate();
 
   const menuItems = [
+    // DASHBOARD
     {
       id: "dashboard",
       title: "Dashboard",
       icon: LayoutDashboard,
       href: "/admin/dashboard",
       subItems: [
-        { title: "Total Students", href: "/admin/dashboard/students" },
-        { title: "Active Exams", href: "/admin/dashboard/exams" },
+        { title: "Overview", href: "/admin/dashboard" },
         { title: "Live Activity Feed", href: "/admin/dashboard/activity" },
         { title: "System Health", href: "/admin/dashboard/health" },
       ],
     },
+    // USER MANAGEMENT
     {
       id: "users",
-      title: "Users Management",
+      title: "User Management",
       icon: Users,
       href: "/admin/users",
       subItems: [
@@ -37,16 +38,18 @@ const Sidebar = () => {
         { title: "Admins", href: "/admin/users/admins" },
       ],
     },
+    // DEPARTMENTS & FACULTIES
     {
       id: "departments",
-      title: "Departments",
+      title: "Departments & Faculties",
       icon: Building2,
       href: "/admin/departments",
       subItems: [
-        { title: "Create/Edit Departments", href: "/admin/departments/manage" },
+        { title: "Manage Departments", href: "/admin/departments/manage" },
         { title: "Assign Courses", href: "/admin/departments/courses" },
       ],
     },
+    // COURSES
     {
       id: "courses",
       title: "Courses",
@@ -54,47 +57,51 @@ const Sidebar = () => {
       href: "/admin/courses",
       subItems: [
         { title: "Course Creation", href: "/admin/courses/create" },
-        { title: "Lecturer Assignment", href: "/admin/courses/assign" },
+        { title: "Assign Lecturers/Students", href: "/admin/courses/assign" },
       ],
     },
+    // EXAMS
     {
       id: "exams",
       title: "Exams",
       icon: FileText,
       href: "/admin/exams",
       subItems: [
-        { title: "Overview", href: "/admin/exams/overview" },
         { title: "All Exams", href: "/admin/exams/all" },
-        { title: "Scheduled", href: "/admin/exams/scheduled" },
-        { title: "Active", href: "/admin/exams/active" },
-        { title: "Ended", href: "/admin/exams/ended" },
+        { title: "Scheduled Exams", href: "/admin/exams/scheduled" },
+        { title: "Active Exams", href: "/admin/exams/active" },
+        { title: "Ended Exams", href: "/admin/exams/ended" },
+        { title: "Exam Results", href: "/admin/exams/results" },
+        { title: "Exam Analytics", href: "/admin/exams/analytics" },
       ],
     },
+    // QUESTION BANK
     {
-      id: "results",
-      title: "Results & Analytics",
+      id: "question-bank",
+      title: "Question Bank",
+      icon: FileText,
+      href: "/admin/question-bank",
+      subItems: [
+        { title: "Manage Question Banks", href: "/admin/question-bank/manage" },
+        { title: "Pending Approvals", href: "/admin/question-bank/approvals" },
+      ],
+    },
+    // CBT SESSIONS
+    {
+      id: "sessions",
+      title: "CBT Sessions",
       icon: BarChart3,
-      href: "/admin/results",
+      href: "/admin/sessions",
       subItems: [
-        { title: "Overall Performance", href: "/admin/results/overall" },
-        { title: "Department Breakdown", href: "/admin/results/departments" },
-        { title: "Course Breakdown", href: "/admin/results/courses" },
+        { title: "Academic Sessions", href: "/admin/sessions" },
+        { title: "Session Settings", href: "/admin/settings/session" },
+        { title: "Exam Rules", href: "/admin/settings/exam-rules" },
       ],
     },
-    {
-      id: "uploads",
-      title: "Uploads / Documents",
-      icon: Upload,
-      href: "/admin/uploads",
-      subItems: [
-        { title: "Student IDs", href: "/admin/uploads/student-ids" },
-        { title: "Exam Attachments", href: "/admin/uploads/attachments" },
-        { title: "Evidence Logs", href: "/admin/uploads/evidence" },
-      ],
-    },
+    // AUDIT & LOGS
     {
       id: "audit",
-      title: "Audit Logs",
+      title: "Audit & Logs",
       icon: Shield,
       href: "/admin/audit",
       subItems: [
@@ -103,15 +110,27 @@ const Sidebar = () => {
         { title: "Security Events", href: "/admin/audit/security" },
       ],
     },
+    // UPLOADS & DOCUMENTS
+    {
+      id: "uploads",
+      title: "Uploads & Documents",
+      icon: Upload,
+      href: "/admin/uploads",
+      subItems: [
+        { title: "Student IDs", href: "/admin/uploads/student-ids" },
+        { title: "Exam Attachments", href: "/admin/uploads/attachments" },
+        { title: "Evidence Logs", href: "/admin/uploads/evidence" },
+      ],
+    },
+    // SYSTEM SETTINGS
     {
       id: "settings",
       title: "System Settings",
       icon: Settings,
       href: "/admin/settings",
       subItems: [
-        { title: "Academic Session", href: "/admin/settings/session" },
         { title: "Timezone", href: "/admin/settings/timezone" },
-        { title: "Exam Rules", href: "/admin/settings/exam-rules" },
+        { title: "General Settings", href: "/admin/settings/general" },
       ],
     },
   ];
