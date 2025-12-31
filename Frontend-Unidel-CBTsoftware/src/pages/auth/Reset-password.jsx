@@ -1,19 +1,28 @@
-import React, { useState, useEffect } from "react";
+/* eslint-disable no-unused-vars */
+import React, { useEffect, useState, useMemo } from "react";
 import { Eye, EyeOff, AlertCircle } from "lucide-react";
 import { Images } from "../../constants/image-strings";
 import { useAuthResetPassword, useAuthChangePasswordFirstLogin } from "../../store/auth-store";
 import { ButtonSpinner } from "../../components/Spinners";
 import { useLocation, useNavigate, Link } from "react-router-dom";
 import useAuthStore from "../../store/auth-store";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import * as z from "zod";
+
+const resetPasswordSchema = z.object({
+  password: z.string().min(8, "Password must be at least 8 characters"),
+  confirm: z.string(),
+}).refine((data) => data.password === data.confirm, {
+  message: "Passwords do not match",
+  path: ["confirm"],
+});
 
 const ResetPassword = () => {
   const [showPassword, setShowPassword] = useState(false);
-  const [password, setPassword] = useState("");
-  const [confirm, setConfirm] = useState("");
-  const [errors, setErrors] = useState({});
   const navigate = useNavigate();
   const location = useLocation();
-  const prefill = location.state || {};
+  const prefill = useMemo(() => location.state || {}, [location.state]);
   const query = new URLSearchParams(location.search);
   const tokenFromQuery = query.get("token");
   const roleFromQuery = query.get("role");
@@ -23,68 +32,61 @@ const ResetPassword = () => {
   const authUser = useAuthStore((s) => s.user);
   const authFirstLogin = useAuthStore((s) => s.isFirstLogin);
 
-  // Guard: only allow access when a valid reset token is present OR it's a first-login flow
   useEffect(() => {
     const isFirstLoginFlow = !!(prefill?.firstLogin || authFirstLogin || authUser?.isFirstLogin);
     const tokenVal = prefill.token || prefill.resetToken || tokenFromQuery;
     if (!isFirstLoginFlow && !tokenVal) {
-      // Prevent direct access to /reset-password without a token
       navigate("/forgot-password", { replace: true });
     }
   }, [prefill, tokenFromQuery, authFirstLogin, authUser, navigate]);
 
-  const validate = () => {
-    const e = {};
-    if (!password) e.password = "Password is required";
-    else if (password.length < 8) e.password = "Password must be at least 8 characters";
-    if (!confirm) e.confirm = "Please confirm your password";
-    else if (password !== confirm) e.confirm = "Passwords do not match";
-    return e;
-  };
+  const {
+    register,
+    handleSubmit,
+    setError,
+    formState: { errors },
+    getValues,
+  } = useForm({
+    resolver: zodResolver(resetPasswordSchema),
+    mode: "onBlur",
+    defaultValues: {
+      password: "",
+      confirm: "",
+    },
+  });
 
-  const handleSubmit = async (ev) => {
-    ev.preventDefault();
-    const e = validate();
-    setErrors(e);
-    if (Object.keys(e).length === 0) {
-      try {
-        const isFirstLoginFlow = !!(prefill?.firstLogin || authFirstLogin || authUser?.isFirstLogin);
+  const onSubmit = async (data) => {
+    try {
+      const isFirstLoginFlow = !!(prefill?.firstLogin || authFirstLogin || authUser?.isFirstLogin);
 
-        if (isFirstLoginFlow) {
-          // first-login flow: prefer prefill, fall back to authenticated user
-          const userId = prefill.userId || authUser?.id || authUser?._id || authUser?.userId;
-          const role = (prefill.role || authUser?.role || roleFromQuery || "").toString().toLowerCase();
-          if (!userId || !role) {
-            setErrors({ form: "Cannot change password: missing userId or role." });
-            return;
-          }
-          const payload = { userId, role, newPassword: password };
-          const data = await changePassword(payload);
-
-          // store updates user; redirect to dashboard
-          const roleRes = (data.user?.role || data.user?.type || "").toString().toLowerCase();
-          const target = roleRes === "admin" ? "/admin" : roleRes === "lecturer" ? "/lecturer" : "/student";
-          navigate(target, { replace: true });
-        } else {
-          // normal reset - token required (from query or state)
-          const tokenVal = prefill.token || prefill.resetToken || tokenFromQuery;
-          if (!tokenVal) {
-            setErrors({ form: "Reset token missing. Use the link from your email to reset password." });
-            return;
-          }
-          const payload = {
-            token: tokenVal,
-            role: prefill.role || roleFromQuery,
-            newPassword: password,
-          };
-          await resetPassword(payload);
-          navigate("/portal-signin", { replace: true });
+      if (isFirstLoginFlow) {
+        const userId = prefill.userId || authUser?.id || authUser?._id || authUser?.userId;
+        const role = (prefill.role || authUser?.role || roleFromQuery || "").toString().toLowerCase();
+        if (!userId || !role) {
+          setError("password", { message: "Cannot change password: missing userId or role." });
+          return;
         }
-      // eslint-disable-next-line no-unused-vars
-      } catch (err) {
-        // Surface API error to the form so user sees the issue (e.g., invalid/expired token)
-        setErrors((prev) => ({ ...prev, form: err?.message || "An error occurred" }));
+        const payload = { userId, role, newPassword: data.password };
+        const result = await changePassword(payload);
+        const roleRes = (result.user?.role || result.user?.type || "").toString().toLowerCase();
+        const target = roleRes === "admin" ? "/admin" : roleRes === "lecturer" ? "/lecturer" : "/student";
+        navigate(target, { replace: true });
+      } else {
+        const tokenVal = prefill.token || prefill.resetToken || tokenFromQuery;
+        if (!tokenVal) {
+          setError("password", { message: "Reset token missing. Use the link from your email to reset password." });
+          return;
+        }
+        const payload = {
+          token: tokenVal,
+          role: prefill.role || roleFromQuery,
+          newPassword: data.password,
+        };
+        await resetPassword(payload);
+        navigate("/portal-signin", { replace: true });
       }
+    } catch (err) {
+      setError("password", { message: err?.message || "An error occurred" });
     }
   };
 
@@ -101,13 +103,12 @@ const ResetPassword = () => {
             {prefill.email && <p className="mt-2 text-xs text-gray-500">Resetting for: <strong>{prefill.email}</strong></p>}
           </div>
 
-          <form onSubmit={handleSubmit} className="space-y-5">
+          <form onSubmit={handleSubmit(onSubmit)} className="space-y-5">
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1.5">New Password</label>
               <div className="relative">
                 <input
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
+                  {...register("password")}
                   type={showPassword ? "text" : "password"}
                   placeholder="Choose a strong password"
                   className={`w-full px-4 py-3 bg-white border rounded-lg text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 transition-all pr-12 ${errors.password ? "border-red-500 focus:ring-red-200" : "border-gray-300 focus:ring-orange-200 focus:border-orange-500"}`}
@@ -119,7 +120,7 @@ const ResetPassword = () => {
               {errors.password && (
                 <div className="flex items-center gap-1 mt-1.5 text-red-600 text-sm">
                   <AlertCircle className="w-4 h-4" />
-                  <span>{errors.password}</span>
+                  <span>{errors.password.message}</span>
                 </div>
               )}
             </div>
@@ -127,8 +128,7 @@ const ResetPassword = () => {
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1.5">Confirm Password</label>
               <input
-                value={confirm}
-                onChange={(e) => setConfirm(e.target.value)}
+                {...register("confirm")}
                 type={showPassword ? "text" : "password"}
                 placeholder="Re-enter password"
                 className={`w-full px-4 py-3 bg-white border rounded-lg text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 transition-all ${errors.confirm ? "border-red-500 focus:ring-red-200" : "border-gray-300 focus:ring-orange-200 focus:border-orange-500"}`}
@@ -136,7 +136,7 @@ const ResetPassword = () => {
               {errors.confirm && (
                 <div className="flex items-center gap-1 mt-1.5 text-red-600 text-sm">
                   <AlertCircle className="w-4 h-4" />
-                  <span>{errors.confirm}</span>
+                  <span>{errors.confirm.message}</span>
                 </div>
               )}
             </div>
@@ -144,7 +144,7 @@ const ResetPassword = () => {
             {errors.form && (
               <div className="mt-3 text-sm text-red-600 flex items-center gap-2">
                 <AlertCircle className="w-4 h-4" />
-                <span>{errors.form}</span>
+                <span>{errors.form.message}</span>
               </div>
             )}
 

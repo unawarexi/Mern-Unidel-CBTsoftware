@@ -1,40 +1,49 @@
-import React, { useState } from "react";
+/* eslint-disable no-unused-vars */
+import React from "react";
 import { AlertCircle, Mail, User } from "lucide-react";
 import { Images } from "../../constants/image-strings";
 import { useNavigate, Link } from "react-router-dom";
 import { useAuthForgotPassword } from "../../store/auth-store";
 import { ButtonSpinner } from "../../components/Spinners";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import * as z from "zod";
+
+const forgotPasswordSchema = z.object({
+  role: z.enum(["student", "lecturer", "admin"]),
+  identifier: z.string().min(1, "ID is required"),
+  email: z.string().email("Invalid email address"),
+});
 
 const ForgotPassword = () => {
-  const [role, setRole] = useState("student");
-  const [identifier, setIdentifier] = useState("");
-  const [email, setEmail] = useState("");
-  const [errors, setErrors] = useState({});
   const navigate = useNavigate();
   const { forgotPassword, isLoading } = useAuthForgotPassword();
 
-  const validate = () => {
-    const e = {};
-    if (!identifier.trim()) e.identifier = `${role === "student" ? "Matric/Student ID" : role === "lecturer" ? "Employee ID" : "Admin ID"} is required`;
-    if (!email.trim()) e.email = "Email is required";
-    else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) e.email = "Invalid email address";
-    return e;
-  };
+  const {
+    register,
+    handleSubmit,
+    watch,
+    formState: { errors },
+    setValue,
+  } = useForm({
+    resolver: zodResolver(forgotPasswordSchema),
+    mode: "onBlur",
+    defaultValues: {
+      role: "student",
+      identifier: "",
+      email: "",
+    },
+  });
 
-  const handleSubmit = async (ev) => {
-    ev.preventDefault();
-    const e = validate();
-    setErrors(e);
-    if (Object.keys(e).length === 0) {
-      try {
-        const payload = { role, identifier, email };
-        const data = await forgotPassword(payload);
-        // backend might return token or confirmation; pass useful info to reset page
-        navigate("/reset-password", { state: { ...payload, token: data?.token || null } });
-      // eslint-disable-next-line no-unused-vars
-      } catch (_err) {
-        // toast shown by store; no-op here
-      }
+  const role = watch("role");
+
+  const onSubmit = async (data) => {
+    try {
+      const payload = { ...data };
+      const result = await forgotPassword(payload);
+      navigate("/reset-password", { state: { ...payload, token: result?.token || null } });
+    } catch (err) {
+      // toast shown by store
     }
   };
 
@@ -48,20 +57,20 @@ const ForgotPassword = () => {
             <p className="text-sm text-gray-600 mt-2">Request a password reset link for your account.</p>
           </div>
 
-          <form onSubmit={handleSubmit} className="space-y-5">
+          <form onSubmit={handleSubmit(onSubmit)} className="space-y-5">
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1.5">I am a</label>
               <div className="flex items-center gap-3">
                 <label className={`px-3 py-2 rounded-lg cursor-pointer ${role === "student" ? "bg-orange-50 border border-orange-300" : "bg-white border border-gray-200"}`}>
-                  <input type="radio" name="role" value="student" checked={role === "student"} onChange={() => setRole("student")} className="hidden" />
+                  <input type="radio" {...register("role")} value="student" checked={role === "student"} onChange={() => setValue("role", "student")} className="hidden" />
                   Student
                 </label>
                 <label className={`px-3 py-2 rounded-lg cursor-pointer ${role === "lecturer" ? "bg-orange-50 border border-orange-300" : "bg-white border border-gray-200"}`}>
-                  <input type="radio" name="role" value="lecturer" checked={role === "lecturer"} onChange={() => setRole("lecturer")} className="hidden" />
+                  <input type="radio" {...register("role")} value="lecturer" checked={role === "lecturer"} onChange={() => setValue("role", "lecturer")} className="hidden" />
                   Lecturer
                 </label>
                 <label className={`px-3 py-2 rounded-lg cursor-pointer ${role === "admin" ? "bg-orange-50 border border-orange-300" : "bg-white border border-gray-200"}`}>
-                  <input type="radio" name="role" value="admin" checked={role === "admin"} onChange={() => setRole("admin")} className="hidden" />
+                  <input type="radio" {...register("role")} value="admin" checked={role === "admin"} onChange={() => setValue("role", "admin")} className="hidden" />
                   Admin
                 </label>
               </div>
@@ -73,8 +82,7 @@ const ForgotPassword = () => {
               </label>
               <div className="relative">
                 <input
-                  value={identifier}
-                  onChange={(e) => setIdentifier(e.target.value)}
+                  {...register("identifier")}
                   placeholder={role === "student" ? "UNIDEL/2023/0001" : role === "lecturer" ? "EMP12345" : "ADM001"}
                   className={`w-full px-4 py-3 bg-white border rounded-lg text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 transition-all ${errors.identifier ? "border-red-500 focus:ring-red-200" : "border-gray-300 focus:ring-orange-200 focus:border-orange-500"}`}
                 />
@@ -82,7 +90,7 @@ const ForgotPassword = () => {
               {errors.identifier && (
                 <div className="flex items-center gap-1 mt-1.5 text-red-600 text-sm">
                   <AlertCircle className="w-4 h-4" />
-                  <span>{errors.identifier}</span>
+                  <span>{errors.identifier.message}</span>
                 </div>
               )}
             </div>
@@ -90,15 +98,14 @@ const ForgotPassword = () => {
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1.5">Email Address</label>
               <input
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
+                {...register("email")}
                 placeholder="your.email@unidel.edu.ng"
                 className={`w-full px-4 py-3 bg-white border rounded-lg text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 transition-all ${errors.email ? "border-red-500 focus:ring-red-200" : "border-gray-300 focus:ring-orange-200 focus:border-orange-500"}`}
               />
               {errors.email && (
                 <div className="flex items-center gap-1 mt-1.5 text-red-600 text-sm">
                   <AlertCircle className="w-4 h-4" />
-                  <span>{errors.email}</span>
+                  <span>{errors.email.message}</span>
                 </div>
               )}
             </div>

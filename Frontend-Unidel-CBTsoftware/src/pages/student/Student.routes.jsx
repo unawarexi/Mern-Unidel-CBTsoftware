@@ -1,7 +1,7 @@
 import React from "react";
 import { Routes, Route } from "react-router-dom";
 import NotAvailableYet from "../../components/Not-available";
-import Overview from "./presentation/dashboard/Overview";
+import Overview from "./presentation/dashboard/Student-overview";
 
 export default function StudentRoutes() {
   return (

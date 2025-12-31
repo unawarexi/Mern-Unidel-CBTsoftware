@@ -1,10 +1,20 @@
-import React, { useState, useEffect } from "react";
+/* eslint-disable no-unused-vars */
+import React, { useEffect, useState } from "react";
 import { Eye, EyeOff, BookOpen, AlertCircle } from "lucide-react";
 import { Images } from "../../constants/image-strings";
 import { useNavigate, Link } from "react-router-dom";
 import { ButtonSpinner } from "../../components/Spinners";
 import { useAuthLogin } from "../../store/auth-store";
 import useAuthStore from "../../store/auth-store";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import * as z from "zod";
+
+const signInSchema = z.object({
+  studentId: z.string().min(5, "Student ID must be at least 5 characters"),
+  email: z.string().email("Invalid email address"),
+  password: z.string().min(8, "Password must be at least 8 characters"),
+});
 
 const SignIn = () => {
   const navigate = useNavigate();
@@ -22,91 +32,47 @@ const SignIn = () => {
   }, [isAuthenticated, user, navigate]);
 
   const [showPassword, setShowPassword] = useState(false);
-  const [formData, setFormData] = useState({
-    studentId: "",
-    email: "",
-    password: "",
+
+  const {
+    register,
+    handleSubmit,
+    setValue,
+    formState: { errors, touchedFields },
+    getValues,
+  } = useForm({
+    resolver: zodResolver(signInSchema),
+    mode: "onBlur",
+    defaultValues: {
+      studentId: "",
+      email: "",
+      password: "",
+    },
   });
-  const [errors, setErrors] = useState({});
-  const [touched, setTouched] = useState({});
 
-  // Validation schema using Zod-like logic
-  const validateField = (name, value) => {
-    switch (name) {
-      case "studentId":
-        if (!value.trim()) return "Student ID/Matric Number is required";
-        if (value.length < 5) return "Student ID must be at least 5 characters";
-        return "";
-      case "email": {
-        if (!value.trim()) return "Email address is required";
-        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-        if (!emailRegex.test(value)) return "Invalid email address";
-        return "";
+  const onSubmit = async (data) => {
+    try {
+      // build payload: student sign in must include role; prefer email if provided, otherwise include studentId
+      const payload = {
+        role: "student",
+        password: data.password,
+      };
+      if (data.email && data.email.trim()) payload.email = data.email.trim();
+      else payload.studentId = data.studentId.trim();
+
+      const result = await login(payload);
+
+      // handle first-login shape returned by backend (either data.user?.isFirstLogin or data.requirePasswordChange)
+      if (result?.requirePasswordChange || result?.user?.isFirstLogin) {
+        navigate("/reset-password", { state: { message: "Please change your password", userId: result.user?.id || result?.userId, role: "student" } });
+        return;
       }
-      case "password":
-        if (!value) return "Password is required";
-        if (value.length < 8) return "Password must be at least 8 characters";
-        return "";
-      default:
-        return "";
-    }
-  };
 
-  const handleChange = (e) => {
-    const { name, value } = e.target;
-    setFormData((prev) => ({ ...prev, [name]: value }));
-
-    // Validate on change if field has been touched
-    if (touched[name]) {
-      const error = validateField(name, value);
-      setErrors((prev) => ({ ...prev, [name]: error }));
-    }
-  };
-
-  const handleBlur = (e) => {
-    const { name, value } = e.target;
-    setTouched((prev) => ({ ...prev, [name]: true }));
-    const error = validateField(name, value);
-    setErrors((prev) => ({ ...prev, [name]: error }));
-  };
-
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    // Validate all fields (existing validation)
-    const newErrors = {};
-    Object.keys(formData).forEach((key) => {
-      const error = validateField(key, formData[key]);
-      if (error) newErrors[key] = error;
-    });
-
-    setTouched({ studentId: true, email: true, password: true });
-    setErrors(newErrors);
-
-    if (Object.keys(newErrors).length === 0) {
-      try {
-        // build payload: student sign in must include role; prefer email if provided, otherwise include studentId
-        const payload = {
-          role: "student",
-          password: formData.password,
-        };
-        if (formData.email && formData.email.trim()) payload.email = formData.email.trim();
-        else payload.studentId = formData.studentId.trim();
-
-        const data = await login(payload);
-
-        // handle first-login shape returned by backend (either data.user?.isFirstLogin or data.requirePasswordChange)
-        if (data?.requirePasswordChange || data?.user?.isFirstLogin) {
-          navigate("/reset-password", { state: { message: "Please change your password", userId: data.user?.id || data?.userId, role: "student" } });
-          return;
-        }
-
-        const role = (data.user.role || data.user.type || "").toString().toLowerCase();
-        const target = role === "admin" ? "/admin" : role === "lecturer" ? "/lecturer" : "/student";
-        navigate(target, { replace: true });
-        // eslint-disable-next-line no-unused-vars
-      } catch (error) {
-        // errors are shown by store toasts
-      }
+      const role = (result.user.role || result.user.type || "").toString().toLowerCase();
+      const target = role === "admin" ? "/admin" : role === "lecturer" ? "/lecturer" : "/student";
+      navigate(target, { replace: true });
+      // eslint-disable-next-line no-unused-vars
+    } catch (error) {
+      // errors are shown by store toasts
     }
   };
 
@@ -131,7 +97,7 @@ const SignIn = () => {
           </div>
 
           {/* Sign In Form */}
-          <form onSubmit={handleSubmit} className="space-y-5">
+          <form onSubmit={handleSubmit(onSubmit)} className="space-y-5">
             {/* Student ID Field */}
             <div>
               <label htmlFor="studentId" className="block text-sm font-medium text-gray-700 mb-1.5">
@@ -140,17 +106,14 @@ const SignIn = () => {
               <input
                 type="text"
                 id="studentId"
-                name="studentId"
-                value={formData.studentId}
-                onChange={handleChange}
-                onBlur={handleBlur}
+                {...register("studentId")}
                 placeholder="e.g., UNIDEL/2023/0001"
-                className={`w-full px-4 py-3 bg-white border rounded-lg text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 transition-all ${errors.studentId && touched.studentId ? "border-red-500 focus:ring-red-200" : "border-gray-300 focus:ring-orange-200 focus:border-orange-500"}`}
+                className={`w-full px-4 py-3 bg-white border rounded-lg text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 transition-all ${errors.studentId ? "border-red-500 focus:ring-red-200" : "border-gray-300 focus:ring-orange-200 focus:border-orange-500"}`}
               />
-              {errors.studentId && touched.studentId && (
+              {errors.studentId && (
                 <div className="flex items-center gap-1 mt-1.5 text-red-600 text-sm">
                   <AlertCircle className="w-4 h-4" />
-                  <span>{errors.studentId}</span>
+                  <span>{errors.studentId.message}</span>
                 </div>
               )}
             </div>
@@ -163,17 +126,14 @@ const SignIn = () => {
               <input
                 type="email"
                 id="email"
-                name="email"
-                value={formData.email}
-                onChange={handleChange}
-                onBlur={handleBlur}
+                {...register("email")}
                 placeholder="your.email@unidel.edu.ng"
-                className={`w-full px-4 py-3 bg-white border rounded-lg text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 transition-all ${errors.email && touched.email ? "border-red-500 focus:ring-red-200" : "border-gray-300 focus:ring-orange-200 focus:border-orange-500"}`}
+                className={`w-full px-4 py-3 bg-white border rounded-lg text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 transition-all ${errors.email ? "border-red-500 focus:ring-red-200" : "border-gray-300 focus:ring-orange-200 focus:border-orange-500"}`}
               />
-              {errors.email && touched.email && (
+              {errors.email && (
                 <div className="flex items-center gap-1 mt-1.5 text-red-600 text-sm">
                   <AlertCircle className="w-4 h-4" />
-                  <span>{errors.email}</span>
+                  <span>{errors.email.message}</span>
                 </div>
               )}
             </div>
@@ -192,23 +152,20 @@ const SignIn = () => {
                 <input
                   type={showPassword ? "text" : "password"}
                   id="password"
-                  name="password"
-                  value={formData.password}
-                  onChange={handleChange}
-                  onBlur={handleBlur}
+                  {...register("password")}
                   placeholder="Enter your password"
                   className={`w-full px-4 py-3 bg-white border rounded-lg text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 transition-all pr-12 ${
-                    errors.password && touched.password ? "border-red-500 focus:ring-red-200" : "border-gray-300 focus:ring-orange-200 focus:border-orange-500"
+                    errors.password ? "border-red-500 focus:ring-red-200" : "border-gray-300 focus:ring-orange-200 focus:border-orange-500"
                   }`}
                 />
                 <button type="button" onClick={() => setShowPassword(!showPassword)} className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-700 transition-colors">
                   {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
                 </button>
               </div>
-              {errors.password && touched.password && (
+              {errors.password && (
                 <div className="flex items-center gap-1 mt-1.5 text-red-600 text-sm">
                   <AlertCircle className="w-4 h-4" />
-                  <span>{errors.password}</span>
+                  <span>{errors.password.message}</span>
                 </div>
               )}
             </div>

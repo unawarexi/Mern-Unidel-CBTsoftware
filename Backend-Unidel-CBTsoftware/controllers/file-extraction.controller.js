@@ -1,14 +1,47 @@
 import Lecturer from "../models/lecturer.model.js";
 import fs from "fs/promises";
 import { uploadToCloudinary } from "../services/cloudinary.service.js";
-import {
-  extractTextFromPDFBuffer,
-  extractTextFromDocxBuffer,
-  extractTextFromDocxPath,
-  extractQuestionsFromFile,
-} from "../core/utils/pdf-docx-export.js";
+import { extractTextFromPDFBuffer, extractTextFromDocxBuffer, extractTextFromDocxPath, extractQuestionsFromFile } from "../core/utils/pdf-docx-export.js";
 import QuestionBank from "../models/question.model.js";
 import { generateQuestionsFromText, improveQuestions, generateImageFromPrompt } from "../config/huggingface.config.js";
+
+/**
+ * Helper function to extract text based on file type
+ */
+async function extractText(file, fileType) {
+  let extractedText = "";
+
+  if (fileType === "application/pdf") {
+    if (file.buffer) {
+      extractedText = await extractTextFromPDFBuffer(file.buffer);
+    } else {
+      const dataBuffer = await fs.readFile(file.path);
+      extractedText = await extractTextFromPDFBuffer(dataBuffer);
+      await fs.unlink(file.path).catch(() => {});
+    }
+  } else if (fileType === "application/vnd.openxmlformats-officedocument.wordprocessingml.document") {
+    if (file.buffer) {
+      extractedText = await extractTextFromDocxBuffer(file.buffer);
+    } else {
+      extractedText = await extractTextFromDocxPath(file.path);
+      await fs.unlink(file.path).catch(() => {});
+    }
+  }
+
+  return extractedText;
+}
+
+/**
+ * Helper function to save document to Cloudinary
+ */
+async function saveDocumentToCloudinary(file, userId) {
+  if (!file.buffer) return null;
+
+  const folder = `projects/unidel/lecturers/${userId}/documents`;
+  const uploadResult = await uploadToCloudinary(file.buffer, file.originalname, folder);
+  await Lecturer.findByIdAndUpdate(userId, { $push: { documents: uploadResult.url } });
+  return uploadResult.url;
+}
 
 /**
  * Extract text from uploaded file (PDF or DOCX)
@@ -20,49 +53,25 @@ export const extractTextFromFile = async (req, res) => {
     }
 
     const fileType = req.file.mimetype;
-    let extractedText = "";
-    let uploadedDocUrl = null;
+    const supportedTypes = ["application/pdf", "application/vnd.openxmlformats-officedocument.wordprocessingml.document"];
 
-    // Only support PDF and DOCX for extraction
-    if (fileType === "application/pdf" || fileType === "application/vnd.openxmlformats-officedocument.wordprocessingml.document") {
-      // Save file to Cloudinary for record
-      if (req.file.buffer) {
-        const folder = `projects/unidel/lecturers/${req.user._id}/documents`;
-        const uploadResult = await uploadToCloudinary(req.file.buffer, req.file.originalname, folder);
-        uploadedDocUrl = uploadResult.url;
-        // Save to lecturer model
-        await Lecturer.findByIdAndUpdate(req.user._id, { $push: { documents: uploadedDocUrl } });
-      }
-    }
-    // Only support PDF and DOCX for extraction
-    if (fileType === "application/pdf") {
-      if (req.file.buffer) {
-        extractedText = await extractTextFromPDFBuffer(req.file.buffer);
-      } else {
-        const dataBuffer = await fs.readFile(req.file.path);
-        extractedText = await extractTextFromPDFBuffer(dataBuffer);
-        await fs.unlink(req.file.path).catch(() => {});
-      }
-      if (!extractedText || extractedText.trim().length < 20) {
-        return res.status(400).json({
-          message:
-            "Failed to extract text from PDF. This PDF may be scanned or image-based. Please upload a text-based PDF or use DOCX.",
-        });
-      }
-    } else if (fileType === "application/vnd.openxmlformats-officedocument.wordprocessingml.document") {
-      if (req.file.buffer) {
-        extractedText = await extractTextFromDocxBuffer(req.file.buffer);
-      } else {
-        extractedText = await extractTextFromDocxPath(req.file.path);
-        await fs.unlink(req.file.path).catch(() => {});
-      }
-      if (!extractedText || extractedText.trim().length < 20) {
-        return res.status(400).json({ message: "DOCX file does not contain enough text to extract." });
-      }
-    } else {
-      // Remove file if on disk
+    if (!supportedTypes.includes(fileType)) {
       if (req.file.path) await fs.unlink(req.file.path).catch(() => {});
-      return res.status(400).json({ message: "Unsupported file type for extraction. Only PDF and DOCX are supported." });
+      return res.status(400).json({
+        message: "Unsupported file type for extraction. Only PDF and DOCX are supported.",
+      });
+    }
+
+    // Save to Cloudinary
+    const uploadedDocUrl = await saveDocumentToCloudinary(req.file, req.user._id);
+
+    // Extract text
+    const extractedText = await extractText(req.file, fileType);
+
+    if (!extractedText || extractedText.trim().length < 20) {
+      return res.status(400).json({
+        message: fileType === "application/pdf" ? "Failed to extract text from PDF. This PDF may be scanned or image-based. Please upload a text-based PDF or use DOCX." : "DOCX file does not contain enough text to extract.",
+      });
     }
 
     res.status(200).json({
@@ -72,17 +81,15 @@ export const extractTextFromFile = async (req, res) => {
       uploadedDocUrl,
     });
   } catch (error) {
-    console.error("File extraction error:", error, req.file);
-    if (req.file && req.file.path) await fs.unlink(req.file.path).catch(() => {});
+    console.error("File extraction error:", error);
+    if (req.file?.path) await fs.unlink(req.file.path).catch(() => {});
     res.status(500).json({ message: "Failed to extract text from file", error: error.message });
   }
 };
 
-
 /**
  * Generate questions from uploaded file using AI
  */
-
 export const generateQuestionsFromFile = async (req, res) => {
   try {
     if (!req.file) {
@@ -91,53 +98,37 @@ export const generateQuestionsFromFile = async (req, res) => {
 
     const { numberOfQuestions = 10, difficulty = "medium" } = req.body;
     const fileType = req.file.mimetype;
-    let extractedText = "";
+    const supportedTypes = ["application/pdf", "application/vnd.openxmlformats-officedocument.wordprocessingml.document"];
 
-    // Only support PDF and DOCX for question generation
-    if (fileType === "application/pdf") {
-      if (req.file.buffer) {
-        extractedText = await extractTextFromPDFBuffer(req.file.buffer);
-      } else {
-        const dataBuffer = await fs.readFile(req.file.path);
-        extractedText = await extractTextFromPDFBuffer(dataBuffer);
-        await fs.unlink(req.file.path).catch(() => {});
-      }
-      if (!extractedText || extractedText.trim().length < 100) {
-        return res.status(400).json({
-          message:
-            "Failed to extract enough text from PDF for question generation. This PDF may be scanned or image-based. Please upload a text-based PDF or use DOCX.",
-        });
-      }
-    } else if (fileType === "application/vnd.openxmlformats-officedocument.wordprocessingml.document") {
-      if (req.file.buffer) {
-        extractedText = await extractTextFromDocxBuffer(req.file.buffer);
-      } else {
-        extractedText = await extractTextFromDocxPath(req.file.path);
-        await fs.unlink(req.file.path).catch(() => {});
-      }
-      if (!extractedText || extractedText.trim().length < 100) {
-        return res.status(400).json({ message: "DOCX file does not contain enough text for question generation." });
-      }
-    } else {
+    if (!supportedTypes.includes(fileType)) {
       if (req.file.path) await fs.unlink(req.file.path).catch(() => {});
-      return res.status(400).json({ message: "Unsupported file type for question generation. Only PDF and DOCX are supported." });
+      return res.status(400).json({
+        message: "Unsupported file type for question generation. Only PDF and DOCX are supported.",
+      });
+    }
+
+    // Extract text
+    const extractedText = await extractText(req.file, fileType);
+
+    if (!extractedText || extractedText.trim().length < 100) {
+      return res.status(400).json({
+        message: fileType === "application/pdf" ? "Failed to extract enough text from PDF for question generation. This PDF may be scanned or image-based. Please upload a text-based PDF or use DOCX." : "DOCX file does not contain enough text for question generation.",
+      });
     }
 
     const questions = await generateQuestionsFromText(extractedText, parseInt(numberOfQuestions), difficulty);
+
     res.status(200).json({
       message: "Questions generated successfully",
       questions,
       sourceFile: req.file.originalname,
     });
   } catch (error) {
-    console.error("Question generation error:", error, req.file);
-    if (req.file && req.file.path) {
-      await fs.unlink(req.file.path).catch(() => {});
-    }
+    console.error("Question generation error:", error);
+    if (req.file?.path) await fs.unlink(req.file.path).catch(() => {});
     res.status(500).json({ message: "Failed to generate questions", error: error.message });
   }
 };
-
 
 /**
  * Bulk upload questions from file (CSV, XLSX, DOCX, PDF)
@@ -150,11 +141,25 @@ export const bulkUploadQuestions = async (req, res) => {
     if (!req.file) {
       return res.status(400).json({ message: "No file uploaded" });
     }
+
     let questions = [];
+
     try {
+      // Use the unified extraction function that handles all file types
       questions = await extractQuestionsFromFile(req.file);
     } catch (err) {
+      // Clean up file if on disk
+      if (req.file.path) await fs.unlink(req.file.path).catch(() => {});
       return res.status(400).json({ message: err.message });
+    }
+
+    // Clean up file if on disk
+    if (req.file.path) await fs.unlink(req.file.path).catch(() => {});
+
+    if (questions.length === 0) {
+      return res.status(400).json({
+        message: "No valid questions found in the file. Please ensure questions are formatted correctly:\n\n" + "1. Question text\n" + "A. Option 1\n" + "B. Option 2\n" + "C. Option 3\n" + "D. Option 4\n" + "Answer: A (or full option text)",
+      });
     }
 
     res.status(200).json({
@@ -162,6 +167,8 @@ export const bulkUploadQuestions = async (req, res) => {
       questions,
     });
   } catch (error) {
+    console.error("Bulk upload error:", error);
+    if (req.file?.path) await fs.unlink(req.file.path).catch(() => {});
     res.status(500).json({ message: "Failed to parse questions from file", error: error.message });
   }
 };
@@ -210,8 +217,11 @@ export const improveQuestionsWithAI = async (req, res) => {
 export const generateImageForQuestion = async (req, res) => {
   try {
     const { question, questionBankId, questionId } = req.body;
+
     if (!question || !questionBankId || !questionId) {
-      return res.status(400).json({ message: "question, questionBankId, and questionId are required" });
+      return res.status(400).json({
+        message: "question, questionBankId, and questionId are required",
+      });
     }
 
     // Generate image from HuggingFace
@@ -226,10 +236,12 @@ export const generateImageForQuestion = async (req, res) => {
     if (!questionBank) {
       return res.status(404).json({ message: "Question bank not found" });
     }
-    const qIndex = questionBank.questions.findIndex(q => q._id.toString() === questionId);
+
+    const qIndex = questionBank.questions.findIndex((q) => q._id.toString() === questionId);
     if (qIndex === -1) {
       return res.status(404).json({ message: "Question not found in bank" });
     }
+
     questionBank.questions[qIndex].imageUrl = uploadResult.url;
     await questionBank.save();
 

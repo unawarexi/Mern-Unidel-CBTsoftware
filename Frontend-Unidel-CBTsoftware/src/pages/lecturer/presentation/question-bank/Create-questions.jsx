@@ -9,6 +9,16 @@ import EditQuestions from "./Edit-questions.jsx";
 import { useNavigate, useLocation } from "react-router-dom";
 import useExamStore from "../../../../store/exam-store";
 import BulkUpload from "./Bulk-upload.jsx";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import * as z from "zod";
+
+// Zod schema for question bank meta
+const questionBankSchema = z.object({
+  title: z.string().min(3, "Title is required"),
+  description: z.string().optional(),
+  courseId: z.string().min(1, "Course is required"),
+});
 
 const CreateQuestions = () => {
   const [activeTab, setActiveTab] = useState("create");
@@ -38,7 +48,6 @@ const CreateQuestions = () => {
     topic: "",
   });
 
-  const [errors, setErrors] = useState({});
   const [successMessage, setSuccessMessage] = useState("");
 
   const { createQuestionBank, isLoading: isCreating } = useCreateQuestionBankAction();
@@ -46,6 +55,24 @@ const CreateQuestions = () => {
   const { generateQuestions, isLoading: isGenerating } = useGenerateQuestionsAction();
   const { improveQuestions, isLoading: isImproving } = useImproveQuestionsAction();
   const { showToast } = useExamStore.getState();
+
+  // React Hook Form for meta fields
+  const {
+    register,
+    handleSubmit,
+    setValue,
+    getValues,
+    formState: { errors, isValid },
+    trigger,
+  } = useForm({
+    resolver: zodResolver(questionBankSchema),
+    mode: "onChange",
+    defaultValues: {
+      title: "",
+      description: "",
+      courseId: "",
+    },
+  });
 
   // Pre-fill questions if navigated from import/export
   useEffect(() => {
@@ -58,7 +85,15 @@ const CreateQuestions = () => {
     }
   }, [location.state]);
 
-  // Validation
+  // Sync formData meta with react-hook-form
+  useEffect(() => {
+    setValue("title", formData.title || "");
+    setValue("description", formData.description || "");
+    setValue("courseId", formData.courseId || "");
+    // eslint-disable-next-line
+  }, [formData.title, formData.description, formData.courseId]);
+
+  // Validation for manual question
   const validateQuestion = () => {
     const newErrors = {};
 
@@ -77,7 +112,7 @@ const CreateQuestions = () => {
       newErrors.correctAnswer = "Correct answer must be one of the options";
     }
 
-    setErrors(newErrors);
+    errors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
 
@@ -114,28 +149,18 @@ const CreateQuestions = () => {
     showToast("Question removed.", "success");
   };
 
-  const handleSaveQuestionBank = async () => {
-    if (!formData.title.trim()) {
-      setErrors({ title: "Title is required" });
-      showToast("Title is required", "error");
-      return;
-    }
-
-    if (!formData.courseId) {
-      setErrors({ courseId: "Course is required" });
-      showToast("Course is required", "error");
-      return;
-    }
-
-    if (formData.questions.length === 0) {
-      setErrors({ questions: "At least one question is required" });
+  // Save handler for both manual and bulk-uploaded questions
+  const onSaveQuestionBank = async (data) => {
+    // Use questions from formData (manual or bulk-uploaded)
+    const questions = formData.questions;
+    if (!questions.length) {
       showToast("At least one question is required", "error");
       return;
     }
-
     try {
       await createQuestionBank({
-        ...formData,
+        ...data,
+        questions,
         sourceType: "manual",
       });
 
@@ -146,6 +171,9 @@ const CreateQuestions = () => {
         courseId: "",
         questions: [],
       });
+      setValue("title", "");
+      setValue("description", "");
+      setValue("courseId", "");
 
       refetch();
       setActiveTab("view");
@@ -172,6 +200,9 @@ const CreateQuestions = () => {
     }));
   };
 
+  // Pass meta fields to BulkUpload so it can decide whether to show modal
+  const metaFieldsFilled = !!(getValues("title") && getValues("courseId"));
+
   // --- UI ---
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 p-6">
@@ -183,7 +214,15 @@ const CreateQuestions = () => {
         </motion.div>
 
         {/* Bulk Upload Feature */}
-        <BulkUpload onQuestionsParsed={handleBulkUploadParsed} />
+        <BulkUpload
+          onQuestionsParsed={handleBulkUploadParsed}
+          metaFieldsFilled={metaFieldsFilled}
+          metaValues={{
+            title: getValues("title"),
+            description: getValues("description"),
+            courseId: getValues("courseId"),
+          }}
+        />
 
         {/* Tabs */}
         <div className="flex gap-4 mb-6">
@@ -220,7 +259,7 @@ const CreateQuestions = () => {
 
         {/* Create Tab Content */}
         {activeTab === "create" && (
-          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="space-y-6">
+          <motion.form initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="space-y-6" onSubmit={handleSubmit(onSaveQuestionBank)}>
             {/* Question Bank Details */}
             <div className="bg-white rounded-xl shadow-lg p-6 border border-slate-200">
               <h2 className="text-2xl font-bold text-slate-800 mb-6 flex items-center gap-2">
@@ -233,15 +272,19 @@ const CreateQuestions = () => {
                   <label className="block text-sm font-semibold text-slate-700 mb-2">Title *</label>
                   <input
                     type="text"
-                    value={formData.title}
-                    onChange={(e) => setFormData((prev) => ({ ...prev, title: e.target.value }))}
+                    {...register("title")}
+                    value={getValues("title")}
+                    onChange={e => {
+                      setValue("title", e.target.value, { shouldValidate: true });
+                      setFormData((prev) => ({ ...prev, title: e.target.value }));
+                    }}
                     className="w-full px-4 py-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent transition-all"
                     placeholder="e.g., Database Systems Mid-term Questions"
                   />
                   {errors.title && (
                     <p className="text-red-500 text-sm mt-1 flex items-center gap-1">
                       <AlertCircle className="w-4 h-4" />
-                      {errors.title}
+                      {errors.title.message}
                     </p>
                   )}
                 </div>
@@ -255,7 +298,17 @@ const CreateQuestions = () => {
                     ) : lecturerCourses.length > 0 ? (
                       lecturerCourses.map((course) => (
                         <label key={course._id} className="flex items-center gap-2 p-2 hover:bg-white rounded cursor-pointer">
-                          <input type="radio" name="courseId" value={course._id} checked={formData.courseId === course._id} onChange={() => setFormData((prev) => ({ ...prev, courseId: course._id }))} className="rounded border-slate-300 text-blue-900 focus:ring-blue-900" />
+                          <input
+                            type="radio"
+                            name="courseId"
+                            value={course._id}
+                            checked={getValues("courseId") === course._id}
+                            onChange={() => {
+                              setValue("courseId", course._id, { shouldValidate: true });
+                              setFormData((prev) => ({ ...prev, courseId: course._id }));
+                            }}
+                            className="rounded border-slate-300 text-blue-900 focus:ring-blue-900"
+                          />
                           <span className="text-sm text-slate-700">
                             <BookOpen className="inline-block w-4 h-4 mr-1 text-blue-900" />
                             {course.courseCode} - {course.courseTitle}
@@ -269,7 +322,7 @@ const CreateQuestions = () => {
                   {errors.courseId && (
                     <p className="text-red-500 text-sm mt-1 flex items-center gap-1">
                       <AlertCircle className="w-4 h-4" />
-                      {errors.courseId}
+                      {errors.courseId.message}
                     </p>
                   )}
                 </div>
@@ -277,12 +330,22 @@ const CreateQuestions = () => {
                 <div className="md:col-span-2">
                   <label className="block text-sm font-semibold text-slate-700 mb-2">Description</label>
                   <textarea
-                    value={formData.description}
-                    onChange={(e) => setFormData((prev) => ({ ...prev, description: e.target.value }))}
+                    {...register("description")}
+                    value={getValues("description")}
+                    onChange={e => {
+                      setValue("description", e.target.value, { shouldValidate: true });
+                      setFormData((prev) => ({ ...prev, description: e.target.value }));
+                    }}
                     rows={3}
                     className="w-full px-4 py-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent transition-all"
                     placeholder="Brief description of this question bank..."
                   />
+                  {errors.description && (
+                    <p className="text-red-500 text-sm mt-1 flex items-center gap-1">
+                      <AlertCircle className="w-4 h-4" />
+                      {errors.description.message}
+                    </p>
+                  )}
                 </div>
               </div>
             </div>
@@ -436,7 +499,7 @@ const CreateQuestions = () => {
                 <motion.button
                   whileHover={{ scale: 1.02 }}
                   whileTap={{ scale: 0.98 }}
-                  onClick={handleSaveQuestionBank}
+                  type="submit"
                   disabled={isCreating}
                   className="w-full mt-6 bg-blue-900 text-white py-3 rounded-lg font-semibold hover:bg-blue-800 transition-all flex items-center justify-center gap-2 disabled:opacity-50"
                 >
@@ -445,7 +508,7 @@ const CreateQuestions = () => {
                 </motion.button>
               </div>
             )}
-          </motion.div>
+          </motion.form>
         )}
 
         {/* View Tab Content */}

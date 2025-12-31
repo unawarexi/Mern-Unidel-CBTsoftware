@@ -1,10 +1,20 @@
-import React, { useState, useEffect } from "react";
+/* eslint-disable no-unused-vars */
+import React, { useEffect, useState } from "react";
 import { Eye, EyeOff, BookOpen, AlertCircle } from "lucide-react";
 import { Images } from "../../constants/image-strings";
 import { Link, useNavigate } from "react-router-dom";
 import { ButtonSpinner } from "../../components/Spinners";
 import { useAuthLogin } from "../../store/auth-store";
 import useAuthStore from "../../store/auth-store";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import * as z from "zod";
+
+const lecturerSignInSchema = z.object({
+  employeeId: z.string().min(3, "Employee ID must be at least 3 characters"),
+  email: z.string().email("Invalid email address"),
+  password: z.string().min(8, "Password must be at least 8 characters"),
+});
 
 const LecturerSignIn = () => {
   const navigate = useNavigate();
@@ -20,71 +30,36 @@ const LecturerSignIn = () => {
   }, [isAuthenticated, user, navigate]);
 
   const [showPassword, setShowPassword] = useState(false);
-  const [formData, setFormData] = useState({
-    employeeId: "",
-    email: "",
-    password: "",
+
+  const {
+    register,
+    handleSubmit,
+    formState: { errors },
+  } = useForm({
+    resolver: zodResolver(lecturerSignInSchema),
+    mode: "onBlur",
+    defaultValues: {
+      employeeId: "",
+      email: "",
+      password: "",
+    },
   });
-  const [errors, setErrors] = useState({});
-  const [touched, setTouched] = useState({});
 
-  const validateField = (name, value) => {
-    switch (name) {
-      case "employeeId":
-        if (!value.trim()) return "Employee ID is required";
-        if (value.length < 3) return "Employee ID must be at least 3 characters";
-        return "";
-      case "email":
-        if (!value.trim()) return "Email address is required";
-        if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value)) return "Invalid email address";
-        return "";
-      case "password":
-        if (!value) return "Password is required";
-        if (value.length < 8) return "Password must be at least 8 characters";
-        return "";
-      default:
-        return "";
-    }
-  };
+  const onSubmit = async (data) => {
+    try {
+      const payload = { ...data, role: "lecturer" };
+      const result = await login(payload);
 
-  const handleChange = (e) => {
-    const { name, value } = e.target;
-    setFormData((p) => ({ ...p, [name]: value }));
-    if (touched[name]) setErrors((p) => ({ ...p, [name]: validateField(name, value) }));
-  };
-
-  const handleBlur = (e) => {
-    const { name, value } = e.target;
-    setTouched((p) => ({ ...p, [name]: true }));
-    setErrors((p) => ({ ...p, [name]: validateField(name, value) }));
-  };
-
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    const newErrors = {};
-    Object.keys(formData).forEach((k) => {
-      const err = validateField(k, formData[k]);
-      if (err) newErrors[k] = err;
-    });
-    setTouched(Object.fromEntries(Object.keys(formData).map((k) => [k, true])));
-    setErrors(newErrors);
-    if (Object.keys(newErrors).length === 0) {
-      try {
-        const payload = { ...formData, role: "lecturer" };
-        const data = await login(payload);
-
-        if (data?.requirePasswordChange || data?.user?.isFirstLogin) {
-          navigate("/reset-password", { state: { message: "Please change your password", userId: data.user?.id || data?.userId, role: "lecturer" } });
-          return;
-        }
-
-        const role = (data.user.role || data.user.type || "").toString().toLowerCase();
-        const target = role === "admin" ? "/admin" : role === "lecturer" ? "/lecturer" : "/student";
-        navigate(target, { replace: true });
-      // eslint-disable-next-line no-unused-vars
-      } catch (error) {
-        // handled by store toast
+      if (result?.requirePasswordChange || result?.user?.isFirstLogin) {
+        navigate("/reset-password", { state: { message: "Please change your password", userId: result.user?.id || result?.userId, role: "lecturer" } });
+        return;
       }
+
+      const role = (result.user.role || result.user.type || "").toString().toLowerCase();
+      const target = role === "admin" ? "/admin" : role === "lecturer" ? "/lecturer" : "/student";
+      navigate(target, { replace: true });
+    } catch (error) {
+      // handled by store toast
     }
   };
 
@@ -106,36 +81,28 @@ const LecturerSignIn = () => {
             <p className="text-gray-600">Access your lecturer dashboard to manage tests and review results.</p>
           </div>
 
-          <form onSubmit={handleSubmit} className="space-y-5">
+          <form onSubmit={handleSubmit(onSubmit)} className="space-y-5">
             <div>
               <label htmlFor="employeeId" className="block text-sm font-medium text-gray-700 mb-1.5">Employee ID</label>
               <input
                 id="employeeId"
-                name="employeeId"
-                value={formData.employeeId}
-                onChange={handleChange}
-                onBlur={handleBlur}
+                {...register("employeeId")}
                 placeholder="EMP12345"
-                className={`w-full px-4 py-3 bg-white border rounded-lg text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 transition-all ${errors.employeeId && touched.employeeId ? "border-red-500 focus:ring-red-200" : "border-gray-300 focus:ring-orange-200 focus:border-orange-500"}`}
+                className={`w-full px-4 py-3 bg-white border rounded-lg text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 transition-all ${errors.employeeId ? "border-red-500 focus:ring-red-200" : "border-gray-300 focus:ring-orange-200 focus:border-orange-500"}`}
               />
-              {errors.employeeId && touched.employeeId && <div className="flex items-center gap-1 mt-1.5 text-red-600 text-sm"><AlertCircle className="w-4 h-4" /><span>{errors.employeeId}</span></div>}
+              {errors.employeeId && <div className="flex items-center gap-1 mt-1.5 text-red-600 text-sm"><AlertCircle className="w-4 h-4" /><span>{errors.employeeId.message}</span></div>}
             </div>
-
             <div>
               <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-1.5">Email Address</label>
               <input
                 id="email"
-                name="email"
                 type="email"
-                value={formData.email}
-                onChange={handleChange}
-                onBlur={handleBlur}
+                {...register("email")}
                 placeholder="you@unidel.edu.ng"
-                className={`w-full px-4 py-3 bg-white border rounded-lg text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 transition-all ${errors.email && touched.email ? "border-red-500 focus:ring-red-200" : "border-gray-300 focus:ring-orange-200 focus:border-orange-500"}`}
+                className={`w-full px-4 py-3 bg-white border rounded-lg text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 transition-all ${errors.email ? "border-red-500 focus:ring-red-200" : "border-gray-300 focus:ring-orange-200 focus:border-orange-500"}`}
               />
-              {errors.email && touched.email && <div className="flex items-center gap-1 mt-1.5 text-red-600 text-sm"><AlertCircle className="w-4 h-4" /><span>{errors.email}</span></div>}
+              {errors.email && <div className="flex items-center gap-1 mt-1.5 text-red-600 text-sm"><AlertCircle className="w-4 h-4" /><span>{errors.email.message}</span></div>}
             </div>
-
             <div>
               <div className="flex items-center justify-between mb-1.5">
                 <label htmlFor="password" className="block text-sm font-medium text-gray-700">Password</label>
@@ -144,21 +111,17 @@ const LecturerSignIn = () => {
               <div className="relative">
                 <input
                   id="password"
-                  name="password"
                   type={showPassword ? "text" : "password"}
-                  value={formData.password}
-                  onChange={handleChange}
-                  onBlur={handleBlur}
+                  {...register("password")}
                   placeholder="Enter your password"
-                  className={`w-full px-4 py-3 bg-white border rounded-lg text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 transition-all pr-12 ${errors.password && touched.password ? "border-red-500 focus:ring-red-200" : "border-gray-300 focus:ring-orange-200 focus:border-orange-500"}`}
+                  className={`w-full px-4 py-3 bg-white border rounded-lg text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 transition-all pr-12 ${errors.password ? "border-red-500 focus:ring-red-200" : "border-gray-300 focus:ring-orange-200 focus:border-orange-500"}`}
                 />
                 <button type="button" onClick={() => setShowPassword(!showPassword)} className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-700 transition-colors">
                   {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
                 </button>
               </div>
-              {errors.password && touched.password && <div className="flex items-center gap-1 mt-1.5 text-red-600 text-sm"><AlertCircle className="w-4 h-4" /><span>{errors.password}</span></div>}
+              {errors.password && <div className="flex items-center gap-1 mt-1.5 text-red-600 text-sm"><AlertCircle className="w-4 h-4" /><span>{errors.password.message}</span></div>}
             </div>
-
             <button type="submit" disabled={isLoading} className={`w-full bg-orange-600 text-white py-3 px-4 rounded-lg font-medium hover:bg-orange-700 ${isLoading ? "opacity-80 pointer-events-none" : ""}`}>
               {isLoading ? <span className="flex items-center gap-2"><ButtonSpinner size={16} /> Sign In</span> : "Sign In"}
             </button>

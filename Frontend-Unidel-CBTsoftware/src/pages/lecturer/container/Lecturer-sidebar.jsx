@@ -20,64 +20,74 @@ const Sidebar = () => {
       icon: LayoutDashboard,
       href: "/lecturer/dashboard",
       subItems: [
-        { title: "Assigned Courses", href: "/lecturer/dashboard/courses" },
+        { title: "Overview", href: "/lecturer/dashboard/overview" },
         { title: "Active Exams", href: "/lecturer/dashboard/exams" },
-        { title: "Submission Count", href: "/lecturer/dashboard/submissions" },
+        { title: "Recent Results", href: "/lecturer/dashboard/results" },
+        { title: "System Notices", href: "/lecturer/dashboard/notices" },
       ],
     },
     {
       id: "courses",
-      title: "My Courses",
+      title: "Courses & Materials",
       icon: BookOpen,
       href: "/lecturer/courses",
       subItems: [
         { title: "Assigned Courses", href: "/lecturer/courses/assigned" },
         { title: "Department & Level", href: "/lecturer/courses/department" },
+        { title: "Course Materials", href: "/lecturer/courses/materials" },
+        { title: "Upload Materials", href: "/lecturer/courses/upload" },
+        { title: "Student Enrollments", href: "/lecturer/courses/enrollments" },
+        { title: "Lecturer Info", href: "/lecturer/courses/lecturers" },
       ],
     },
     {
       id: "question-bank",
       title: "Question Bank",
       icon: Database,
-      href: "/lecturer/questions/manage", // Default to manage page
+      href: "/lecturer/questions/manage",
       subItems: [
         { title: "Create/Edit Questions", href: "/lecturer/questions/manage" },
-        // Remove static Question Types route, as it is dynamic and accessed via manage
-        // { title: "Question Types", href: "/lecturer/questions/types" }, // REMOVE THIS LINE
         { title: "Import/Export", href: "/lecturer/questions/import-export" },
-        { title: "Uploaded Docs", href: "/lecturer/questions/docs" }, // <-- Add this line
+        { title: "Uploaded Docs", href: "/lecturer/questions/docs" },
+        // You may add new routes here if needed, but do not change existing ones
       ],
     },
     {
       id: "exams",
-      title: "Exams / Assessments",
+      title: "Exams & Assessments",
       icon: FileText,
       href: "/lecturer/exams",
       subItems: [
         { title: "Create Exam", href: "/lecturer/exams/create" },
         { title: "Schedule Exam", href: "/lecturer/exams/schedule" },
-        { title: "Activate/Deactivate", href: "/lecturer/exams/manage" },
+        { title: "Manage Exams", href: "/lecturer/exams/manage" },
+        { title: "Exam Results", href: "/lecturer/exams/results" },
+        { title: "Exam Analytics", href: "/lecturer/exams/analytics" },
+        { title: "Exam Attachments", href: "/lecturer/exams/attachments" },
       ],
     },
     {
       id: "submissions",
-      title: "Submissions",
+      title: "Submissions & Grading",
       icon: Send,
       href: "/lecturer/submissions",
       subItems: [
         { title: "Student Attempts", href: "/lecturer/submissions/attempts" },
         { title: "Auto-graded Scores", href: "/lecturer/submissions/auto-graded" },
         { title: "Manual Grading", href: "/lecturer/submissions/manual" },
+        { title: "Submission History", href: "/lecturer/submissions/history" },
       ],
     },
     {
       id: "reports",
-      title: "Reports",
+      title: "Reports & Analytics",
       icon: BarChart3,
       href: "/lecturer/reports",
       subItems: [
         { title: "Course Performance", href: "/lecturer/reports/performance" },
         { title: "Pass/Fail Distribution", href: "/lecturer/reports/distribution" },
+        { title: "Exam Statistics", href: "/lecturer/reports/statistics" },
+        { title: "Export Reports", href: "/lecturer/reports/export" },
       ],
     },
     {
@@ -89,6 +99,19 @@ const Sidebar = () => {
       subItems: [
         { title: "Real-time Monitoring", href: "/lecturer/monitoring/live" },
         { title: "Integrity Logs", href: "/lecturer/monitoring/integrity" },
+        // You may add new routes here if needed, but do not change existing ones
+      ],
+    },
+    {
+      id: "support",
+      title: "Support & Integrity",
+      icon: ShieldCheck,
+      href: "/lecturer/support",
+      subItems: [
+        { title: "Exam Integrity Policy", href: "/lecturer/support/integrity" },
+        { title: "Help & Support", href: "/lecturer/support/help" },
+        { title: "Announcements", href: "/lecturer/support/announcements" },
+        { title: "System Messages", href: "/lecturer/support/system" },
       ],
     },
   ];
