@@ -75,7 +75,11 @@ export const getDepartmentById = async (req, res) => {
  */
 export const getDepartmentsByEntity = async (req, res) => {
   try {
-    const { studentId, lecturerId, courseId } = req.query;
+    let { studentId, lecturerId, courseId } = req.query;
+    // If lecturerId is "me", use req.user._id
+    if (lecturerId === "me" && req.user && req.user.role === "lecturer") {
+      lecturerId = req.user._id;
+    }
     let filter = {};
     if (studentId) filter.students = studentId;
     if (lecturerId) filter.lecturers = lecturerId;

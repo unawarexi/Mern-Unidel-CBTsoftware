@@ -793,6 +793,43 @@ export const getLecturerQuestionBanks = async (req, res) => {
   }
 };
 
+// ========== NEW: Get all students for the logged-in lecturer ==========
+export const getLecturerStudents = async (req, res) => {
+  try {
+    if (req.user.role !== "lecturer") {
+      return res.status(403).json({ success: false, message: "Forbidden" });
+    }
+    const lecturer = await Lecturer.findById(req.user.userId).populate("courses");
+    if (!lecturer) {
+      return res.status(404).json({ success: false, message: "Lecturer not found" });
+    }
+    // Get all students from all courses assigned to this lecturer
+    const courseIds = lecturer.courses.map((c) => c._id);
+    // Find all students enrolled in these courses
+    const students = await Student.find({ courses: { $in: courseIds } })
+      .select("-password -resetPasswordToken -resetPasswordExpires")
+      .lean();
+
+    // Optionally, add course info for each student (list of courses they share with this lecturer)
+    const courseMap = {};
+    lecturer.courses.forEach((c) => {
+      courseMap[c._id.toString()] = { courseTitle: c.courseTitle, courseCode: c.courseCode };
+    });
+    students.forEach((student) => {
+      // Find which courses this student shares with this lecturer
+      const sharedCourses = (student.courses || [])
+        .map((cid) => cid.toString())
+        .filter((cid) => courseMap[cid])
+        .map((cid) => courseMap[cid]);
+      student.coursesInfo = sharedCourses;
+    });
+
+    res.status(200).json({ success: true, data: students });
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+};
+
 // ========== UTILITY ENDPOINTS ==========
 
 // @desc    Get user statistics

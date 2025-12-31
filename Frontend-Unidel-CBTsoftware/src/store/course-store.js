@@ -223,10 +223,11 @@ export const useUploadCourseMaterialAction = () => {
   const { showToast, showLoader, hideLoader } = useCourseStore();
   const uploadMaterialMutation = useUploadCourseMaterial();
 
-  const uploadMaterial = async ({ courseId, file, description }) => {
+  const uploadMaterial = async ({ courseId, file, description, type }) => {
     showLoader();
     try {
-      const data = await uploadMaterialMutation.mutateAsync({ courseId, file, description });
+      // Pass type (category) to backend
+      const data = await uploadMaterialMutation.mutateAsync({ courseId, file, description, type });
       showToast("Course material uploaded", "success");
       return data;
     } catch (error) {

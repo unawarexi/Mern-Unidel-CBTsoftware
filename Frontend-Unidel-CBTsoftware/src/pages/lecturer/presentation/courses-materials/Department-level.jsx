@@ -1,58 +1,101 @@
+/* eslint-disable no-unused-vars */
 import React from "react";
 import { BookOpen, Users, User } from "lucide-react";
+import { useGetDepartmentsByEntityAction } from "../../../../store/department-store";
+import { useGetLecturerCoursesAction } from "../../../../store/user-store";
 
-const departmentCourses = [
-  {
-    _id: "c1",
-    courseCode: "CSC101",
-    courseTitle: "Intro to Computer Science",
-    students: 40,
-    lecturers: ["Dr. Alice", "Mr. Bob"],
-  },
-  {
-    _id: "c2",
-    courseCode: "CSC201",
-    courseTitle: "Data Structures",
-    students: 35,
-    lecturers: ["Dr. Alice"],
-  },
-  // ...more dummy data
-];
+const DepartmentLevel = () => {
+  const { courses = [] } = useGetLecturerCoursesAction();
+  const { departments = [], isLoading } = useGetDepartmentsByEntityAction({ lecturerId: "me" });
+  const department = departments[0];
 
-const DepartmentLevel = () => (
-  <div className="w-full min-h-screen bg-white p-4 md:p-8">
-    <div className="mb-6">
-      <h2 className="text-2xl md:text-3xl font-bold text-slate-900 mb-1 flex items-center gap-2">
-        <BookOpen className="w-7 h-7 text-blue-900" />
-        Department Overview
-      </h2>
-      <p className="text-slate-600 text-sm md:text-base">
-        Overview of courses, students, and lecturers in your department.
-      </p>
-    </div>
-    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-      {departmentCourses.map((course) => (
-        <div key={course._id} className="bg-blue-50 rounded-xl p-5 border border-blue-100 shadow-sm">
+  const deptCourses = courses;
+  const deptLecturers = department?.lecturers || [];
+  const deptStudents = department?.students || [];
+
+  return (
+    <div className="w-full min-h-screen bg-slate-50 p-6">
+      <div className="max-w-7xl mx-auto">
+        <div className="mb-8">
           <div className="flex items-center gap-3 mb-2">
-            <BookOpen className="w-6 h-6 text-blue-700" />
-            <span className="font-bold text-blue-900 text-lg">{course.courseCode}</span>
-            <span className="text-slate-700">{course.courseTitle}</span>
-          </div>
-          <div className="flex items-center gap-6 mt-2">
-            <div className="flex items-center gap-2 text-green-700 font-semibold">
-              <Users className="w-5 h-5" /> {course.students} Students
+            <div className="p-2 bg-slate-900 rounded-lg">
+              <BookOpen className="w-6 h-6 text-white" />
             </div>
-            <div className="flex items-center gap-2 text-purple-700 font-semibold">
-              <User className="w-5 h-5" /> {course.lecturers.length} Lecturer{course.lecturers.length > 1 ? "s" : ""}
-            </div>
+            <h2 className="text-3xl font-bold text-slate-900">Department Overview</h2>
           </div>
-          <div className="mt-2 text-xs text-slate-600">
-            Lecturers: {course.lecturers.join(", ")}
-          </div>
+          <p className="text-slate-600 ml-14">Overview of your assigned department's courses, students, and lecturers.</p>
         </div>
-      ))}
+
+        {department && (
+          <div className="bg-white rounded-xl shadow-sm border border-slate-200 p-6 mb-8">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <span className="text-sm font-semibold text-slate-500 uppercase tracking-wider">Department</span>
+                <p className="text-lg font-bold text-slate-900 mt-1">{department.departmentName}</p>
+              </div>
+              <div>
+                <span className="text-sm font-semibold text-slate-500 uppercase tracking-wider">Faculty</span>
+                <p className="text-lg font-bold text-slate-900 mt-1">{department.faculty}</p>
+              </div>
+              <div>
+                <span className="text-sm font-semibold text-slate-500 uppercase tracking-wider">Department Code</span>
+                <p className="text-lg font-bold text-orange-600 mt-1">{department.departmentCode}</p>
+              </div>
+              <div>
+                <span className="text-sm font-semibold text-slate-500 uppercase tracking-wider">Description</span>
+                <p className="text-slate-700 mt-1">{department.description}</p>
+              </div>
+            </div>
+          </div>
+        )}
+
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          {deptCourses.map((course) => (
+            <div key={course._id} className="bg-white rounded-xl shadow-sm border border-slate-200 p-6 hover:shadow-md transition-shadow">
+              <div className="flex items-start justify-between mb-4">
+                <div className="flex items-center gap-3">
+                  <div className="p-2 bg-orange-100 rounded-lg">
+                    <BookOpen className="w-5 h-5 text-orange-600" />
+                  </div>
+                  <div>
+                    <span className="font-bold text-orange-600 text-lg block">{course.courseCode}</span>
+                    <span className="text-slate-900 font-medium">{course.courseTitle}</span>
+                  </div>
+                </div>
+              </div>
+
+              <div className="flex items-center gap-6 pt-4 border-t border-slate-100">
+                <div className="flex items-center gap-2">
+                  <div className="p-1.5 bg-slate-100 rounded">
+                    <Users className="w-4 h-4 text-slate-700" />
+                  </div>
+                  <div>
+                    <span className="text-2xl font-bold text-slate-900">{Array.isArray(course.students) ? course.students.length : 0}</span>
+                    <span className="text-sm text-slate-500 ml-1">Students</span>
+                  </div>
+                </div>
+
+                <div className="flex items-center gap-2">
+                  <div className="p-1.5 bg-slate-100 rounded">
+                    <User className="w-4 h-4 text-slate-700" />
+                  </div>
+                  <div>
+                    <span className="text-2xl font-bold text-slate-900">{Array.isArray(course.lecturers) ? course.lecturers.length : 0}</span>
+                    <span className="text-sm text-slate-500 ml-1">Lecturer{Array.isArray(course.lecturers) && course.lecturers.length > 1 ? "s" : ""}</span>
+                  </div>
+                </div>
+              </div>
+
+              <div className="mt-4 pt-4 border-t border-slate-100">
+                <span className="text-xs font-semibold text-slate-500 uppercase tracking-wider">Lecturers</span>
+                <p className="text-sm text-slate-700 mt-1">{Array.isArray(course.lecturers) ? course.lecturers.map((l) => l.fullname || l.email || l).join(", ") : "None"}</p>
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
     </div>
-  </div>
-);
+  );
+};
 
 export default DepartmentLevel;

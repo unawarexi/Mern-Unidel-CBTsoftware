@@ -225,10 +225,11 @@ export const useRemoveFromCourse = () => {
 // ========== COURSE MATERIALS API FUNCTIONS ==========
 
 // Upload course material (document) for a course
-export const uploadCourseMaterial = async ({ courseId, file, description }) => {
+export const uploadCourseMaterial = async ({ courseId, file, description, type }) => {
   const formData = new FormData();
   formData.append("file", file);
   if (description) formData.append("description", description);
+  if (type) formData.append("type", type); // <-- send the category
 
   const response = await fetch(`${BASE_URL}/${courseId}/materials`, {
     method: "POST",

@@ -1,4 +1,5 @@
-import React, { useState, useEffect } from "react";
+/* eslint-disable no-unused-vars */
+import React, { useEffect, useState } from "react";
 // eslint-disable-next-line no-unused-vars
 import { motion, AnimatePresence } from "framer-motion";
 import { UserPlus, Upload, Search, Filter, Edit2, Trash2, X, Download, MoreVertical } from "lucide-react";
@@ -10,6 +11,20 @@ import {
 } from "../../../../store/user-store";
 import { useUploadAttachmentAction, useGetUserAttachmentsAction } from "../../../../store/attachment-store";
 import { useGetAllCoursesAction } from "../../../../store/course-store";
+import { useGetAllDepartmentsAction } from "../../../../store/department-store";
+import { useForm } from "react-hook-form";
+import { z } from "zod";
+import { zodResolver } from "@hookform/resolvers/zod";
+
+// Zod schema for student form validation
+const studentSchema = z.object({
+  fullname: z.string().min(2, "Full name is required"),
+  email: z.string().email("Invalid email address"),
+  // Remove matricNumber from validation (it's auto-generated)
+  department: z.string().min(1, "Department is required"),
+  level: z.number().min(100, "Level required").max(900, "Level required"),
+  courses: z.string().min(1, "Course is required"),
+});
 
 const StudentsManagement = () => {
   const [showModal, setShowModal] = useState(false);
@@ -27,8 +42,7 @@ const StudentsManagement = () => {
     courses: "", // comma-separated
   });
 
-  //   const courses = ["CS101", "CS102", "CS103", "CS104"];
-  const departments = ["Computer Science", "Software Engineering", "Data Science", "Information Technology"];
+  const { departments = [] } = useGetAllDepartmentsAction();
 
   // store hooks
   const { createStudent } = useCreateStudentAction();
@@ -42,18 +56,36 @@ const StudentsManagement = () => {
   const { courses: allCourses = [] } = useGetAllCoursesAction();
 
   useEffect(() => {
+    // initial fetch (refetch from hook if available)
     if (refetch) refetch();
-  }, []);
+  }, [refetch]);
 
-  const handleAddStudent = async () => {
+  // React Hook Form setup
+  const {
+    register,
+    handleSubmit,
+    reset,
+    setValue,
+    formState: { errors },
+  } = useForm({
+    resolver: zodResolver(studentSchema),
+    defaultValues: {
+      fullname: "",
+      email: "",
+      // Remove matricNumber from defaultValues
+      department: "",
+      courses: "",
+      level: "",
+    },
+  });
+
+  const handleAddStudent = async (data) => {
     // Ensure courses is always an array of course ObjectIds (not courseCode)
     let selectedCourseId = null;
-    if (formData.courses) {
-      // If courses is an array, take the first value; if string, use as is
-      const selected = Array.isArray(formData.courses)
-        ? formData.courses[0]
-        : formData.courses;
-      // Find the course object by courseCode
+    if (data.courses) {
+      const selected = Array.isArray(data.courses)
+        ? data.courses[0]
+        : data.courses;
       const found = allCourses.find(
         (c) => c.courseCode === selected || c._id === selected
       );
@@ -61,12 +93,12 @@ const StudentsManagement = () => {
     }
 
     const payload = {
-      fullname: formData.fullname,
-      email: formData.email,
-      matricNumber: formData.matricNumber || undefined,
-      department: formData.department,
+      fullname: data.fullname,
+      email: data.email,
+      // Do not send matricNumber, let backend generate it
+      department: data.department,
       courses: selectedCourseId ? [selectedCourseId] : [],
-      level: formData.level,
+      level: data.level,
     };
 
     try {
@@ -78,7 +110,7 @@ const StudentsManagement = () => {
       if (refetch) refetch();
       setShowModal(false);
       setEditingStudent(null);
-      setFormData({ fullname: "", email: "", matricNumber: "", department: "", courses: "" });
+      reset();
     } catch (err) {
       console.error(err);
     }
@@ -86,12 +118,13 @@ const StudentsManagement = () => {
 
   const handleEdit = (student) => {
     setEditingStudent(student);
-    setFormData({
+    reset({
       fullname: student.fullname || "",
       email: student.email || "",
-      matricNumber: student.matricNumber || "",
+      // Do not set matricNumber in the form
       department: student.department || "",
       courses: Array.isArray(student.courses) ? student.courses.join(", ") : (student.courses || ""),
+      level: student.level || "",
     });
     setShowModal(true);
   };
@@ -150,6 +183,12 @@ const StudentsManagement = () => {
       .filter(Boolean);
   };
 
+  // Helper to get department name by _id (same as in lecturer management)
+  const getDepartmentName = (deptId) => {
+    const dept = departments.find((d) => d._id === deptId);
+    return dept ? dept.departmentName : deptId || "-";
+  };
+
   return (
     <div className="min-h-screen bg-white p-6">
       <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="max-w-7xl mx-auto">
@@ -188,9 +227,11 @@ const StudentsManagement = () => {
             {/* Filters */}
             <div className="flex gap-3">
               <select value={filterDepartment} onChange={(e) => setFilterDepartment(e.target.value)} className="px-4 py-2 bg-white border border-slate-300 rounded-lg text-slate-900 focus:outline-none focus:border-blue-900 focus:ring-2 focus:ring-blue-900/20 transition-colors">
-                <option>All</option>
+                <option value="All">All</option>
                 {departments.map((dept) => (
-                  <option key={dept}>{dept}</option>
+                  <option key={dept._id} value={dept._id}>
+                    {dept.departmentName}
+                  </option>
                 ))}
               </select>
               <select value={filterLevel} onChange={(e) => setFilterLevel(e.target.value)} className="px-4 py-2 bg-white border border-slate-300 rounded-lg text-slate-900">
@@ -245,7 +286,7 @@ const StudentsManagement = () => {
                         <td className="px-6 py-4 text-slate-900 font-medium">{student.fullname}</td>
                         <td className="px-6 py-4 text-slate-600">{student.email}</td>
                         <td className="px-6 py-4 text-slate-600">{student.matricNumber}</td>
-                        <td className="px-6 py-4 text-slate-600">{student.department}</td>
+                        <td className="px-6 py-4 text-slate-600">{getDepartmentName(student.department)}</td>
                         <td className="px-6 py-4 text-slate-600">{student.level || "-"}</td>
                         <td className="px-6 py-4 text-slate-600">
                           {courseLabels.length === 0 && <span className="text-xs text-gray-400 italic">No courses</span>}
@@ -286,7 +327,7 @@ const StudentsManagement = () => {
               onClick={() => {
                 setShowModal(false);
                 setEditingStudent(null);
-                setFormData({ fullname: "", email: "", matricNumber: "", department: "", courses: "" });
+                reset();
               }}
             >
               <motion.div initial={{ scale: 0.9, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0.9, opacity: 0 }} onClick={(e) => e.stopPropagation()} className="bg-white rounded-xl p-6 w-full max-w-md border border-slate-200 shadow-xl">
@@ -296,7 +337,7 @@ const StudentsManagement = () => {
                     onClick={() => {
                       setShowModal(false);
                       setEditingStudent(null);
-                      setFormData({ fullname: "", email: "", matricNumber: "", department: "", courses: "" });
+                      reset();
                     }}
                     className="text-gray-400 hover:text-slate-900 transition-colors"
                   >
@@ -304,64 +345,72 @@ const StudentsManagement = () => {
                   </button>
                 </div>
 
-                <div className="space-y-4">
+                <form className="space-y-4" onSubmit={handleSubmit(handleAddStudent)}>
                   <div>
                     <label className="block text-gray-300 mb-2 font-medium">Full Name</label>
                     <input
                       type="text"
-                      value={formData.fullname}
-                      onChange={(e) => setFormData({ ...formData, fullname: e.target.value })}
+                      {...register("fullname")}
                       className="w-full px-4 py-2 bg-white border border-slate-300 rounded-lg text-slate-900 focus:outline-none focus:border-blue-900 focus:ring-2 focus:ring-blue-900/20 transition-colors"
                       placeholder="Enter student full name"
                     />
+                    {errors.fullname && <span className="text-xs text-red-600">{errors.fullname.message}</span>}
                   </div>
 
                   <div>
                     <label className="block text-gray-300 mb-2 font-medium">Email</label>
                     <input
                       type="email"
-                      value={formData.email}
-                      onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                      {...register("email")}
                       className="w-full px-4 py-2 bg-white border border-slate-300 rounded-lg text-slate-900 focus:outline-none focus:border-blue-900 focus:ring-2 focus:ring-blue-900/20 transition-colors"
                       placeholder="Enter email address"
                     />
+                    {errors.email && <span className="text-xs text-red-600">{errors.email.message}</span>}
                   </div>
 
+                  {/* Matric Number - auto-generated, greyed out */}
                   <div>
-                    <label className="block text-gray-300 mb-2 font-medium">Matric Number</label>
+                    <label className="block text-gray-300 mb-2 font-medium">
+                      Matric Number
+                      <span className="ml-2 text-xs text-gray-400">(auto-generated)</span>
+                    </label>
                     <input
                       type="text"
-                      value={formData.matricNumber}
-                      onChange={(e) => setFormData({ ...formData, matricNumber: e.target.value })}
-                      className="w-full px-4 py-2 bg-white border border-slate-300 rounded-lg text-slate-900 focus:outline-none focus:border-blue-900 focus:ring-2 focus:ring-blue-900/20 transition-colors"
-                      placeholder="Enter matric number"
+                      value={editingStudent?.matricNumber || ""}
+                      disabled
+                      className="w-full px-4 py-2 bg-gray-100 border border-slate-300 rounded-lg text-slate-400 cursor-not-allowed"
+                      placeholder="Will be generated"
                     />
                   </div>
 
                   <div>
                     <label className="block text-gray-300 mb-2 font-medium">Department</label>
-                    <select value={formData.department} onChange={(e) => setFormData({ ...formData, department: e.target.value })} className="w-full px-4 py-2 bg-white border border-slate-300 rounded-lg text-slate-900 focus:outline-none focus:border-blue-900 focus:ring-2 focus:ring-blue-900/20 transition-colors">
+                    <select
+                      {...register("department")}
+                      className="w-full px-4 py-2 bg-white border border-slate-300 rounded-lg text-slate-900 focus:outline-none focus:border-blue-900 focus:ring-2 focus:ring-blue-900/20 transition-colors"
+                    >
                       <option value="">Select department</option>
                       {departments.map((dept) => (
-                        <option key={dept} value={dept}>
-                          {dept}
+                        <option key={dept._id} value={dept._id}>
+                          {dept.departmentName}
                         </option>
                       ))}
                     </select>
+                    {errors.department && <span className="text-xs text-red-600">{errors.department.message}</span>}
                   </div>
 
                   <div>
                     <label className="block text-gray-300 mb-2 font-medium">Level</label>
                     <input
                       type="number"
-                      value={formData.level || ""}
-                      onChange={(e) => setFormData({ ...formData, level: Number(e.target.value) })}
+                      {...register("level", { valueAsNumber: true })}
                       min={100}
                       max={900}
                       step={100}
                       className="w-full px-4 py-2 bg-white border border-slate-300 rounded-lg text-slate-900"
                       placeholder="e.g. 100, 200, 300"
                     />
+                    {errors.level && <span className="text-xs text-red-600">{errors.level.message}</span>}
                   </div>
 
                   <div>
@@ -371,40 +420,45 @@ const StudentsManagement = () => {
                         <label key={course._id} className="flex items-center gap-2">
                           <input
                             type="radio"
-                            name="student-course"
                             value={course.courseCode}
+                            {...register("courses")}
                             checked={
-                              Array.isArray(formData.courses)
-                                ? formData.courses.includes(course.courseCode)
-                                : formData.courses === course.courseCode
+                              // react-hook-form manages checked state
+                              undefined
                             }
-                            onChange={(e) => setFormData({ ...formData, courses: e.target.value })}
                             className="accent-blue-900"
                           />
                           <span className="text-sm text-slate-700">{course.courseCode} - {course.courseTitle}</span>
                         </label>
                       ))}
                     </div>
+                    {errors.courses && <span className="text-xs text-red-600">{errors.courses.message}</span>}
                   </div>
 
                   <div className="flex gap-3 pt-4">
-                    <motion.button whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }} onClick={handleAddStudent} className="flex-1 bg-orange-500 hover:bg-orange-600 text-white px-4 py-2 rounded-lg font-medium transition-colors">
+                    <motion.button
+                      type="submit"
+                      whileHover={{ scale: 1.02 }}
+                      whileTap={{ scale: 0.98 }}
+                      className="flex-1 bg-orange-500 hover:bg-orange-600 text-white px-4 py-2 rounded-lg font-medium transition-colors"
+                    >
                       {editingStudent ? "Update" : "Add"} Student
                     </motion.button>
                     <motion.button
+                      type="button"
                       whileHover={{ scale: 1.02 }}
                       whileTap={{ scale: 0.98 }}
                       onClick={() => {
                         setShowModal(false);
                         setEditingStudent(null);
-                        setFormData({ fullname: "", email: "", matricNumber: "", department: "", courses: "" });
+                        reset();
                       }}
                       className="flex-1 bg-gray-200 hover:bg-gray-300 text-slate-900 px-4 py-2 rounded-lg font-medium transition-colors"
                     >
                       Cancel
                     </motion.button>
                   </div>
-                </div>
+                </form>
               </motion.div>
             </motion.div>
           )}

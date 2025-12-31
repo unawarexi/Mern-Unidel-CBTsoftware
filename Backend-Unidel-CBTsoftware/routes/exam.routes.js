@@ -79,13 +79,13 @@ router.post("/question-bank/bulk-upload", protect, authorize("lecturer"), upload
 // ==================== ADMIN APPROVAL ROUTES ====================
 
 // Get all question banks pending approval (Admin only)
-router.get("/question-bank/pending/approvals", protect, authorize("admin"), getPendingApprovals);
+router.get("/question-bank/pending/approvals", protect, authorize("admin", "superadmin"), getPendingApprovals);
 
 // Approve question bank (Admin only)
-router.post("/question-bank/:id/approve", protect, authorize("admin"), approveQuestionBank);
+router.post("/question-bank/:id/approve", protect, authorize("admin", "superadmin"), approveQuestionBank);
 
 // Reject question bank (Admin only)
-router.post("/question-bank/:id/reject", protect, authorize("admin"), rejectQuestionBank);
+router.post("/question-bank/:id/reject", protect, authorize("admin", "superadmin"), rejectQuestionBank);
 
 // ==================== EXAM ROUTES ====================
 

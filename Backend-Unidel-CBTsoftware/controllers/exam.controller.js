@@ -403,9 +403,27 @@ export const approveQuestionBank = async (req, res) => {
 
     await questionBank.save();
 
+    // On approval, create an Exam (status: pending, not published)
+    const exam = new Exam({
+      courseId: questionBank.courseId,
+      lecturerId: questionBank.lecturerId,
+      duration: 60, // Default, or you can add duration to question bank or approval form
+      startTime: new Date(), // Placeholder, lecturer will set actual time
+      endTime: new Date(Date.now() + 60 * 60 * 1000), // Placeholder
+      questions: questionBank.questions.map((q) => ({
+        question: q.question,
+        options: q.options,
+        correctAnswer: q.correctAnswer,
+        marks: q.marks,
+      })),
+      status: "pending",
+    });
+    await exam.save();
+
     res.status(200).json({
       message: "Question bank approved successfully",
       questionBank,
+      exam,
     });
   } catch (error) {
     console.error("Approve question bank error:", error);

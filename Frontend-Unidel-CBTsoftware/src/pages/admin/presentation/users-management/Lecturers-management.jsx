@@ -10,6 +10,7 @@ import {
 } from "../../../../store/user-store";
 import { useUploadAttachmentAction, useGetUserAttachmentsAction } from "../../../../store/attachment-store";
 import { useGetAllCoursesAction } from "../../../../store/course-store"; // already imported
+import { useGetAllDepartmentsAction } from "../../../../store/department-store";
 
 const LecturersManagement = () => {
   const [showModal, setShowModal] = useState(false);
@@ -29,7 +30,7 @@ const LecturersManagement = () => {
     role: "Lecturer",
   });
 
-  const departments = ["Computer Science", "Software Engineering", "Data Science", "Information Technology"];
+  const { departments = [] } = useGetAllDepartmentsAction();
   const roles = ["Lecturer", "Senior Lecturer", "Professor", "Associate Professor"];
 
   // store hooks
@@ -185,7 +186,9 @@ const LecturersManagement = () => {
               <select value={filterDepartment} onChange={(e) => setFilterDepartment(e.target.value)} className="px-4 py-2 bg-white border border-slate-300 rounded-lg text-slate-900 focus:outline-none focus:border-blue-900 focus:ring-2 focus:ring-blue-900/20 transition-colors">
                 <option>All</option>
                 {departments.map((dept) => (
-                  <option key={dept}>{dept}</option>
+                  <option key={dept._id} value={dept.departmentName}>
+                    {dept.departmentName}
+                  </option>
                 ))}
               </select>
               <select value={filterLevel} onChange={(e) => setFilterLevel(e.target.value)} className="px-4 py-2 bg-white border border-slate-300 rounded-lg text-slate-900">
@@ -368,8 +371,8 @@ const LecturersManagement = () => {
                     >
                       <option value="">Select department</option>
                       {departments.map((dept) => (
-                        <option key={dept} value={dept}>
-                          {dept}
+                        <option key={dept._id} value={dept.departmentName}>
+                          {dept.departmentName}
                         </option>
                       ))}
                     </select>

@@ -58,7 +58,7 @@ const questionBankSchema = new mongoose.Schema(
         ref: "Admin",
       },
       reviewedAt: Date,
-      comments: String,
+      comments: String, // <-- already present, used for admin feedback
       status: String,
     },
     sourceType: {

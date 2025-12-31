@@ -4,6 +4,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { BookOpen, Search, Edit2, Trash2, X, UserPlus, UserMinus, GraduationCap } from "lucide-react";
 import { useCreateCourseAction, useGetAllCoursesAction, useUpdateCourseAction, useDeleteCourseAction, useAssignToCourseAction, useRemoveFromCourseAction } from "../../../../store/course-store";
 import { useGetAllLecturersAction, useGetAllStudentsAction } from "../../../../store/user-store";
+import { useGetAllDepartmentsAction } from "../../../../store/department-store";
 
 const CourseCreation = () => {
   const [showModal, setShowModal] = useState(false);
@@ -25,7 +26,7 @@ const CourseCreation = () => {
     students: [],
   });
 
-  const departments = ["Computer Science", "Software Engineering", "Data Science", "Information Technology"];
+  const { departments = [] } = useGetAllDepartmentsAction();
 
   // Store hooks
   const { createCourse } = useCreateCourseAction();
@@ -187,7 +188,9 @@ const CourseCreation = () => {
               <select value={filterDepartment} onChange={(e) => setFilterDepartment(e.target.value)} className="px-4 py-2 bg-white border border-slate-300 rounded-lg text-slate-900 focus:outline-none focus:border-blue-900 focus:ring-2 focus:ring-blue-900/20 transition-colors">
                 <option>All</option>
                 {departments.map((dept) => (
-                  <option key={dept}>{dept}</option>
+                  <option key={dept._id} value={dept.departmentName}>
+                    {dept.departmentName}
+                  </option>
                 ))}
               </select>
             </div>
@@ -332,8 +335,8 @@ const CourseCreation = () => {
                     >
                       <option value="">Select department</option>
                       {departments.map((dept) => (
-                        <option key={dept} value={dept}>
-                          {dept}
+                        <option key={dept._id} value={dept.departmentName}>
+                          {dept.departmentName}
                         </option>
                       ))}
                     </select>

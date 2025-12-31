@@ -17,6 +17,7 @@ import {
   useDeleteAdmin,
   useGetCurrentUserStats, // <-- only use this for user stats
   useGetLecturerCourses,
+  useGetLecturerStudents, // <-- add this import
 } from "../core/apis/user-api";
 import { useEffect } from "react";
 
@@ -468,8 +469,6 @@ export const useDeleteAdminAction = () => {
 
 // ========== UTILITY HOOKS ==========
 
-// ========== UTILITY HOOKS ==========
-
 // Fixed version - no more infinite refetching
 export const useGetUserStatsAction = () => {
   const { setError } = useUserStore();
@@ -491,6 +490,23 @@ export const useGetUserStatsAction = () => {
 
   return {
     stats: data?.data || {},
+    isLoading,
+    error,
+    refetch,
+  };
+};
+
+export const useGetLecturerStudentsAction = () => {
+  const { setError } = useUserStore();
+  const { data, isLoading, error, refetch } = useGetLecturerStudents();
+
+  // Handle error side effect
+  useEffect(() => {
+    if (error) setError(error.message);
+  }, [error, setError]);
+
+  return {
+    students: data?.data || [],
     isLoading,
     error,
     refetch,

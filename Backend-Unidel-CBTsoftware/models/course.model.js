@@ -9,6 +9,7 @@ const courseMaterialSchema = new mongoose.Schema(
     description: { type: String },
     public_id: { type: String }, // for cloudinary deletion
     type: { type: String, default: "document" }, // e.g. pdf, docx, ppt
+    category: { type: String, default: "document" }, // e.g. document, assignment, reading, slides, tutorial, other
   },
   { _id: true } // <-- ensure each material is an object with its own _id
 );

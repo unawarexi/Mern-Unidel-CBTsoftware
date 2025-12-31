@@ -241,6 +241,19 @@ export const getLecturerCourses = async () => {
   return response.json();
 };
 
+// NEW: Get students for the logged-in lecturer
+export const getLecturerStudents = async () => {
+  const response = await fetch(`${BASE_URL}/lecturers/me/students`, {
+    method: "GET",
+    credentials: "include",
+  });
+  if (!response.ok) {
+    const error = await response.json();
+    throw new Error(error.message || "Failed to fetch lecturer students");
+  }
+  return response.json();
+};
+
 // ========== DRY: Standard Query Options ==========
 const STANDARD_QUERY_OPTIONS = {
   staleTime: 5 * 60 * 1000, // 5 minutes
@@ -304,6 +317,15 @@ export const useGetLecturerCourses = () => {
   return useQuery({
     queryKey: ["lecturerCourses"],
     queryFn: getLecturerCourses,
+    ...STANDARD_QUERY_OPTIONS,
+  });
+};
+
+// NEW: React Query hook for lecturer's students
+export const useGetLecturerStudents = () => {
+  return useQuery({
+    queryKey: ["lecturerStudents"],
+    queryFn: getLecturerStudents,
     ...STANDARD_QUERY_OPTIONS,
   });
 };

@@ -91,6 +91,9 @@ export const useGetDepartmentByIdAction = (id) => {
 
 export const useGetDepartmentsByEntityAction = (params) => {
   const { setError } = useDepartmentStore();
+  // If lecturerId is "me", backend should resolve to logged-in lecturer
+  const queryParams = { ...params };
+  if (queryParams.lecturerId === "me") delete queryParams.lecturerId;
   const { data, isLoading, error, refetch } = useGetDepartmentsByEntity(params);
 
   useEffect(() => {

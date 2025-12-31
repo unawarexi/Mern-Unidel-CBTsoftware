@@ -8,6 +8,8 @@ import AdminsManagement from "./presentation/users-management/Admins-management"
 import CourseCreation from "./presentation/courses/Course-creation";
 import CreateDepartment from "./presentation/departments/Create-department";
 import Assignees from "./presentation/departments/Assignees";
+import ManageQuestionBanks from "./presentation/question-bank/Manage-question-banks";
+import PendingApprovals from "./presentation/question-bank/Pending-approvals";
 
 
 // Main user routes based on UserLeftContainer menuItems
@@ -46,8 +48,8 @@ export default function AdminRoutes() {
 
       {/* Question Bank */}
       <Route path="question-bank" element={<NotAvailableYet />} />
-      <Route path="question-bank/manage" element={<NotAvailableYet />} />
-      <Route path="question-bank/approvals" element={<NotAvailableYet />} />
+      <Route path="question-bank/manage" element={<ManageQuestionBanks />} />
+      <Route path="question-bank/approvals" element={<PendingApprovals />} />
 
       {/* CBT Sessions */}
       <Route path="sessions" element={<NotAvailableYet />} />

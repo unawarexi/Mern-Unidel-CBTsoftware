@@ -13,6 +13,7 @@ import DepartmentLevel from "./presentation/courses-materials/Department-level";
 import CourseMaterials from "./presentation/courses-materials/Course-materials";
 import UploadMaterials from "./presentation/courses-materials/Upload-materials";
 import StudentEnrollments from "./presentation/courses-materials/student-enrollments";
+import Approval from "./presentation/question-bank/Approval";
 
 // Main user routes based on UserLeftContainer menuItems
 export default function LecturerRoutes() {
@@ -40,6 +41,7 @@ export default function LecturerRoutes() {
       <Route path="questions/types/:id" element={<QuestionTypes />} />
       <Route path="questions/import-export" element={<ImportExport />} />
       <Route path="questions/docs" element={<UploadedDocs />} />
+      <Route path="questions/approval" element={<Approval />} />
       {/* Add new question bank routes here if needed */}
 
       {/* Exams */}

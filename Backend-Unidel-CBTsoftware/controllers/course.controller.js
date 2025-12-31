@@ -305,7 +305,8 @@ export const removeLecturers = async (req, res) => {
 export const uploadCourseMaterial = async (req, res) => {
   try {
     const courseId = req.params.id;
-    const lecturerId = req.user.userId;
+    // Use req.user._id for MongoDB _id, not req.user.userId
+    const lecturerId = req.user._id ? req.user._id.toString() : req.user.userId;
     const course = await Course.findById(courseId);
 
     if (!course) {
@@ -313,6 +314,7 @@ export const uploadCourseMaterial = async (req, res) => {
     }
 
     // Only allow lecturers assigned to this course
+    // Compare as strings for ObjectId
     if (!course.lecturers.some((l) => l.toString() === lecturerId)) {
       return res.status(403).json({ success: false, message: "You are not assigned to this course" });
     }
@@ -338,6 +340,7 @@ export const uploadCourseMaterial = async (req, res) => {
       public_id: uploadResult.public_id,
       type: ext,
       description: req.body.description || "",
+      category: req.body.type || "document", // <-- store the semantic type/category
     });
     await course.save();
 

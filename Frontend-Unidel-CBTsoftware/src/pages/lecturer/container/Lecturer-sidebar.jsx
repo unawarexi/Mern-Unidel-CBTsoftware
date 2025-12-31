@@ -49,6 +49,7 @@ const Sidebar = () => {
         { title: "Create/Edit Questions", href: "/lecturer/questions/manage" },
         { title: "Import/Export", href: "/lecturer/questions/import-export" },
         { title: "Uploaded Docs", href: "/lecturer/questions/docs" },
+        { title: "Approval", href: "/lecturer/questions/approval" },
         // You may add new routes here if needed, but do not change existing ones
       ],
     },
