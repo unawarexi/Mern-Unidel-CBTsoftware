@@ -1,11 +1,6 @@
 import express from "express";
 import path from "path";
 import {
-  // File extraction and AI generation
-  extractTextFromFile,
-  generateQuestionsFromFile,
-  generateImageForQuestion,
-
   // Question Bank CRUD
   createQuestionBank,
   getLecturerQuestionBanks,
@@ -16,8 +11,6 @@ import {
   deleteQuestionFromBank,
   submitForApproval,
   deleteQuestionBank,
-  improveQuestionsWithAI,
-  bulkUploadQuestions, // <-- new import for bulk upload
 
   // Admin approval
   getPendingApprovals,
@@ -34,8 +27,9 @@ import {
   deleteExam,
   getActiveExamsForStudent,
 } from "../controllers/exam.controller.js";
-import { upload } from "../services/cloudinary.service.js"; // <-- use shared upload (memory storage)
-import { protect, authorize } from "../middlewares/auth.middleware.js"; // <-- correct middleware import & names
+import { generateQuestionsFromFile, extractTextFromFile, bulkUploadQuestions, improveQuestionsWithAI, generateImageForQuestion } from "../controllers/file-extraction.controller.js";
+import { upload } from "../services/cloudinary.service.js";
+import { protect, authorize } from "../middlewares/auth.middleware.js";
 
 const router = express.Router();
 
