@@ -745,26 +745,44 @@ export const getActiveExamsForStudent = async (req, res) => {
       return res.status(404).json({ message: "Student not found" });
     }
 
+    // Get course IDs where student is enrolled
     const courseIds = student.courses.map((c) => c._id);
     const now = new Date();
 
+    // Find all active exams for enrolled courses
     const exams = await Exam.find({
       courseId: { $in: courseIds },
-      status: "active",
-      startTime: { $lte: now },
-      endTime: { $gte: now },
+      status: { $in: ["pending", "active"] }, // Include both pending (upcoming) and active
     })
-      .populate("courseId", "name code")
-      .select("-questions.correctAnswer"); // Hide correct answers
+      .populate({
+        path: "courseId",
+        select: "courseCode courseTitle department students",
+      })
+      .populate("lecturerId", "fullname email")
+      .select("-questions.correctAnswer") // Hide correct answers
+      .sort({ startTime: 1 }); // Sort by start time ascending
+
+    // Double-check that student is actually enrolled in each course
+    const filteredExams = exams.filter((exam) => {
+      if (!exam.courseId || !exam.courseId.students) return false;
+      return exam.courseId.students.some(
+        (s) => s.toString() === studentId.toString()
+      );
+    });
 
     res.status(200).json({
+      success: true,
       message: "Active exams retrieved successfully",
-      exams,
-      count: exams.length,
+      exams: filteredExams,
+      count: filteredExams.length,
     });
   } catch (error) {
     console.error("Get active exams error:", error);
-    res.status(500).json({ message: "Failed to retrieve active exams", error: error.message });
+    res.status(500).json({ 
+      success: false,
+      message: "Failed to retrieve active exams", 
+      error: error.message 
+    });
   }
 };
 
