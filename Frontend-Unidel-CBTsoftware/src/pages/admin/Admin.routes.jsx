@@ -39,7 +39,7 @@ export default function AdminRoutes() {
 
       {/* Exams */}
       <Route path="exams" element={<NotAvailableYet />} />
-      <Route path="exams/all" element={<NotAvailableYet />} />
+      {/* <Route path="exams/all" element={<NotAvailableYet />} /> */}
       <Route path="exams/scheduled" element={<NotAvailableYet />} />
       <Route path="exams/active" element={<NotAvailableYet />} />
       <Route path="exams/ended" element={<NotAvailableYet />} />

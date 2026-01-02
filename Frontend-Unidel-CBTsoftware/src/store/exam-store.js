@@ -573,11 +573,15 @@ export const useGetActiveExamsForStudentAction = () => {
     console.log("❌ Failed to fetch active exams:", error.message);
   }
 
+  if (data) {
+    console.log("✅ Active exams fetched:", data.exams?.length || 0);
+  }
+
   return {
     activeExams: data?.exams || [],
     count: data?.count || 0,
     isLoading,
-    error,
+    error: error?.message || null,
     refetch,
   };
 };

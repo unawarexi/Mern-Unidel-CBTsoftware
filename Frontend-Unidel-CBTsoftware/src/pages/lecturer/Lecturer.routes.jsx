@@ -1,11 +1,14 @@
 import React from "react";
 import { Routes, Route } from "react-router-dom";
 import NotAvailableYet from "../../components/Not-available";
+import LecturerOverview from "./presentation/dashboard/Lecturer-Overview";
+
+// Import question bank pages
 import CreateQuestions from "./presentation/question-bank/Create-questions";
 import ImportExport from "./presentation/question-bank/Import-export"; // added
 import QuestionTypes from "./presentation/question-bank/Question-types"; // add this import
 import UploadedDocs from "./presentation/question-bank/Uploaded-docs";
-import LecturerOverview from "./presentation/dashboard/Lecturer-Overview";
+import Approval from "./presentation/question-bank/Approval";
 
 // Import new course material pages
 import AssignedCourses from "./presentation/courses-materials/Assigned-courses";
@@ -13,7 +16,11 @@ import DepartmentLevel from "./presentation/courses-materials/Department-level";
 import CourseMaterials from "./presentation/courses-materials/Course-materials";
 import UploadMaterials from "./presentation/courses-materials/Upload-materials";
 import StudentEnrollments from "./presentation/courses-materials/student-enrollments";
-import Approval from "./presentation/question-bank/Approval";
+
+// Import exam assessment pages
+import CreateExam from "./presentation/exam-assessment/Create-exam";
+import ScheduleExam from "./presentation/exam-assessment/Schedule-exam";
+import ManageExams from "./presentation/exam-assessment/Manage-exams";
 
 // Main user routes based on UserLeftContainer menuItems
 export default function LecturerRoutes() {
@@ -46,9 +53,9 @@ export default function LecturerRoutes() {
 
       {/* Exams */}
       <Route path="exams" element={<NotAvailableYet />} />
-      <Route path="exams/create" element={<NotAvailableYet />} />
-      <Route path="exams/schedule" element={<NotAvailableYet />} />
-      <Route path="exams/manage" element={<NotAvailableYet />} />
+      <Route path="exams/create" element={<CreateExam />} />
+      <Route path="exams/schedule" element={<ScheduleExam />} />
+      <Route path="exams/manage" element={<ManageExams />} />
       <Route path="exams/results" element={<NotAvailableYet />} />
       <Route path="exams/analytics" element={<NotAvailableYet />} />
       <Route path="exams/attachments" element={<NotAvailableYet />} />

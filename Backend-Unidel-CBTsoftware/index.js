@@ -4,6 +4,7 @@ import dotenv from "dotenv";
 import express from "express";
 import morgan from "morgan";
 import { connectDB, disconnectDB } from "./config/db-config.js";
+import globalRateLimiter from "./core/security/rate-limiter.js";
 
 // Load environment variables
 dotenv.config();
@@ -15,6 +16,9 @@ import attachmentRoutes from "./routes/attachment.routes.js";
 import courseRoutes from "./routes/course.routes.js";
 import examRoutes from "./routes/exam.routes.js";
 import departmentRoutes from "./routes/department.routes.js"; // Add department routes import
+import submissionRoutes from "./routes/submission.routes.js";
+import statisticsRoutes from "./routes/statistics.route.js";
+import { startExamScheduler } from "./core/utils/time-lapse.util.js";
 
 // Create Express app
 const app = express();
@@ -30,6 +34,9 @@ app.use(express.json());
 app.use(cookieParser());
 app.use(express.urlencoded({ extended: true }));
 
+// Apply global rate limiter
+app.use(globalRateLimiter);
+
 // Development logging
 if (process.env.NODE_ENV === "development") {
   app.use(morgan("dev"));
@@ -41,7 +48,9 @@ app.use("/api/users", userRoutes);
 app.use("/api/attachments", attachmentRoutes);
 app.use("/api/courses", courseRoutes);
 app.use("/api/exams", examRoutes);
-app.use("/api/departments", departmentRoutes); 
+app.use("/api/departments", departmentRoutes);
+app.use("/api/submissions", submissionRoutes);
+app.use("/api/statistics", statisticsRoutes);
 
 // 404 handler middleware
 app.use((req, res, next) => {
@@ -72,6 +81,9 @@ const startServer = async () => {
     const PORT = process.env.PORT ?? 3000;
     const server = app.listen(PORT, () => {
       console.log(`Server started on port ${PORT}`);
+
+      // Start exam scheduler after server starts
+      startExamScheduler();
     });
 
     const gracefulShutdown = (signal) => {

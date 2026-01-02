@@ -2,6 +2,8 @@ import React from "react";
 import { Routes, Route } from "react-router-dom";
 import NotAvailableYet from "../../components/Not-available";
 import Overview from "./presentation/dashboard/Student-overview";
+import ActiveExams from "./presentation/dashboard/Active-exams";
+import AnswerQuestions from "./presentation/dashboard/Answer-questions";
 
 export default function StudentRoutes() {
   return (
@@ -9,7 +11,7 @@ export default function StudentRoutes() {
       {/* Dashboard */}
       <Route path="dashboard" element={<NotAvailableYet />} />
       <Route path="dashboard/overview" element={<Overview />} />
-      <Route path="dashboard/active" element={<NotAvailableYet />} />
+      <Route path="dashboard/active" element={<ActiveExams />} />
       <Route path="dashboard/results" element={<NotAvailableYet />} />
       <Route path="dashboard/notices" element={<NotAvailableYet />} />
 
@@ -22,7 +24,8 @@ export default function StudentRoutes() {
       {/* Exams */}
       <Route path="exams" element={<NotAvailableYet />} />
       <Route path="exams/upcoming" element={<NotAvailableYet />} />
-      <Route path="exams/active" element={<NotAvailableYet />} />
+      <Route path="exams/active" element={<ActiveExams />} />
+      <Route path="exams/take/:examId" element={<AnswerQuestions />} />
       <Route path="exams/completed" element={<NotAvailableYet />} />
       <Route path="exams/history" element={<NotAvailableYet />} />
 

@@ -67,7 +67,7 @@ const Sidebar = () => {
       icon: FileText,
       href: "/admin/exams",
       subItems: [
-        { title: "All Exams", href: "/admin/exams/all" },
+        // { title: "All Exams", href: "/admin/exams/all" },
         { title: "Scheduled Exams", href: "/admin/exams/scheduled" },
         { title: "Active Exams", href: "/admin/exams/active" },
         { title: "Ended Exams", href: "/admin/exams/ended" },

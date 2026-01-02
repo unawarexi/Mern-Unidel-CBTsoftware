@@ -49,6 +49,26 @@ const examSchema = new mongoose.Schema(
       enum: ["pending", "active", "completed"],
       default: "pending",
     },
+    reminderSent: {
+      type: Boolean,
+      default: false,
+    },
+    endWarningSent: {
+      type: Boolean,
+      default: false,
+    },
+    passingPercentage: {
+      type: Number,
+      default: 50,
+    },
+    totalSubmissions: {
+      type: Number,
+      default: 0,
+    },
+    averageScore: {
+      type: Number,
+      default: 0,
+    },
   },
   {
     timestamps: true,
