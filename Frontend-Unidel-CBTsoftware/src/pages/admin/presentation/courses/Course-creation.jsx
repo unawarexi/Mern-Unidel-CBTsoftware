@@ -18,7 +18,7 @@ const CourseCreation = () => {
   const [popupType, setPopupType] = useState(""); // "students" or "lecturers"
   const [formData, setFormData] = useState({
     courseTitle: "",
-    department: "",
+    department: [], // <-- Changed to array
     lecturers: [],
   });
   const [assignData, setAssignData] = useState({
@@ -46,7 +46,7 @@ const CourseCreation = () => {
   const handleCreateCourse = async () => {
     const payload = {
       courseTitle: formData.courseTitle,
-      department: formData.department,
+      department: formData.department, // <-- Now an array of department IDs
       lecturers: formData.lecturers,
     };
 
@@ -59,7 +59,7 @@ const CourseCreation = () => {
       if (refetch) refetch();
       setShowModal(false);
       setEditingCourse(null);
-      setFormData({ courseTitle: "", department: "", lecturers: [] });
+      setFormData({ courseTitle: "", department: [], lecturers: [] });
     } catch (err) {
       console.error(err);
     }
@@ -69,7 +69,9 @@ const CourseCreation = () => {
     setEditingCourse(course);
     setFormData({
       courseTitle: course.courseTitle || "",
-      department: course.department || "",
+      department: Array.isArray(course.department)
+        ? course.department.map(d => typeof d === "object" && d?._id ? d._id : d)
+        : [],
       lecturers: course.lecturers?.map((l) => l._id) || [],
     });
     setShowModal(true);
@@ -142,7 +144,12 @@ const CourseCreation = () => {
 
   const filteredCourses = (courses || []).filter((course) => {
     const matchesSearch = (course.courseTitle || "").toLowerCase().includes(searchTerm.toLowerCase()) || (course.courseCode || "").toLowerCase().includes(searchTerm.toLowerCase());
-    const matchesDept = filterDepartment === "All" || course.department === filterDepartment;
+    const matchesDept = filterDepartment === "All" ||
+      (Array.isArray(course.department) &&
+        course.department.some(dept => {
+          const deptName = typeof dept === "object" ? dept.departmentName : dept;
+          return deptName === filterDepartment;
+        }));
     return matchesSearch && matchesDept;
   });
 
@@ -205,7 +212,7 @@ const CourseCreation = () => {
                 <tr className="border-b border-slate-200 bg-slate-50">
                   <th className="text-left px-6 py-4 text-slate-700 font-semibold">Course Code</th>
                   <th className="text-left px-6 py-4 text-slate-700 font-semibold">Course Title</th>
-                  <th className="text-left px-6 py-4 text-slate-700 font-semibold">Department</th>
+                  <th className="text-left px-6 py-4 text-slate-700 font-semibold">Departments</th>
                   <th className="text-left px-6 py-4 text-slate-700 font-semibold">Lecturers</th>
                   <th className="text-left px-6 py-4 text-slate-700 font-semibold">Students</th>
                   <th className="text-left px-6 py-4 text-slate-700 font-semibold">Actions</th>
@@ -216,6 +223,10 @@ const CourseCreation = () => {
                   {filteredCourses.map((course, index) => {
                     const lecturersList = course.lecturers || [];
                     const studentsList = course.students || [];
+                    const deptNames = Array.isArray(course.department)
+                      ? course.department.map(d => typeof d === "object" ? d.departmentName : d).filter(Boolean)
+                      : [];
+                    
                     return (
                       <motion.tr key={course._id} initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: 20 }} transition={{ delay: index * 0.05 }} className="border-b border-slate-100 hover:bg-slate-50 transition-colors">
                         <td className="px-6 py-4">
@@ -227,7 +238,17 @@ const CourseCreation = () => {
                         <td className="px-6 py-4">
                           <span className="text-slate-900 font-medium">{course.courseTitle}</span>
                         </td>
-                        <td className="px-6 py-4 text-slate-600">{course.department}</td>
+                        <td className="px-6 py-4">
+                          <div className="flex flex-col gap-1">
+                            {deptNames.slice(0, 2).map((deptName, i) => (
+                              <span key={i} className="text-xs text-slate-600">{deptName}</span>
+                            ))}
+                            {deptNames.length > 2 && (
+                              <span className="text-xs text-blue-600 font-medium">+{deptNames.length - 2} more</span>
+                            )}
+                            {deptNames.length === 0 && <span className="text-xs text-gray-400 italic">No departments</span>}
+                          </div>
+                        </td>
                         <td className="px-6 py-4">
                           <div className="flex flex-col gap-1">
                             {lecturersList.slice(0, 2).map((lecturer) => (
@@ -296,7 +317,7 @@ const CourseCreation = () => {
               onClick={() => {
                 setShowModal(false);
                 setEditingCourse(null);
-                setFormData({ courseTitle: "", department: "", lecturers: [] });
+                setFormData({ courseTitle: "", department: [], lecturers: [] });
               }}
             >
               <motion.div initial={{ scale: 0.9, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0.9, opacity: 0 }} onClick={(e) => e.stopPropagation()} className="bg-white rounded-xl p-6 w-full max-w-md border border-slate-200 shadow-xl">
@@ -306,7 +327,7 @@ const CourseCreation = () => {
                     onClick={() => {
                       setShowModal(false);
                       setEditingCourse(null);
-                      setFormData({ courseTitle: "", department: "", lecturers: [] });
+                      setFormData({ courseTitle: "", department: [], lecturers: [] });
                     }}
                     className="text-gray-400 hover:text-slate-900 transition-colors"
                   >
@@ -327,19 +348,30 @@ const CourseCreation = () => {
                   </div>
 
                   <div>
-                    <label className="block text-slate-700 mb-2 font-medium">Department</label>
-                    <select
-                      value={formData.department}
-                      onChange={(e) => setFormData({ ...formData, department: e.target.value })}
-                      className="w-full px-4 py-2 bg-white border border-slate-300 rounded-lg text-slate-900 focus:outline-none focus:border-blue-900 focus:ring-2 focus:ring-blue-900/20 transition-colors"
-                    >
-                      <option value="">Select department</option>
+                    <label className="block text-slate-700 mb-2 font-medium">Departments</label>
+                    <div className="max-h-40 overflow-y-auto border border-slate-300 rounded-lg p-2 bg-slate-50">
                       {departments.map((dept) => (
-                        <option key={dept._id} value={dept.departmentName}>
-                          {dept.departmentName}
-                        </option>
+                        <label key={dept._id} className="flex items-center gap-2 p-2 hover:bg-white rounded cursor-pointer">
+                          <input
+                            type="checkbox"
+                            checked={formData.department.includes(dept._id)}
+                            onChange={() => {
+                              setFormData((prev) => ({
+                                ...prev,
+                                department: prev.department.includes(dept._id)
+                                  ? prev.department.filter((id) => id !== dept._id)
+                                  : [...prev.department, dept._id],
+                              }));
+                            }}
+                            className="rounded border-slate-300 text-blue-900 focus:ring-blue-900"
+                          />
+                          <span className="text-sm text-slate-700">{dept.departmentName}</span>
+                        </label>
                       ))}
-                    </select>
+                      {departments.length === 0 && (
+                        <span className="text-xs text-gray-400 italic block p-2">No departments available</span>
+                      )}
+                    </div>
                   </div>
 
                   <div>
@@ -367,7 +399,7 @@ const CourseCreation = () => {
                   {!editingCourse && (
                     <div className="bg-blue-50 rounded-lg p-3 border border-blue-200">
                       <p className="text-blue-900 text-sm">
-                        <strong>Note:</strong> Course code will be auto-generated based on the department.
+                        <strong>Note:</strong> Course code will be auto-generated based on the first selected department.
                       </p>
                     </div>
                   )}
@@ -382,7 +414,7 @@ const CourseCreation = () => {
                       onClick={() => {
                         setShowModal(false);
                         setEditingCourse(null);
-                        setFormData({ courseTitle: "", department: "", lecturers: [] });
+                        setFormData({ courseTitle: "", department: [], lecturers: [] });
                       }}
                       className="flex-1 bg-gray-200 hover:bg-gray-300 text-slate-900 px-4 py-2 rounded-lg font-medium transition-colors"
                     >
