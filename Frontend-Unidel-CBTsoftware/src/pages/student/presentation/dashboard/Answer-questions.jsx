@@ -1,5 +1,5 @@
 /* eslint-disable no-unused-vars */
-import React, { useState, useEffect, useCallback } from "react";
+import React, { useState, useEffect, useCallback, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useNavigate, useParams } from "react-router-dom";
 import {
@@ -14,6 +14,8 @@ import {
   useGetStudentSubmissionAction,
 } from "../../../../store/submission-store";
 import { debounce } from "../../../../core/services/debounce-throttle";
+import FraudDetectionSystem from "../../../../core/security/fraud-detection";
+import { useReportViolationAction } from "../../../../store/security-store";
 
 const AnswerQuestions = () => {
   const { examId } = useParams();
@@ -34,6 +36,12 @@ const AnswerQuestions = () => {
   const [showSubmitModal, setShowSubmitModal] = useState(false);
   const [autoSaving, setAutoSaving] = useState(false);
   const [examStarted, setExamStarted] = useState(false);
+
+  // Fraud detection
+  const fraudDetectionRef = useRef(null);
+  const { reportViolation } = useReportViolationAction();
+  const [showViolationWarning, setShowViolationWarning] = useState(false);
+  const [violationMessage, setViolationMessage] = useState("");
 
   // Remove excessive console logs or reduce them
   useEffect(() => {
@@ -324,6 +332,23 @@ const AnswerQuestions = () => {
 
   return (
     <div className="min-h-screen bg-gray-50">
+      {/* Violation Warning Banner */}
+      <AnimatePresence>
+        {showViolationWarning && (
+          <motion.div
+            initial={{ y: -100, opacity: 0 }}
+            animate={{ y: 0, opacity: 1 }}
+            exit={{ y: -100, opacity: 0 }}
+            className="fixed top-0 left-0 right-0 z-50 bg-red-600 text-white px-4 py-3 shadow-lg"
+          >
+            <div className="max-w-7xl mx-auto flex items-center gap-3">
+              <AlertTriangle className="w-5 h-5 flex-shrink-0" />
+              <p className="font-medium">{violationMessage}</p>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
       {/* Header */}
       <div className=" border-b border-gray-200 sticky top-0 z-10">
         <div className="max-w-7xl mx-auto px-4 py-4">

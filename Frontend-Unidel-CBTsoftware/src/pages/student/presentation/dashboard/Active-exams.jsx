@@ -17,13 +17,15 @@ import {
   formatDate,
   createCountdownTimer
 } from "../../../../core/utils/time-laspe.util";
+import ExamWarningModal from "../../components/warning-modals";
 
 const ActiveExams = () => {
   const navigate = useNavigate();
   const { activeExams = [], isLoading, error, refetch } = useGetActiveExamsForStudentAction();
-  // Fetch all submissions to know which exams are already submitted
   const { submissions = [] } = useGetMySubmissionsAction({ status: "graded" });
   const [examTimers, setExamTimers] = useState({});
+  const [selectedExam, setSelectedExam] = useState(null);
+  const [showWarningModal, setShowWarningModal] = useState(false);
 
   // Update countdowns every second
   useEffect(() => {
@@ -62,8 +64,21 @@ const ActiveExams = () => {
     return { status: "active", color: "green", icon: Unlock };
   };
 
-  const handleStartExam = (examId) => {
-    navigate(`/student/exams/take/${examId}`);
+  const handleStartExam = (exam) => {
+    setSelectedExam(exam);
+    setShowWarningModal(true);
+  };
+
+  const handleProceedToExam = () => {
+    if (selectedExam) {
+      setShowWarningModal(false);
+      navigate(`/student/exams/take/${selectedExam._id}`);
+    }
+  };
+
+  const handleCloseModal = () => {
+    setShowWarningModal(false);
+    setSelectedExam(null);
   };
 
   // Helper: check if student has submitted this exam
@@ -357,7 +372,7 @@ const ActiveExams = () => {
 
                       {/* Action Button */}
                       <button
-                        onClick={() => handleStartExam(exam._id)}
+                        onClick={() => handleStartExam(exam)}
                         disabled={isLocked || isEnded || submitted}
                         className={`w-full py-3 rounded-lg font-medium transition-all flex items-center justify-center gap-2 ${
                           isLocked || isEnded || submitted
@@ -396,6 +411,14 @@ const ActiveExams = () => {
             </AnimatePresence>
           </div>
         )}
+
+        {/* Warning Modal */}
+        <ExamWarningModal
+          isOpen={showWarningModal}
+          onClose={handleCloseModal}
+          onProceed={handleProceedToExam}
+          exam={selectedExam}
+        />
       </div>
     </div>
   );
