@@ -7,11 +7,11 @@ const courseMaterialSchema = new mongoose.Schema(
     uploadedBy: { type: mongoose.Schema.Types.ObjectId, ref: "Lecturer", required: true },
     uploadedAt: { type: Date, default: Date.now },
     description: { type: String },
-    public_id: { type: String }, // for cloudinary deletion
-    type: { type: String, default: "document" }, // e.g. pdf, docx, ppt
-    category: { type: String, default: "document" }, // e.g. document, assignment, reading, slides, tutorial, other
+    public_id: { type: String },
+    type: { type: String, default: "document" },
+    category: { type: String, default: "document" },
   },
-  { _id: true } // <-- ensure each material is an object with its own _id
+  { _id: true }
 );
 
 const courseSchema = new mongoose.Schema(
@@ -28,10 +28,12 @@ const courseSchema = new mongoose.Schema(
       required: true,
       trim: true,
     },
-    department: {
-      type: String,
-      required: true,
-    },
+    department: [
+      {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "Department",
+      },
+    ],
     lecturers: [
       {
         type: mongoose.Schema.Types.ObjectId,
@@ -44,7 +46,7 @@ const courseSchema = new mongoose.Schema(
         ref: "Student",
       },
     ],
-    courseMaterials: [courseMaterialSchema], // <-- array of objects
+    courseMaterials: [courseMaterialSchema],
   },
   {
     timestamps: true,

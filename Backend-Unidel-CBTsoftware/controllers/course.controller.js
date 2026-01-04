@@ -3,34 +3,29 @@ import Student from "../models/student.model.js";
 import Lecturer from "../models/lecturer.model.js";
 import { uploadToCloudinary, deleteFromCloudinary } from "../services/cloudinary.service.js";
 
-// Generate unique course code
-const generateCourseCode = async (department) => {
-  const prefix = department.substring(0, 3).toUpperCase();
-  let isUnique = false;
-  let courseCode = "";
-
-  while (!isUnique) {
-    const randomNum = Math.floor(1000 + Math.random() * 9000);
-    courseCode = `${prefix}${randomNum}`;
-    const existing = await Course.findOne({ courseCode });
-    if (!existing) isUnique = true;
-  }
-
-  return courseCode;
-};
-
 // @desc    Create new course
-// @route   POST /api/courses
-// @access  Admin only
 export const createCourse = async (req, res) => {
   try {
     const { courseTitle, department, lecturers } = req.body;
 
-    // Validate required fields
     if (!courseTitle || !department) {
       return res.status(400).json({
         success: false,
         message: "Please provide course title and department",
+      });
+    }
+
+    // Ensure department is an array
+    const departmentArray = Array.isArray(department) ? department : [department];
+
+    // Validate all department IDs exist
+    const Department = (await import("../models/department.model.js")).default;
+    const validDepartments = await Department.find({ _id: { $in: departmentArray } });
+    
+    if (validDepartments.length !== departmentArray.length) {
+      return res.status(400).json({
+        success: false,
+        message: "One or more department IDs are invalid",
       });
     }
 
@@ -48,19 +43,21 @@ export const createCourse = async (req, res) => {
       }
     }
 
-    // Generate unique course code
-    const courseCode = await generateCourseCode(department);
+    // Generate unique course code based on first department code
+    const firstDept = validDepartments[0];
+    const courseCode = await generateCourseCode(firstDept.departmentCode);
 
     // Create course
     const course = await Course.create({
       courseCode,
       courseTitle,
-      department,
+      department: departmentArray,
       lecturers: lecturers || [],
     });
 
-    // Populate lecturers
+    // Populate before sending response
     await course.populate("lecturers", "fullname email lecturerId");
+    await course.populate("department", "departmentName departmentCode");
 
     res.status(201).json({
       success: true,
@@ -77,12 +74,30 @@ export const createCourse = async (req, res) => {
   }
 };
 
+// Helper function to generate course code based on department name
+const generateCourseCode = async (deptName) => {
+  const prefix = deptName.substring(0, 3).toUpperCase();
+  let isUnique = false;
+  let courseCode = "";
+
+  while (!isUnique) {
+    const randomNum = Math.floor(1000 + Math.random() * 9000);
+    courseCode = `${prefix}${randomNum}`;
+    const existing = await Course.findOne({ courseCode });
+    if (!existing) isUnique = true;
+  }
+
+  return courseCode;
+};
+
 // @desc    Get all courses
-// @route   GET /api/courses
-// @access  Admin, Lecturer
 export const getAllCourses = async (req, res) => {
   try {
-    const courses = await Course.find().populate("lecturers", "fullname email lecturerId").populate("students", "fullname email studentId").sort({ createdAt: -1 });
+    const courses = await Course.find()
+      .populate("lecturers", "fullname email lecturerId")
+      .populate("students", "fullname email matricNumber")
+      .populate("department", "departmentName departmentCode")
+      .sort({ createdAt: -1 });
 
     res.status(200).json({
       success: true,
@@ -100,11 +115,12 @@ export const getAllCourses = async (req, res) => {
 };
 
 // @desc    Get single course
-// @route   GET /api/courses/:id
-// @access  Admin, Lecturer
 export const getCourse = async (req, res) => {
   try {
-    const course = await Course.findById(req.params.id).populate("lecturers", "fullname email lecturerId").populate("students", "fullname email studentId");
+    const course = await Course.findById(req.params.id)
+      .populate("lecturers", "fullname email lecturerId")
+      .populate("students", "fullname email matricNumber")
+      .populate("department", "departmentName departmentCode");
 
     if (!course) {
       return res.status(404).json({
@@ -128,8 +144,6 @@ export const getCourse = async (req, res) => {
 };
 
 // @desc    Update course
-// @route   PUT /api/courses/:id
-// @access  Admin only
 export const updateCourse = async (req, res) => {
   try {
     const { courseTitle, department } = req.body;
@@ -143,12 +157,27 @@ export const updateCourse = async (req, res) => {
       });
     }
 
+    // Validate department if provided
+    if (department) {
+      const departmentArray = Array.isArray(department) ? department : [department];
+      const Department = (await import("../models/department.model.js")).default;
+      const validDepartments = await Department.find({ _id: { $in: departmentArray } });
+      
+      if (validDepartments.length !== departmentArray.length) {
+        return res.status(400).json({
+          success: false,
+          message: "One or more department IDs are invalid",
+        });
+      }
+      course.department = departmentArray;
+    }
+
     // Update fields
     if (courseTitle) course.courseTitle = courseTitle;
-    if (department) course.department = department;
 
     await course.save();
     await course.populate("lecturers", "fullname email lecturerId");
+    await course.populate("department", "departmentName departmentCode");
 
     res.status(200).json({
       success: true,

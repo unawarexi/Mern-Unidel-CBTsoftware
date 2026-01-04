@@ -17,22 +17,27 @@ const lecturerSchema = new mongoose.Schema(
     password: {
       type: String,
       required: true,
-      select: false, // Don't include password in queries by default
+      select: false,
     },
     lecturerId: {
       type: String,
       required: true,
       unique: true,
+      uppercase: true,
     },
     employeeId: {
       type: String,
       required: true,
       unique: true,
+      uppercase: true,
     },
-    department: {
-      type: String,
-      required: true,
-    },
+    department: [
+      {
+        type: mongoose.Schema.Types.ObjectId, // <-- Changed from String to ObjectId
+        ref: "Department",
+        required: true,
+      },
+    ],
     resetPasswordToken: String,
     resetPasswordExpires: Date,
     isFirstLogin: {
@@ -49,12 +54,12 @@ const lecturerSchema = new mongoose.Schema(
         ref: "Course",
       },
     ],
-    documents: [String],
-    attachment: [String],
     level: {
       type: Number,
       default: 100,
     },
+    documents: [String],
+    attachment: [String],
   },
   {
     timestamps: true,

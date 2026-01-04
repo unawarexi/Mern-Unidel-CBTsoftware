@@ -17,7 +17,7 @@ const studentSchema = new mongoose.Schema(
     password: {
       type: String,
       required: true,
-      select: false, // Don't include password in queries by default
+      select: false,
     },
     matricNumber: {
       type: String,
@@ -26,7 +26,8 @@ const studentSchema = new mongoose.Schema(
       uppercase: true,
     },
     department: {
-      type: String,
+      type: mongoose.Schema.Types.ObjectId, // <-- Changed from String to ObjectId
+      ref: "Department",
       required: true,
     },
     resetPasswordToken: String,
