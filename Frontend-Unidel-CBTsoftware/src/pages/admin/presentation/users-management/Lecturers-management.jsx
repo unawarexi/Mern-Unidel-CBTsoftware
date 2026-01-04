@@ -25,8 +25,8 @@ const LecturersManagement = () => {
     email: "",
     lecturerId: "",
     employeeId: "",
-    department: "",
-    courses: [], // now an array of course IDs
+    department: [], // <-- Changed to array
+    courses: [],
     role: "Lecturer",
   });
 
@@ -58,9 +58,13 @@ const LecturersManagement = () => {
       lecturerId: formData.lecturerId || undefined,
       employeeId: formData.employeeId || undefined,
       department: formData.department,
-      courses: formData.courses, // array of course IDs
+      courses: formData.courses, // <-- Array of course IDs
       role: formData.role,
     };
+
+    // Debug: Log the payload to verify courses are included
+    console.log("[DEBUG] handleAddLecturer payload:", payload);
+    console.log("[DEBUG] courses in payload:", payload.courses);
 
     try {
       if (editingLecturer) {
@@ -71,9 +75,8 @@ const LecturersManagement = () => {
       if (refetch) refetch();
       setShowModal(false);
       setEditingLecturer(null);
-      setFormData({ fullname: "", email: "", lecturerId: "", employeeId: "", department: "", courses: [], role: "Lecturer" });
+      setFormData({ fullname: "", email: "", lecturerId: "", employeeId: "", department: [], courses: [], role: "Lecturer" });
     } catch (err) {
-      // create/update action already triggers toast via store
       console.error(err);
     }
   };
@@ -85,7 +88,9 @@ const LecturersManagement = () => {
       email: lecturer.email || "",
       lecturerId: lecturer.lecturerId || "",
       employeeId: lecturer.employeeId || "",
-      department: lecturer.department || "",
+      department: Array.isArray(lecturer.department) 
+        ? lecturer.department.map(d => typeof d === "object" && d?._id ? d._id : d) 
+        : [],
       courses: Array.isArray(lecturer.courses) ? lecturer.courses.map(c => typeof c === "object" && c?._id ? c._id : c) : [],
       role: lecturer.role || "Lecturer",
     });
@@ -123,7 +128,14 @@ const LecturersManagement = () => {
       (lecturer.fullname || "").toLowerCase().includes(searchTerm.toLowerCase()) ||
       (lecturer.email || "").toLowerCase().includes(searchTerm.toLowerCase()) ||
       (lecturer.lecturerId || "").toLowerCase().includes(searchTerm.toLowerCase());
-    const matchesDept = filterDepartment === "All" || lecturer.department === filterDepartment;
+    
+    const matchesDept = filterDepartment === "All" || 
+      (Array.isArray(lecturer.department) && 
+        lecturer.department.some(dept => {
+          const deptName = typeof dept === "object" ? dept.departmentName : dept;
+          return deptName === filterDepartment;
+        }));
+    
     const matchesLevel = filterLevel === "All" || lecturer.level === Number(filterLevel);
     const matchesCourse =
       filterCourse === "All" ||
@@ -216,7 +228,7 @@ const LecturersManagement = () => {
                   <th className="text-left px-6 py-4 text-slate-700 font-semibold">Name</th>
                   <th className="text-left px-6 py-4 text-slate-700 font-semibold">Email</th>
                   <th className="text-left px-6 py-4 text-slate-700 font-semibold">Role</th>
-                  <th className="text-left px-6 py-4 text-slate-700 font-semibold">Department</th>
+                  <th className="text-left px-6 py-4 text-slate-700 font-semibold">Departments</th>
                   <th className="text-left px-6 py-4 text-slate-700 font-semibold">Level</th>
                   <th className="text-left px-6 py-4 text-slate-700 font-semibold">Courses</th>
                   <th className="text-left px-6 py-4 text-slate-700 font-semibold">Actions</th>
@@ -225,7 +237,6 @@ const LecturersManagement = () => {
               <tbody>
                 <AnimatePresence>
                   {filteredLecturers.map((lecturer, index) => {
-                    // Get course labels for this lecturer
                     const courseLabels = getCourseLabels(
                       Array.isArray(lecturer.courses)
                         ? lecturer.courses.map((c) =>
@@ -233,9 +244,14 @@ const LecturersManagement = () => {
                           )
                         : []
                     );
-                    // Limit display to 2 courses, show ... if more
                     const displayCourses = courseLabels.slice(0, 2).join(", ");
                     const hasMore = courseLabels.length > 2;
+                    
+                    // Get department names
+                    const deptNames = Array.isArray(lecturer.department)
+                      ? lecturer.department.map(d => typeof d === "object" ? d.departmentName : d).filter(Boolean)
+                      : [];
+                    
                     return (
                       <motion.tr key={lecturer._id} initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: 20 }} transition={{ delay: index * 0.05 }} className="border-b border-slate-100 hover:bg-slate-50 transition-colors">
                         <td className="px-6 py-4">
@@ -256,7 +272,17 @@ const LecturersManagement = () => {
                             {lecturer.role}
                           </span>
                         </td>
-                        <td className="px-6 py-4 text-slate-600">{lecturer.department}</td>
+                        <td className="px-6 py-4">
+                          <div className="flex flex-col gap-1">
+                            {deptNames.slice(0, 2).map((deptName, i) => (
+                              <span key={i} className="text-xs text-slate-600">{deptName}</span>
+                            ))}
+                            {deptNames.length > 2 && (
+                              <span className="text-xs text-blue-600 font-medium">+{deptNames.length - 2} more</span>
+                            )}
+                            {deptNames.length === 0 && <span className="text-xs text-gray-400 italic">No departments</span>}
+                          </div>
+                        </td>
                         <td className="px-6 py-4 text-slate-600">{lecturer.level || "-"}</td>
                         <td className="px-6 py-4">
                           <span className="inline-flex items-center gap-1 text-slate-600 text-sm">
@@ -300,7 +326,7 @@ const LecturersManagement = () => {
               onClick={() => {
                 setShowModal(false);
                 setEditingLecturer(null);
-                setFormData({ fullname: "", email: "", lecturerId: "", employeeId: "", department: "", courses: [], role: "Lecturer" });
+                setFormData({ fullname: "", email: "", lecturerId: "", employeeId: "", department: [], courses: [], role: "Lecturer" });
               }}
             >
               <motion.div
@@ -316,7 +342,7 @@ const LecturersManagement = () => {
                     onClick={() => {
                       setShowModal(false);
                       setEditingLecturer(null);
-                      setFormData({ fullname: "", email: "", lecturerId: "", employeeId: "", department: "", courses: [], role: "Lecturer" });
+                      setFormData({ fullname: "", email: "", lecturerId: "", employeeId: "", department: [], courses: [], role: "Lecturer" });
                     }}
                     className="text-gray-400 hover:text-slate-900 transition-colors"
                   >
@@ -363,19 +389,30 @@ const LecturersManagement = () => {
                   </div>
 
                   <div>
-                    <label className="block text-slate-700 mb-2 font-medium">Department</label>
-                    <select
-                      value={formData.department}
-                      onChange={(e) => setFormData({ ...formData, department: e.target.value })}
-                      className="w-full px-4 py-2 bg-white border border-slate-300 rounded-lg text-slate-900 focus:outline-none focus:border-blue-900 focus:ring-2 focus:ring-blue-900/20 transition-colors"
-                    >
-                      <option value="">Select department</option>
+                    <label className="block text-slate-700 mb-2 font-medium">Departments</label>
+                    <div className="max-h-40 overflow-y-auto border border-slate-300 rounded-lg p-2 bg-slate-50">
                       {departments.map((dept) => (
-                        <option key={dept._id} value={dept.departmentName}>
-                          {dept.departmentName}
-                        </option>
+                        <label key={dept._id} className="flex items-center gap-2 p-2 hover:bg-white rounded cursor-pointer">
+                          <input
+                            type="checkbox"
+                            checked={formData.department.includes(dept._id)}
+                            onChange={() => {
+                              setFormData((prev) => ({
+                                ...prev,
+                                department: prev.department.includes(dept._id)
+                                  ? prev.department.filter((id) => id !== dept._id)
+                                  : [...prev.department, dept._id],
+                              }));
+                            }}
+                            className="rounded border-slate-300 text-blue-900 focus:ring-blue-900"
+                          />
+                          <span className="text-sm text-slate-700">{dept.departmentName}</span>
+                        </label>
                       ))}
-                    </select>
+                      {departments.length === 0 && (
+                        <span className="text-xs text-gray-400 italic block p-2">No departments available</span>
+                      )}
+                    </div>
                   </div>
 
                   <div>
@@ -430,7 +467,7 @@ const LecturersManagement = () => {
                       onClick={() => {
                         setShowModal(false);
                         setEditingLecturer(null);
-                        setFormData({ fullname: "", email: "", lecturerId: "", employeeId: "", department: "", courses: [], role: "Lecturer" });
+                        setFormData({ fullname: "", email: "", lecturerId: "", employeeId: "", department: [], courses: [], role: "Lecturer" });
                       }}
                       className="flex-1 bg-gray-200 hover:bg-gray-300 text-slate-900 px-4 py-2 rounded-lg font-medium transition-colors"
                     >

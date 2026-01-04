@@ -20,10 +20,9 @@ import { zodResolver } from "@hookform/resolvers/zod";
 const studentSchema = z.object({
   fullname: z.string().min(2, "Full name is required"),
   email: z.string().email("Invalid email address"),
-  // Remove matricNumber from validation (it's auto-generated)
   department: z.string().min(1, "Department is required"),
   level: z.number().min(100, "Level required").max(900, "Level required"),
-  courses: z.string().min(1, "Course is required"),
+  courses: z.array(z.string()).min(1, "At least one course is required"), // <-- Changed to array
 });
 
 const StudentsManagement = () => {
@@ -66,40 +65,31 @@ const StudentsManagement = () => {
     handleSubmit,
     reset,
     setValue,
+    watch,
     formState: { errors },
   } = useForm({
     resolver: zodResolver(studentSchema),
     defaultValues: {
       fullname: "",
       email: "",
-      // Remove matricNumber from defaultValues
       department: "",
-      courses: "",
-      level: "",
+      courses: [], // <-- Changed to array
+      level: 100,
     },
   });
 
-  const handleAddStudent = async (data) => {
-    // Ensure courses is always an array of course ObjectIds (not courseCode)
-    let selectedCourseId = null;
-    if (data.courses) {
-      const selected = Array.isArray(data.courses)
-        ? data.courses[0]
-        : data.courses;
-      const found = allCourses.find(
-        (c) => c.courseCode === selected || c._id === selected
-      );
-      selectedCourseId = found ? found._id : null;
-    }
+  const selectedCourses = watch("courses") || [];
 
+  const handleAddStudent = async (data) => {
     const payload = {
       fullname: data.fullname,
       email: data.email,
-      // Do not send matricNumber, let backend generate it
       department: data.department,
-      courses: selectedCourseId ? [selectedCourseId] : [],
+      courses: data.courses, // <-- Now an array of course IDs
       level: data.level,
     };
+
+    console.log("[DEBUG] handleAddStudent payload:", payload);
 
     try {
       if (editingStudent) {
@@ -118,13 +108,20 @@ const StudentsManagement = () => {
 
   const handleEdit = (student) => {
     setEditingStudent(student);
+    
+    // Extract course IDs from student courses
+    const courseIds = Array.isArray(student.courses)
+      ? student.courses.map(c => typeof c === "object" && c?._id ? c._id : c)
+      : [];
+    
     reset({
       fullname: student.fullname || "",
       email: student.email || "",
-      // Do not set matricNumber in the form
-      department: student.department || "",
-      courses: Array.isArray(student.courses) ? student.courses.join(", ") : (student.courses || ""),
-      level: student.level || "",
+      department: typeof student.department === "object" && student.department?._id 
+        ? student.department._id 
+        : student.department || "",
+      courses: courseIds,
+      level: student.level || 100,
     });
     setShowModal(true);
   };
@@ -185,6 +182,11 @@ const StudentsManagement = () => {
 
   // Helper to get department name by _id (same as in lecturer management)
   const getDepartmentName = (deptId) => {
+    // Handle if department is already populated (object)
+    if (typeof deptId === 'object' && deptId !== null) {
+      return deptId.departmentName || '-';
+    }
+    // Handle if department is just an ID (string)
     const dept = departments.find((d) => d._id === deptId);
     return dept ? dept.departmentName : deptId || "-";
   };
@@ -330,7 +332,7 @@ const StudentsManagement = () => {
                 reset();
               }}
             >
-              <motion.div initial={{ scale: 0.9, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0.9, opacity: 0 }} onClick={(e) => e.stopPropagation()} className="bg-white rounded-xl p-6 w-full max-w-md border border-slate-200 shadow-xl">
+              <motion.div initial={{ scale: 0.9, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0.9, opacity: 0 }} onClick={(e) => e.stopPropagation()} className="bg-white rounded-xl p-6 w-full max-w-md border border-slate-200 shadow-xl max-h-[90vh] overflow-y-auto">
                 <div className="flex items-center justify-between mb-6">
                   <h2 className="text-2xl font-bold text-slate-900">{editingStudent ? "Edit Student" : "Add New Student"}</h2>
                   <button
@@ -347,7 +349,7 @@ const StudentsManagement = () => {
 
                 <form className="space-y-4" onSubmit={handleSubmit(handleAddStudent)}>
                   <div>
-                    <label className="block text-gray-300 mb-2 font-medium">Full Name</label>
+                    <label className="block text-slate-700 mb-2 font-medium">Full Name</label>
                     <input
                       type="text"
                       {...register("fullname")}
@@ -358,7 +360,7 @@ const StudentsManagement = () => {
                   </div>
 
                   <div>
-                    <label className="block text-gray-300 mb-2 font-medium">Email</label>
+                    <label className="block text-slate-700 mb-2 font-medium">Email</label>
                     <input
                       type="email"
                       {...register("email")}
@@ -370,7 +372,7 @@ const StudentsManagement = () => {
 
                   {/* Matric Number - auto-generated, greyed out */}
                   <div>
-                    <label className="block text-gray-300 mb-2 font-medium">
+                    <label className="block text-slate-700 mb-2 font-medium">
                       Matric Number
                       <span className="ml-2 text-xs text-gray-400">(auto-generated)</span>
                     </label>
@@ -384,7 +386,7 @@ const StudentsManagement = () => {
                   </div>
 
                   <div>
-                    <label className="block text-gray-300 mb-2 font-medium">Department</label>
+                    <label className="block text-slate-700 mb-2 font-medium">Department</label>
                     <select
                       {...register("department")}
                       className="w-full px-4 py-2 bg-white border border-slate-300 rounded-lg text-slate-900 focus:outline-none focus:border-blue-900 focus:ring-2 focus:ring-blue-900/20 transition-colors"
@@ -400,7 +402,7 @@ const StudentsManagement = () => {
                   </div>
 
                   <div>
-                    <label className="block text-gray-300 mb-2 font-medium">Level</label>
+                    <label className="block text-slate-700 mb-2 font-medium">Level</label>
                     <input
                       type="number"
                       {...register("level", { valueAsNumber: true })}
@@ -414,23 +416,29 @@ const StudentsManagement = () => {
                   </div>
 
                   <div>
-                    <label className="block text-gray-300 mb-2 font-medium">Courses</label>
-                    <div className="flex flex-col gap-2">
+                    <label className="block text-slate-700 mb-2 font-medium">Courses (Select Multiple)</label>
+                    <div className="max-h-40 overflow-y-auto border border-slate-300 rounded-lg p-2 bg-slate-50">
                       {allCourses.map((course) => (
-                        <label key={course._id} className="flex items-center gap-2">
+                        <label key={course._id} className="flex items-center gap-2 p-2 hover:bg-white rounded cursor-pointer">
                           <input
-                            type="radio"
-                            value={course.courseCode}
-                            {...register("courses")}
-                            checked={
-                              // react-hook-form manages checked state
-                              undefined
-                            }
-                            className="accent-blue-900"
+                            type="checkbox"
+                            value={course._id}
+                            checked={selectedCourses.includes(course._id)}
+                            onChange={(e) => {
+                              const courseId = e.target.value;
+                              const newCourses = e.target.checked
+                                ? [...selectedCourses, courseId]
+                                : selectedCourses.filter(id => id !== courseId);
+                              setValue("courses", newCourses, { shouldValidate: true });
+                            }}
+                            className="rounded border-slate-300 text-blue-900 focus:ring-blue-900"
                           />
                           <span className="text-sm text-slate-700">{course.courseCode} - {course.courseTitle}</span>
                         </label>
                       ))}
+                      {allCourses.length === 0 && (
+                        <span className="text-xs text-gray-400 italic block p-2">No courses available</span>
+                      )}
                     </div>
                     {errors.courses && <span className="text-xs text-red-600">{errors.courses.message}</span>}
                   </div>
