@@ -45,10 +45,12 @@ export const useCreateActivityLogAction = () => {
   const createActivityLogMutation = useCreateActivityLog();
 
   const createActivityLog = async (logData) => {
+    console.log("[STORE] useCreateActivityLogAction called", logData);
     try {
       const result = await createActivityLogMutation.mutateAsync(logData);
       return result;
     } catch (error) {
+      console.error("[STORE] useCreateActivityLogAction error:", error);
       setError(error.message);
       throw error;
     }
@@ -222,6 +224,7 @@ export const useExportStatisticsAction = () => {
       showToast("Statistics exported successfully", "success");
       return result;
     } catch (error) {
+      console.error("[STORE] useExportStatisticsAction error:", error);
       setError(error.message);
       showToast(error.message || "Failed to export statistics", "error");
       throw error;

@@ -56,6 +56,7 @@ export const useCreateLecturerAction = () => {
   const createLecturerMutation = useCreateLecturer();
 
   const createLecturer = async (lecturerData) => {
+    console.log("[STORE] useCreateLecturerAction called", lecturerData);
     setLoading(true);
     setError(null);
     showLoader();
@@ -65,6 +66,7 @@ export const useCreateLecturerAction = () => {
       showToast("Lecturer created successfully", "success");
       return data;
     } catch (error) {
+      console.error("[STORE] useCreateLecturerAction error:", error);
       setError(error.message);
       showToast(error.message || "Failed to create lecturer", "error");
       throw error;
@@ -125,6 +127,7 @@ export const useUpdateLecturerAction = () => {
   const updateLecturerMutation = useUpdateLecturer();
 
   const updateLecturer = async (id, lecturerData) => {
+    console.log("[STORE] useUpdateLecturerAction called", { id, lecturerData });
     setLoading(true);
     setError(null);
     showLoader();
@@ -134,6 +137,7 @@ export const useUpdateLecturerAction = () => {
       showToast("Lecturer updated successfully", "success");
       return data;
     } catch (error) {
+      console.error("[STORE] useUpdateLecturerAction error:", error);
       setError(error.message);
       showToast(error.message || "Failed to update lecturer", "error");
       throw error;
@@ -155,6 +159,7 @@ export const useDeleteLecturerAction = () => {
   const deleteLecturerMutation = useDeleteLecturer();
 
   const deleteLecturer = async (id) => {
+    console.log("[STORE] useDeleteLecturerAction called", id);
     setLoading(true);
     setError(null);
     showLoader();
@@ -164,6 +169,7 @@ export const useDeleteLecturerAction = () => {
       showToast("Lecturer deleted successfully", "success");
       return data;
     } catch (error) {
+      console.error("[STORE] useDeleteLecturerAction error:", error);
       setError(error.message);
       showToast(error.message || "Failed to delete lecturer", "error");
       throw error;
@@ -204,6 +210,7 @@ export const useCreateStudentAction = () => {
   const createStudentMutation = useCreateStudent();
 
   const createStudent = async (studentData) => {
+    console.log("[STORE] useCreateStudentAction called", studentData);
     setLoading(true);
     setError(null);
     showLoader();
@@ -213,6 +220,7 @@ export const useCreateStudentAction = () => {
       showToast("Student created successfully", "success");
       return data;
     } catch (error) {
+      console.error("[STORE] useCreateStudentAction error:", error);
       setError(error.message);
       showToast(error.message || "Failed to create student", "error");
       throw error;
@@ -277,6 +285,7 @@ export const useUpdateStudentAction = () => {
   const updateStudentMutation = useUpdateStudent();
 
   const updateStudent = async (id, studentData) => {
+    console.log("[STORE] useUpdateStudentAction called", { id, studentData });
     setLoading(true);
     setError(null);
     showLoader();
@@ -286,6 +295,7 @@ export const useUpdateStudentAction = () => {
       showToast("Student updated successfully", "success");
       return data;
     } catch (error) {
+      console.error("[STORE] useUpdateStudentAction error:", error);
       setError(error.message);
       showToast(error.message || "Failed to update student", "error");
       throw error;
@@ -307,6 +317,7 @@ export const useDeleteStudentAction = () => {
   const deleteStudentMutation = useDeleteStudent();
 
   const deleteStudent = async (id) => {
+    console.log("[STORE] useDeleteStudentAction called", id);
     setLoading(true);
     setError(null);
     showLoader();
@@ -316,6 +327,7 @@ export const useDeleteStudentAction = () => {
       showToast("Student deleted successfully", "success");
       return data;
     } catch (error) {
+      console.error("[STORE] useDeleteStudentAction error:", error);
       setError(error.message);
       showToast(error.message || "Failed to delete student", "error");
       throw error;
@@ -339,6 +351,7 @@ export const useCreateAdminAction = () => {
   const createAdminMutation = useCreateAdmin();
 
   const createAdmin = async (adminData) => {
+    console.log("[STORE] useCreateAdminAction called", adminData);
     setLoading(true);
     setError(null);
     showLoader();
@@ -348,6 +361,7 @@ export const useCreateAdminAction = () => {
       showToast("Admin created successfully", "success");
       return data;
     } catch (error) {
+      console.error("[STORE] useCreateAdminAction error:", error);
       setError(error.message);
       showToast(error.message || "Failed to create admin", "error");
       throw error;
@@ -412,6 +426,7 @@ export const useUpdateAdminAction = () => {
   const updateAdminMutation = useUpdateAdmin();
 
   const updateAdmin = async (id, adminData) => {
+    console.log("[STORE] useUpdateAdminAction called", { id, adminData });
     setLoading(true);
     setError(null);
     showLoader();
@@ -421,6 +436,7 @@ export const useUpdateAdminAction = () => {
       showToast("Admin updated successfully", "success");
       return data;
     } catch (error) {
+      console.error("[STORE] useUpdateAdminAction error:", error);
       setError(error.message);
       showToast(error.message || "Failed to update admin", "error");
       throw error;
@@ -442,6 +458,7 @@ export const useDeleteAdminAction = () => {
   const deleteAdminMutation = useDeleteAdmin();
 
   const deleteAdmin = async (id) => {
+    console.log("[STORE] useDeleteAdminAction called", id);
     setLoading(true);
     setError(null);
     showLoader();
@@ -451,6 +468,7 @@ export const useDeleteAdminAction = () => {
       showToast("Admin deleted successfully", "success");
       return data;
     } catch (error) {
+      console.error("[STORE] useDeleteAdminAction error:", error);
       setError(error.message);
       showToast(error.message || "Failed to delete admin", "error");
       throw error;

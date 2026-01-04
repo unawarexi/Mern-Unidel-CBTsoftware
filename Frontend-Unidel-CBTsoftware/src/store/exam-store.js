@@ -70,6 +70,7 @@ export const useExtractTextAction = () => {
   const extractTextMutation = useExtractTextFromFile();
 
   const extractText = async (file) => {
+    console.log("[STORE] useExtractTextAction called");
     setError(null);
     showLoader();
 
@@ -79,6 +80,7 @@ export const useExtractTextAction = () => {
       showToast("Text extracted successfully", "success");
       return data;
     } catch (error) {
+      console.error("[STORE] useExtractTextAction error:", error);
       setError(error.message);
       showToast(error.message || "Failed to extract text", "error");
       throw error;
@@ -99,6 +101,7 @@ export const useGenerateQuestionsAction = () => {
   const generateQuestionsMutation = useGenerateQuestionsFromFile();
 
   const generateQuestions = async ({ file, numberOfQuestions, difficulty }) => {
+    console.log("[STORE] useGenerateQuestionsAction called");
     setError(null);
     showLoader();
 
@@ -112,6 +115,7 @@ export const useGenerateQuestionsAction = () => {
       showToast(`${data.questions?.length || 0} questions generated successfully`, "success");
       return data;
     } catch (error) {
+      console.error("[STORE] useGenerateQuestionsAction error:", error);
       setError(error.message);
       showToast(error.message || "Failed to generate questions", "error");
       throw error;
@@ -134,6 +138,7 @@ export const useCreateQuestionBankAction = () => {
   const createQuestionBankMutation = useCreateQuestionBank();
 
   const createQuestionBank = async (data) => {
+    console.log("[STORE] useCreateQuestionBankAction called");
     setLoading(true);
     setError(null);
     showLoader();
@@ -143,6 +148,7 @@ export const useCreateQuestionBankAction = () => {
       showToast("Question bank created successfully", "success");
       return result;
     } catch (error) {
+      console.error("[STORE] useCreateQuestionBankAction error:", error);
       setError(error.message);
       showToast(error.message || "Failed to create question bank", "error");
       throw error;
@@ -199,6 +205,7 @@ export const useUpdateQuestionBankAction = () => {
   const updateQuestionBankMutation = useUpdateQuestionBank();
 
   const updateQuestionBank = async (id, data) => {
+    console.log("[STORE] useUpdateQuestionBankAction called");
     setLoading(true);
     setError(null);
     showLoader();
@@ -208,6 +215,7 @@ export const useUpdateQuestionBankAction = () => {
       showToast("Question bank updated successfully", "success");
       return result;
     } catch (error) {
+      console.error("[STORE] useUpdateQuestionBankAction error:", error);
       setError(error.message);
       showToast(error.message || "Failed to update question bank", "error");
       throw error;
@@ -229,6 +237,7 @@ export const useAddQuestionToBankAction = () => {
   const addQuestionMutation = useAddQuestionToBank();
 
   const addQuestion = async (id, question) => {
+    console.log("[STORE] useAddQuestionToBankAction called");
     setLoading(true);
     setError(null);
     showLoader();
@@ -238,6 +247,7 @@ export const useAddQuestionToBankAction = () => {
       showToast("Question added successfully", "success");
       return result;
     } catch (error) {
+      console.error("[STORE] useAddQuestionToBankAction error:", error);
       setError(error.message);
       showToast(error.message || "Failed to add question", "error");
       throw error;
@@ -259,6 +269,7 @@ export const useUpdateQuestionInBankAction = () => {
   const updateQuestionMutation = useUpdateQuestionInBank();
 
   const updateQuestion = async (id, questionId, data) => {
+    console.log("[STORE] useUpdateQuestionInBankAction called");
     setLoading(true);
     setError(null);
     showLoader();
@@ -268,6 +279,7 @@ export const useUpdateQuestionInBankAction = () => {
       showToast("Question updated successfully", "success");
       return result;
     } catch (error) {
+      console.error("[STORE] useUpdateQuestionInBankAction error:", error);
       setError(error.message);
       showToast(error.message || "Failed to update question", "error");
       throw error;
@@ -289,6 +301,7 @@ export const useDeleteQuestionFromBankAction = () => {
   const deleteQuestionMutation = useDeleteQuestionFromBank();
 
   const deleteQuestion = async (id, questionId) => {
+    console.log("[STORE] useDeleteQuestionFromBankAction called");
     setLoading(true);
     setError(null);
     showLoader();
@@ -298,6 +311,7 @@ export const useDeleteQuestionFromBankAction = () => {
       showToast("Question deleted successfully", "success");
       return result;
     } catch (error) {
+      console.error("[STORE] useDeleteQuestionFromBankAction error:", error);
       setError(error.message);
       showToast(error.message || "Failed to delete question", "error");
       throw error;
@@ -319,6 +333,7 @@ export const useSubmitForApprovalAction = () => {
   const submitMutation = useSubmitForApproval();
 
   const submitForApproval = async (id) => {
+    console.log("[STORE] useSubmitForApprovalAction called");
     setLoading(true);
     setError(null);
     showLoader();
@@ -328,6 +343,7 @@ export const useSubmitForApprovalAction = () => {
       showToast("Question bank submitted for approval", "success");
       return result;
     } catch (error) {
+      console.error("[STORE] useSubmitForApprovalAction error:", error);
       setError(error.message);
       showToast(error.message || "Failed to submit for approval", "error");
       throw error;
@@ -349,6 +365,7 @@ export const useDeleteQuestionBankAction = () => {
   const deleteQuestionBankMutation = useDeleteQuestionBank();
 
   const deleteQuestionBank = async (id) => {
+    console.log("[STORE] useDeleteQuestionBankAction called");
     setLoading(true);
     setError(null);
     showLoader();
@@ -358,6 +375,7 @@ export const useDeleteQuestionBankAction = () => {
       showToast("Question bank deleted successfully", "success");
       return result;
     } catch (error) {
+      console.error("[STORE] useDeleteQuestionBankAction error:", error);
       setError(error.message);
       showToast(error.message || "Failed to delete question bank", "error");
       throw error;
@@ -379,6 +397,7 @@ export const useImproveQuestionsAction = () => {
   const improveMutation = useImproveQuestionsWithAI();
 
   const improveQuestions = async (id) => {
+    console.log("[STORE] useImproveQuestionsAction called");
     setLoading(true);
     setError(null);
     showLoader();
@@ -388,6 +407,7 @@ export const useImproveQuestionsAction = () => {
       showToast("Questions improved successfully", "success");
       return result;
     } catch (error) {
+      console.error("[STORE] useImproveQuestionsAction error:", error);
       setError(error.message);
       showToast(error.message || "Failed to improve questions", "error");
       throw error;
@@ -429,6 +449,7 @@ export const useApproveQuestionBankAction = () => {
   const approveMutation = useApproveQuestionBank();
 
   const approveQuestionBank = async (id, comments) => {
+    console.log("[STORE] useApproveQuestionBankAction called");
     setLoading(true);
     setError(null);
     showLoader();
@@ -438,6 +459,7 @@ export const useApproveQuestionBankAction = () => {
       showToast("Question bank approved successfully", "success");
       return result;
     } catch (error) {
+      console.error("[STORE] useApproveQuestionBankAction error:", error);
       setError(error.message);
       showToast(error.message || "Failed to approve question bank", "error");
       throw error;
@@ -459,6 +481,7 @@ export const useRejectQuestionBankAction = () => {
   const rejectMutation = useRejectQuestionBank();
 
   const rejectQuestionBank = async (id, comments) => {
+    console.log("[STORE] useRejectQuestionBankAction called");
     setLoading(true);
     setError(null);
     showLoader();
@@ -468,6 +491,7 @@ export const useRejectQuestionBankAction = () => {
       showToast("Question bank rejected", "success");
       return result;
     } catch (error) {
+      console.error("[STORE] useRejectQuestionBankAction error:", error);
       setError(error.message);
       showToast(error.message || "Failed to reject question bank", "error");
       throw error;
@@ -491,6 +515,7 @@ export const useCreateExamAction = () => {
   const createExamMutation = useCreateExam();
 
   const createExam = async (data) => {
+    console.log("[STORE] useCreateExamAction called");
     setLoading(true);
     setError(null);
     showLoader();
@@ -500,6 +525,7 @@ export const useCreateExamAction = () => {
       showToast("Exam created successfully", "success");
       return result;
     } catch (error) {
+      console.error("[STORE] useCreateExamAction error:", error);
       setError(error.message);
       showToast(error.message || "Failed to create exam", "error");
       throw error;
@@ -521,6 +547,7 @@ export const useCreateExamFromQuestionBankAction = () => {
   const createExamMutation = useCreateExamFromQuestionBank();
 
   const createExamFromQuestionBank = async (data) => {
+    console.log("[STORE] useCreateExamFromQuestionBankAction called");
     setLoading(true);
     setError(null);
     showLoader();
@@ -530,6 +557,7 @@ export const useCreateExamFromQuestionBankAction = () => {
       showToast("Exam created from question bank successfully", "success");
       return result;
     } catch (error) {
+      console.error("[STORE] useCreateExamFromQuestionBankAction error:", error);
       setError(error.message);
       showToast(error.message || "Failed to create exam from question bank", "error");
       throw error;
@@ -613,6 +641,7 @@ export const useUpdateExamAction = () => {
   const updateExamMutation = useUpdateExam();
 
   const updateExam = async (id, data) => {
+    console.log("[STORE] useUpdateExamAction called");
     setLoading(true);
     setError(null);
     showLoader();
@@ -622,6 +651,7 @@ export const useUpdateExamAction = () => {
       showToast("Exam updated successfully", "success");
       return result;
     } catch (error) {
+      console.error("[STORE] useUpdateExamAction error:", error);
       setError(error.message);
       showToast(error.message || "Failed to update exam", "error");
       throw error;
@@ -643,6 +673,7 @@ export const usePublishExamAction = () => {
   const publishExamMutation = usePublishExam();
 
   const publishExam = async (id) => {
+    console.log("[STORE] usePublishExamAction called");
     setLoading(true);
     setError(null);
     showLoader();
@@ -652,6 +683,7 @@ export const usePublishExamAction = () => {
       showToast("Exam published successfully", "success");
       return result;
     } catch (error) {
+      console.error("[STORE] usePublishExamAction error:", error);
       setError(error.message);
       showToast(error.message || "Failed to publish exam", "error");
       throw error;
@@ -673,6 +705,7 @@ export const useDeleteExamAction = () => {
   const deleteExamMutation = useDeleteExam();
 
   const deleteExam = async (id) => {
+    console.log("[STORE] useDeleteExamAction called");
     setLoading(true);
     setError(null);
     showLoader();
@@ -682,6 +715,7 @@ export const useDeleteExamAction = () => {
       showToast("Exam deleted successfully", "success");
       return result;
     } catch (error) {
+      console.error("[STORE] useDeleteExamAction error:", error);
       setError(error.message);
       showToast(error.message || "Failed to delete exam", "error");
       throw error;

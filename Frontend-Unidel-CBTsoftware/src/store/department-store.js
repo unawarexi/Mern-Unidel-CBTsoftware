@@ -31,6 +31,7 @@ export const useCreateDepartmentAction = () => {
   const createDepartmentMutation = useCreateDepartment();
 
   const createDepartment = async (departmentData) => {
+    console.log("[STORE] useCreateDepartmentAction called", departmentData);
     setLoading(true);
     setError(null);
     try {
@@ -38,6 +39,7 @@ export const useCreateDepartmentAction = () => {
       showToast("Department created successfully", "success");
       return data;
     } catch (error) {
+      console.error("[STORE] useCreateDepartmentAction error:", error);
       setError(error.message);
       showToast(error.message || "Failed to create department", "error");
       throw error;
@@ -113,6 +115,7 @@ export const useUpdateDepartmentAction = () => {
   const updateDepartmentMutation = useUpdateDepartment();
 
   const updateDepartment = async (id, departmentData) => {
+    console.log("[STORE] useUpdateDepartmentAction called", { id, departmentData });
     setLoading(true);
     setError(null);
     try {
@@ -120,6 +123,7 @@ export const useUpdateDepartmentAction = () => {
       showToast("Department updated successfully", "success");
       return data;
     } catch (error) {
+      console.error("[STORE] useUpdateDepartmentAction error:", error);
       setError(error.message);
       showToast(error.message || "Failed to update department", "error");
       throw error;
@@ -140,6 +144,7 @@ export const useDeleteDepartmentAction = () => {
   const deleteDepartmentMutation = useDeleteDepartment();
 
   const deleteDepartment = async (id) => {
+    console.log("[STORE] useDeleteDepartmentAction called", id);
     setLoading(true);
     setError(null);
     try {
@@ -147,6 +152,7 @@ export const useDeleteDepartmentAction = () => {
       showToast("Department deleted successfully", "success");
       return data;
     } catch (error) {
+      console.error("[STORE] useDeleteDepartmentAction error:", error);
       setError(error.message);
       showToast(error.message || "Failed to delete department", "error");
       throw error;
@@ -167,6 +173,7 @@ export const usePromoteStudentsAction = () => {
   const promoteStudentsMutation = usePromoteStudents();
 
   const promoteStudents = async (promotionData) => {
+    console.log("[STORE] usePromoteStudentsAction called", promotionData);
     setLoading(true);
     setError(null);
     try {
@@ -174,6 +181,7 @@ export const usePromoteStudentsAction = () => {
       showToast("Students promoted successfully", "success");
       return data;
     } catch (error) {
+      console.error("[STORE] usePromoteStudentsAction error:", error);
       setError(error.message);
       showToast(error.message || "Failed to promote students", "error");
       throw error;

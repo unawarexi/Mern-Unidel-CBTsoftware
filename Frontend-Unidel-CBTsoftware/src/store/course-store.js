@@ -35,6 +35,7 @@ export const useCreateCourseAction = () => {
   const createCourseMutation = useCreateCourse();
 
   const createCourse = async (courseData) => {
+    console.log("[STORE] useCreateCourseAction called", courseData);
     setLoading(true);
     setError(null);
     showLoader();
@@ -44,6 +45,7 @@ export const useCreateCourseAction = () => {
       showToast("Course created successfully", "success");
       return data;
     } catch (error) {
+      console.error("[STORE] useCreateCourseAction error:", error);
       setError(error.message);
       showToast(error.message || "Failed to create course", "error");
       throw error;
@@ -104,6 +106,7 @@ export const useUpdateCourseAction = () => {
   const updateCourseMutation = useUpdateCourse();
 
   const updateCourse = async (id, courseData) => {
+    console.log("[STORE] useUpdateCourseAction called", { id, courseData });
     setLoading(true);
     setError(null);
     showLoader();
@@ -113,6 +116,7 @@ export const useUpdateCourseAction = () => {
       showToast("Course updated successfully", "success");
       return data;
     } catch (error) {
+      console.error("[STORE] useUpdateCourseAction error:", error);
       setError(error.message);
       showToast(error.message || "Failed to update course", "error");
       throw error;
@@ -134,6 +138,7 @@ export const useDeleteCourseAction = () => {
   const deleteCourseMutation = useDeleteCourse();
 
   const deleteCourse = async (id) => {
+    console.log("[STORE] useDeleteCourseAction called", id);
     setLoading(true);
     setError(null);
     showLoader();
@@ -143,6 +148,7 @@ export const useDeleteCourseAction = () => {
       showToast("Course deleted successfully", "success");
       return data;
     } catch (error) {
+      console.error("[STORE] useDeleteCourseAction error:", error);
       setError(error.message);
       showToast(error.message || "Failed to delete course", "error");
       throw error;
@@ -164,6 +170,7 @@ export const useAssignLecturersAction = () => {
   const assignLecturersMutation = useAssignLecturers();
 
   const assignLecturers = async (courseId, lecturers) => {
+    console.log("[STORE] useAssignLecturersAction called", { courseId, lecturers });
     setLoading(true);
     setError(null);
     showLoader();
@@ -173,6 +180,7 @@ export const useAssignLecturersAction = () => {
       showToast("Lecturers assigned successfully", "success");
       return data;
     } catch (error) {
+      console.error("[STORE] useAssignLecturersAction error:", error);
       setError(error.message);
       showToast(error.message || "Failed to assign lecturers", "error");
       throw error;
@@ -194,6 +202,7 @@ export const useRemoveLecturersAction = () => {
   const removeLecturersMutation = useRemoveLecturers();
 
   const removeLecturers = async (courseId, lecturers) => {
+    console.log("[STORE] useRemoveLecturersAction called", { courseId, lecturers });
     setLoading(true);
     setError(null);
     showLoader();
@@ -203,6 +212,7 @@ export const useRemoveLecturersAction = () => {
       showToast("Lecturers removed successfully", "success");
       return data;
     } catch (error) {
+      console.error("[STORE] useRemoveLecturersAction error:", error);
       setError(error.message);
       showToast(error.message || "Failed to remove lecturers", "error");
       throw error;
@@ -224,6 +234,7 @@ export const useUploadCourseMaterialAction = () => {
   const uploadMaterialMutation = useUploadCourseMaterial();
 
   const uploadMaterial = async ({ courseId, file, description, type }) => {
+    console.log("[STORE] useUploadCourseMaterialAction called", { courseId, description, type });
     showLoader();
     try {
       // Pass type (category) to backend
@@ -231,6 +242,7 @@ export const useUploadCourseMaterialAction = () => {
       showToast("Course material uploaded", "success");
       return data;
     } catch (error) {
+      console.error("[STORE] useUploadCourseMaterialAction error:", error);
       showToast(error.message || "Failed to upload material", "error");
       throw error;
     } finally {
@@ -250,12 +262,14 @@ export const useDeleteCourseMaterialAction = () => {
   const deleteMaterialMutation = useDeleteCourseMaterial();
 
   const deleteMaterial = async ({ courseId, materialId }) => {
+    console.log("[STORE] useDeleteCourseMaterialAction called", { courseId, materialId });
     showLoader();
     try {
       const data = await deleteMaterialMutation.mutateAsync({ courseId, materialId });
       showToast("Course material deleted", "success");
       return data;
     } catch (error) {
+      console.error("[STORE] useDeleteCourseMaterialAction error:", error);
       showToast(error.message || "Failed to delete material", "error");
       throw error;
     } finally {
@@ -275,6 +289,7 @@ export const useAssignToCourseAction = () => {
   const assignToCourseMutation = useAssignToCourse();
 
   const assignToCourse = async (courseId, { students = [], lecturers = [] }) => {
+    console.log("[STORE] useAssignToCourseAction called", { courseId, students, lecturers });
     setLoading(true);
     setError(null);
     showLoader();
@@ -283,6 +298,7 @@ export const useAssignToCourseAction = () => {
       showToast("Assigned successfully", "success");
       return data;
     } catch (error) {
+      console.error("[STORE] useAssignToCourseAction error:", error);
       setError(error.message);
       showToast(error.message || "Failed to assign", "error");
       throw error;
@@ -304,6 +320,7 @@ export const useRemoveFromCourseAction = () => {
   const removeFromCourseMutation = useRemoveFromCourse();
 
   const removeFromCourse = async (courseId, { students = [], lecturers = [] }) => {
+    console.log("[STORE] useRemoveFromCourseAction called", { courseId, students, lecturers });
     setLoading(true);
     setError(null);
     showLoader();
@@ -312,6 +329,7 @@ export const useRemoveFromCourseAction = () => {
       showToast("Removed successfully", "success");
       return data;
     } catch (error) {
+      console.error("[STORE] useRemoveFromCourseAction error:", error);
       setError(error.message);
       showToast(error.message || "Failed to remove", "error");
       throw error;

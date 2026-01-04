@@ -49,6 +49,7 @@ export const useStartExamAction = () => {
   const startExamMutation = useStartExam();
 
   const startExam = async (examId) => {
+    console.log("[STORE] useStartExamAction called", examId);
     setLoading(true);
     setError(null);
     showLoader();
@@ -60,6 +61,7 @@ export const useStartExamAction = () => {
       showToast("Exam started successfully", "success");
       return result;
     } catch (error) {
+      console.error("[STORE] useStartExamAction error:", error);
       setError(error.message);
       showToast(error.message || "Failed to start exam", "error");
       throw error;
@@ -81,10 +83,12 @@ export const useSaveAnswerAction = () => {
   const saveAnswerMutation = useSaveAnswer();
 
   const saveAnswer = async (submissionId, questionId, answer) => {
+    console.log("[STORE] useSaveAnswerAction called", { submissionId, questionId, answer });
     try {
       const result = await saveAnswerMutation.mutateAsync({ submissionId, questionId, answer });
       return result;
     } catch (error) {
+      console.error("[STORE] useSaveAnswerAction error:", error);
       setError(error.message);
       showToast(error.message || "Failed to save answer", "error");
       throw error;
@@ -103,6 +107,7 @@ export const useSubmitExamAction = () => {
   const submitExamMutation = useSubmitExam();
 
   const submitExam = async (submissionId) => {
+    console.log("[STORE] useSubmitExamAction called", submissionId);
     setLoading(true);
     setError(null);
     showLoader();
@@ -113,6 +118,7 @@ export const useSubmitExamAction = () => {
       showToast("Exam submitted successfully! Your results have been recorded.", "success", 5000);
       return result;
     } catch (error) {
+      console.error("[STORE] useSubmitExamAction error:", error);
       setError(error.message);
       showToast(error.message || "Failed to submit exam", "error");
       throw error;
@@ -222,6 +228,7 @@ export const useAddFeedbackAction = () => {
   const addFeedbackMutation = useAddFeedback();
 
   const addFeedback = async (submissionId, feedback) => {
+    console.log("[STORE] useAddFeedbackAction called", { submissionId, feedback });
     setLoading(true);
     setError(null);
     showLoader();
@@ -231,6 +238,7 @@ export const useAddFeedbackAction = () => {
       showToast("Feedback added successfully", "success");
       return result;
     } catch (error) {
+      console.error("[STORE] useAddFeedbackAction error:", error);
       setError(error.message);
       showToast(error.message || "Failed to add feedback", "error");
       throw error;
@@ -252,6 +260,7 @@ export const useFlagSubmissionAction = () => {
   const flagSubmissionMutation = useFlagSubmission();
 
   const flagSubmission = async (submissionId, reason) => {
+    console.log("[STORE] useFlagSubmissionAction called", { submissionId, reason });
     setLoading(true);
     setError(null);
     showLoader();
@@ -261,6 +270,7 @@ export const useFlagSubmissionAction = () => {
       showToast("Submission flagged successfully", "success");
       return result;
     } catch (error) {
+      console.error("[STORE] useFlagSubmissionAction error:", error);
       setError(error.message);
       showToast(error.message || "Failed to flag submission", "error");
       throw error;
@@ -323,6 +333,7 @@ export const useDeleteSubmissionAction = () => {
   const deleteSubmissionMutation = useDeleteSubmission();
 
   const deleteSubmission = async (submissionId) => {
+    console.log("[STORE] useDeleteSubmissionAction called", submissionId);
     setLoading(true);
     setError(null);
     showLoader();
@@ -332,6 +343,7 @@ export const useDeleteSubmissionAction = () => {
       showToast("Submission deleted successfully", "success");
       return result;
     } catch (error) {
+      console.error("[STORE] useDeleteSubmissionAction error:", error);
       setError(error.message);
       showToast(error.message || "Failed to delete submission", "error");
       throw error;

@@ -20,6 +20,7 @@ export const useUploadAttachmentAction = () => {
   const uploadMutation = useUploadAttachment();
 
   const uploadAttachment = async (formData) => {
+    console.log("[STORE] useUploadAttachmentAction called");
     setUploading(true);
     setUploadProgress(0);
     showLoader();
@@ -31,6 +32,7 @@ export const useUploadAttachmentAction = () => {
       showToast(res?.message || "File uploaded", "success");
       return res;
     } catch (err) {
+      console.error("[STORE] useUploadAttachmentAction error:", err);
       setUploading(false);
       setUploadProgress(0);
       showToast(err?.message || "Upload failed", "error");
@@ -55,6 +57,7 @@ export const useGetUserAttachmentsAction = () => {
 
   useEffect(() => {
     if (data?.data) {
+      console.log("[STORE] useGetUserAttachmentsAction data:", data.data);
       setAttachments(data.data);
     }
   }, [data, setAttachments]);
@@ -73,12 +76,14 @@ export const useDeleteAttachmentAction = () => {
   const { showToast, showLoader, hideLoader } = useUserStore();
 
   const deleteAttachment = async (fileUrl) => {
+    console.log("[STORE] useDeleteAttachmentAction called", fileUrl);
     showLoader();
     try {
       const res = await deleteMutation.mutateAsync(fileUrl);
       showToast(res?.message || "Attachment deleted", "success");
       return res;
     } catch (err) {
+      console.error("[STORE] useDeleteAttachmentAction error:", err);
       showToast(err?.message || "Failed to delete attachment", "error");
       throw err;
     } finally {
