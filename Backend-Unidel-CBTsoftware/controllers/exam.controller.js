@@ -403,27 +403,13 @@ export const approveQuestionBank = async (req, res) => {
 
     await questionBank.save();
 
-    // On approval, create an Exam (status: pending, not published)
-    const exam = new Exam({
-      courseId: questionBank.courseId,
-      lecturerId: questionBank.lecturerId,
-      duration: 60, // Default, or you can add duration to question bank or approval form
-      startTime: new Date(), // Placeholder, lecturer will set actual time
-      endTime: new Date(Date.now() + 60 * 60 * 1000), // Placeholder
-      questions: questionBank.questions.map((q) => ({
-        question: q.question,
-        options: q.options,
-        correctAnswer: q.correctAnswer,
-        marks: q.marks,
-      })),
-      status: "pending",
-    });
-    await exam.save();
+    // ❌ REMOVE automatic exam creation - lecturer will schedule it manually
+    // const exam = new Exam({...});
+    // await exam.save();
 
     res.status(200).json({
-      message: "Question bank approved successfully",
+      message: "Question bank approved successfully. Lecturer can now schedule exams from it.",
       questionBank,
-      exam,
     });
   } catch (error) {
     console.error("Approve question bank error:", error);
@@ -718,8 +704,11 @@ export const deleteExam = async (req, res) => {
       return res.status(403).json({ message: "Not authorized" });
     }
 
-    if (exam.status === "active" || exam.status === "completed") {
-      return res.status(400).json({ message: "Cannot delete active or completed exam" });
+    // ✅ Allow deletion of active exams but not completed ones with submissions
+    if (exam.status === "completed" && exam.totalSubmissions > 0) {
+      return res.status(400).json({ 
+        message: "Cannot delete completed exam with student submissions. Contact admin to archive it." 
+      });
     }
 
     await Exam.findByIdAndDelete(id);

@@ -1,4 +1,5 @@
 import { create } from "zustand";
+import { useEffect } from "react";
 import {
   useExtractTextFromFile,
   useGenerateQuestionsFromFile,
@@ -615,18 +616,21 @@ export const useGetActiveExamsForStudentAction = () => {
 };
 
 export const useGetExamByIdAction = (id) => {
-  const { setSelectedExam, setError } = useExamStore();
+  const { setError } = useExamStore();
   const { data, isLoading, error, refetch } = useGetExamById(id);
 
-  if (data?.exam) {
-    setSelectedExam(data.exam);
-    console.log("✅ Exam fetched successfully", data.exam);
-  }
+  useEffect(() => {
+    if (data?.exam) {
+      console.log("✅ Exam fetched successfully", data.exam);
+    }
+  }, [data]);
 
-  if (error) {
-    setError(error.message);
-    console.log("❌ Failed to fetch exam:", error.message);
-  }
+  useEffect(() => {
+    if (error) {
+      setError(error.message);
+      console.log("❌ Failed to fetch exam:", error.message);
+    }
+  }, [error, setError]);
 
   return {
     exam: data?.exam,

@@ -13,16 +13,14 @@ import {
   useSubmitExamAction,
   useGetStudentSubmissionAction,
 } from "../../../../store/submission-store";
-import { getTimeRemaining } from "../../../../core/utils/time-laspe.util";
 import { debounce } from "../../../../core/services/debounce-throttle";
 
 const AnswerQuestions = () => {
   const { examId } = useParams();
   const navigate = useNavigate();
   
-  // Exam and submission data
-  const { exam, isLoading: examLoading } = useGetExamByIdAction(examId);
-  const { submission: existingSubmission, timeRemaining: serverTimeRemaining } = useGetStudentSubmissionAction(examId);
+  // Exam and submission data - only fetch once with examId dependency
+  const { exam, isLoading: examLoading, error: examError } = useGetExamByIdAction(examId);
   const { startExam, isLoading: starting } = useStartExamAction();
   const { saveAnswer } = useSaveAnswerAction();
   const { submitExam, isLoading: submitting } = useSubmitExamAction();
@@ -35,38 +33,93 @@ const AnswerQuestions = () => {
   const [timeRemaining, setTimeRemaining] = useState(null);
   const [showSubmitModal, setShowSubmitModal] = useState(false);
   const [autoSaving, setAutoSaving] = useState(false);
+  const [examStarted, setExamStarted] = useState(false);
 
-  // Initialize exam
+  // Remove excessive console logs or reduce them
+  useEffect(() => {
+    if (exam) {
+      console.log("📊 Exam loaded:", exam._id, "Questions:", exam.questions?.length);
+    }
+  }, [exam]);
+
+  // Helper function to calculate time remaining
+  const getTimeRemaining = (endTime) => {
+    const now = new Date();
+    const end = new Date(endTime);
+    const diffInSeconds = Math.floor((end - now) / 1000);
+
+    if (diffInSeconds <= 0) {
+      return {
+        expired: true,
+        totalSeconds: 0,
+        minutes: 0,
+        seconds: 0,
+        formatted: "00:00",
+      };
+    }
+
+    const hours = Math.floor(diffInSeconds / 3600);
+    const minutes = Math.floor((diffInSeconds % 3600) / 60);
+    const seconds = diffInSeconds % 60;
+
+    return {
+      expired: false,
+      totalSeconds: diffInSeconds,
+      hours,
+      minutes,
+      seconds,
+      formatted: hours > 0 
+        ? `${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`
+        : `${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`,
+    };
+  };
+
+  // Start exam on mount
   useEffect(() => {
     const initializeExam = async () => {
-      if (existingSubmission) {
-        setSubmission(existingSubmission);
-        setTimeRemaining(serverTimeRemaining);
+      // Add more specific condition checks
+      if (!exam || !exam.questions || exam.questions.length === 0) {
+        console.log("⏳ Waiting for exam data...");
+        return;
+      }
+      
+      if (examStarted || starting || submission) {
+        console.log("⏭️ Exam already started or starting...");
+        return;
+      }
+
+      console.log("🚀 Starting exam...");
+      try {
+        const result = await startExam(examId);
+        console.log("✅ Exam started:", result.submission._id);
+        setSubmission(result.submission);
+        setExamStarted(true);
         
-        // Load existing answers
-        const existingAnswers = {};
-        existingSubmission.answers?.forEach((ans) => {
-          existingAnswers[ans.questionId] = ans.answer;
-        });
-        setAnswers(existingAnswers);
-      } else if (exam && !submission) {
-        // Start new exam
-        try {
-          const result = await startExam(examId);
-          setSubmission(result.submission);
-          setTimeRemaining(result.timeRemaining);
-        } catch (error) {
-          console.error("Failed to start exam:", error);
+        // Initialize time remaining
+        if (exam.endTime) {
+          const remaining = getTimeRemaining(exam.endTime);
+          setTimeRemaining(remaining);
         }
+        
+        // Load existing answers if any
+        if (result.submission?.answers) {
+          const existingAnswers = {};
+          result.submission.answers.forEach((ans) => {
+            existingAnswers[ans.questionId] = ans.answer;
+          });
+          setAnswers(existingAnswers);
+        }
+      } catch (error) {
+        console.error("❌ Failed to start exam:", error);
       }
     };
 
     initializeExam();
-  }, [exam, existingSubmission, serverTimeRemaining]);
+  }, [exam, examStarted, starting, submission, startExam, examId]);
 
   // Countdown timer
   useEffect(() => {
-    if (!exam) return;
+    if (!exam?.endTime) return;
 
     const interval = setInterval(() => {
       const remaining = getTimeRemaining(exam.endTime);
@@ -78,18 +131,22 @@ const AnswerQuestions = () => {
     }, 1000);
 
     return () => clearInterval(interval);
-  }, [exam, submission]);
+  }, [exam?.endTime, submission]);
 
   // Auto-save with debounce
   const debouncedSave = useCallback(
     debounce(async (questionId, answer) => {
-      if (!submission) return;
+      if (!submission?._id) {
+        console.warn("⚠️ No submission ID for auto-save");
+        return;
+      }
       
       setAutoSaving(true);
       try {
         await saveAnswer(submission._id, questionId, answer);
+        console.log("💾 Answer auto-saved");
       } catch (error) {
-        console.error("Auto-save failed:", error);
+        console.error("❌ Auto-save failed:", error);
       } finally {
         setAutoSaving(false);
       }
@@ -98,6 +155,7 @@ const AnswerQuestions = () => {
   );
 
   const handleAnswerChange = (questionId, answer) => {
+    console.log("✏️ Answer changed:", { questionId, answer });
     setAnswers((prev) => ({ ...prev, [questionId]: answer }));
     debouncedSave(questionId, answer);
   };
@@ -114,6 +172,7 @@ const AnswerQuestions = () => {
     });
   };
 
+  // Navigation
   const handlePreviousQuestion = () => {
     if (currentQuestionIndex > 0) {
       setCurrentQuestionIndex((prev) => prev - 1);
@@ -121,35 +180,51 @@ const AnswerQuestions = () => {
   };
 
   const handleNextQuestion = () => {
-    if (currentQuestionIndex < (exam?.questions?.length || 0) - 1) {
+    // Only allow next if current question is answered
+    const currentQ = exam.questions[currentQuestionIndex];
+    if (!answers[currentQ._id]) return;
+    if (exam?.questions && currentQuestionIndex < exam.questions.length - 1) {
       setCurrentQuestionIndex((prev) => prev + 1);
     }
   };
 
   const handleQuestionNavigate = (index) => {
+    // Only allow navigation if all questions up to (and including) the target index are answered
+    if (index === currentQuestionIndex) return;
+    if (index < currentQuestionIndex) {
+      setCurrentQuestionIndex(index);
+      return;
+    }
+    // Check all questions from current to target are answered
+    for (let i = currentQuestionIndex; i <= index; i++) {
+      const qid = exam.questions[i]._id;
+      if (!answers[qid]) return;
+    }
     setCurrentQuestionIndex(index);
   };
 
   const handleAutoSubmit = async () => {
-    if (!submission) return;
+    if (!submission?._id) return;
     
+    console.log("⏰ Auto-submitting exam...");
     try {
       await submitExam(submission._id);
       navigate("/student/exams/completed");
     } catch (error) {
-      console.error("Auto-submit failed:", error);
+      console.error("❌ Auto-submit failed:", error);
     }
   };
 
   const handleManualSubmit = async () => {
-    if (!submission) return;
+    if (!submission?._id) return;
     
+    console.log("📤 Manually submitting exam...");
     try {
       await submitExam(submission._id);
       setShowSubmitModal(false);
       navigate("/student/exams/completed");
     } catch (error) {
-      console.error("Submit failed:", error);
+      console.error("❌ Submit failed:", error);
     }
   };
 
@@ -165,7 +240,8 @@ const AnswerQuestions = () => {
     return "text-red-600";
   };
 
-  if (examLoading || !exam) {
+  // Loading state - keep it simple
+  if (examLoading) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <div className="text-center">
@@ -176,12 +252,68 @@ const AnswerQuestions = () => {
     );
   }
 
-  if (!submission || !timeRemaining) {
+  // Error state
+  if (examError) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="text-center">
+          <AlertTriangle className="w-12 h-12 text-red-600 mx-auto mb-4" />
+          <p className="text-gray-600 mb-4">Failed to load exam: {examError}</p>
+          <button
+            onClick={() => navigate("/student/exams/active")}
+            className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
+          >
+            Back to Exams
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  // Check if exam exists
+  if (!exam) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="text-center">
+          <AlertTriangle className="w-12 h-12 text-orange-600 mx-auto mb-4" />
+          <p className="text-gray-600 mb-4">Exam not found</p>
+          <button
+            onClick={() => navigate("/student/exams/active")}
+            className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
+          >
+            Back to Exams
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  // Check if exam has questions
+  if (!exam.questions || exam.questions.length === 0) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="text-center">
+          <FileText className="w-12 h-12 text-gray-400 mx-auto mb-4" />
+          <p className="text-gray-600 mb-4">This exam has no questions</p>
+          <button
+            onClick={() => navigate("/student/exams/active")}
+            className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
+          >
+            Back to Exams
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  // Wait for submission to be created
+  if (!submission) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <div className="text-center">
           <Timer className="w-12 h-12 text-blue-600 animate-spin mx-auto mb-4" />
-          <p className="text-gray-600">Initializing exam...</p>
+          <p className="text-gray-600">Starting exam...</p>
+          <p className="text-sm text-gray-500 mt-2">Questions loaded: {exam.questions.length}</p>
         </div>
       </div>
     );
@@ -193,13 +325,13 @@ const AnswerQuestions = () => {
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Header */}
-      <div className="bg-white border-b border-gray-200 sticky top-0 z-10 shadow-sm">
+      <div className=" border-b border-gray-200 sticky top-0 z-10 ">
         <div className="max-w-7xl mx-auto px-4 py-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-4">
               <div>
                 <h1 className="text-xl font-bold text-gray-900">
-                  {exam.courseId?.courseCode} Exam
+                  {exam.courseId?.courseCode || exam.courseId?.courseTitle || "Exam"}
                 </h1>
                 <p className="text-sm text-gray-600">
                   Question {currentQuestionIndex + 1} of {exam.questions.length}
@@ -217,10 +349,12 @@ const AnswerQuestions = () => {
               )}
 
               {/* Timer */}
-              <div className={`flex items-center gap-2 font-mono text-lg font-bold ${getTimeWarningColor()}`}>
-                <Clock className="w-5 h-5" />
-                {timeRemaining.formatted}
-              </div>
+              {timeRemaining && (
+                <div className={`flex items-center gap-2 font-mono text-lg font-bold ${getTimeWarningColor()}`}>
+                  <Clock className="w-5 h-5" />
+                  {timeRemaining.formatted}
+                </div>
+              )}
 
               {/* Submit button */}
               <button
@@ -297,38 +431,44 @@ const AnswerQuestions = () => {
 
               {/* Options */}
               <div className="space-y-3">
-                {currentQuestion.options.map((option, index) => {
-                  const optionKey = String.fromCharCode(65 + index);
-                  const isSelected = answers[currentQuestion._id] === optionKey;
+                {currentQuestion.options && currentQuestion.options.length > 0 ? (
+                  currentQuestion.options.map((option, index) => {
+                    const optionKey = String.fromCharCode(65 + index);
+                    const isSelected = answers[currentQuestion._id] === optionKey;
 
-                  return (
-                    <button
-                      key={index}
-                      onClick={() => handleAnswerChange(currentQuestion._id, optionKey)}
-                      className={`w-full p-4 rounded-lg border-2 transition-all text-left ${
-                        isSelected
-                          ? "border-blue-600 bg-blue-50"
-                          : "border-gray-200 hover:border-gray-300 hover:bg-gray-50"
-                      }`}
-                    >
-                      <div className="flex items-center gap-3">
-                        <div
-                          className={`w-8 h-8 rounded-full border-2 flex items-center justify-center font-semibold ${
-                            isSelected
-                              ? "border-blue-600 bg-blue-600 text-white"
-                              : "border-gray-300 text-gray-600"
-                          }`}
-                        >
-                          {optionKey}
+                    return (
+                      <button
+                        key={index}
+                        onClick={() => handleAnswerChange(currentQuestion._id, optionKey)}
+                        className={`w-full p-4 rounded-lg border-2 transition-all text-left ${
+                          isSelected
+                            ? "border-blue-600 bg-blue-50"
+                            : "border-gray-200 hover:border-gray-300 hover:bg-gray-50"
+                        }`}
+                      >
+                        <div className="flex items-center gap-3">
+                          <div
+                            className={`w-8 h-8 rounded-full border-2 flex items-center justify-center font-semibold ${
+                              isSelected
+                                ? "border-blue-600 bg-blue-600 text-white"
+                                : "border-gray-300 text-gray-600"
+                            }`}
+                          >
+                            {optionKey}
+                          </div>
+                          <span className={`flex-1 ${isSelected ? "text-blue-900 font-medium" : "text-gray-700"}`}>
+                            {option}
+                          </span>
+                          {isSelected && <Check className="w-5 h-5 text-blue-600" />}
                         </div>
-                        <span className={`flex-1 ${isSelected ? "text-blue-900 font-medium" : "text-gray-700"}`}>
-                          {option}
-                        </span>
-                        {isSelected && <Check className="w-5 h-5 text-blue-600" />}
-                      </div>
-                    </button>
-                  );
-                })}
+                      </button>
+                    );
+                  })
+                ) : (
+                  <div className="text-center text-gray-500 py-8">
+                    No options available for this question
+                  </div>
+                )}
               </div>
 
               {/* Navigation */}
@@ -348,7 +488,10 @@ const AnswerQuestions = () => {
 
                 <button
                   onClick={handleNextQuestion}
-                  disabled={currentQuestionIndex === exam.questions.length - 1}
+                  disabled={
+                    currentQuestionIndex === exam.questions.length - 1 ||
+                    !answers[currentQuestion._id] // Disable if not answered
+                  }
                   className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
                 >
                   Next
@@ -386,10 +529,22 @@ const AnswerQuestions = () => {
                   const isFlagged = flaggedQuestions.has(q._id);
                   const isCurrent = index === currentQuestionIndex;
 
+                  // Disable button if trying to jump ahead and previous questions are not answered
+                  let disabled = false;
+                  if (index > currentQuestionIndex) {
+                    for (let i = currentQuestionIndex; i < index; i++) {
+                      if (!answers[exam.questions[i]._id]) {
+                        disabled = true;
+                        break;
+                      }
+                    }
+                  }
+
                   return (
                     <button
                       key={q._id}
                       onClick={() => handleQuestionNavigate(index)}
+                      disabled={disabled}
                       className={`aspect-square rounded-lg text-sm font-medium transition-all ${
                         isCurrent
                           ? "bg-blue-600 text-white ring-2 ring-blue-600 ring-offset-2"
@@ -398,7 +553,7 @@ const AnswerQuestions = () => {
                           : isFlagged
                           ? "bg-orange-100 text-orange-700 hover:bg-orange-200"
                           : "bg-gray-100 text-gray-600 hover:bg-gray-200"
-                      }`}
+                      } ${disabled ? "opacity-50 cursor-not-allowed" : ""}`}
                     >
                       {index + 1}
                     </button>

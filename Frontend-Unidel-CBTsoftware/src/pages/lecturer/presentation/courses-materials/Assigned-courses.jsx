@@ -9,15 +9,34 @@ const AssignedCourses = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [filterDepartment, setFilterDepartment] = useState("All");
 
+  // Helper function to get department names from course
+  const getDepartmentNames = (course) => {
+    if (!course.department) return "N/A";
+    if (Array.isArray(course.department)) {
+      return course.department
+        .map((dept) => {
+          if (typeof dept === "object" && dept.departmentName) {
+            return dept.departmentName;
+          }
+          return dept;
+        })
+        .join(", ");
+    }
+    if (typeof course.department === "object" && course.department.departmentName) {
+      return course.department.departmentName;
+    }
+    return course.department;
+  };
+
   // Filter and search logic
   const filteredCourses = useMemo(() => {
     return courses.filter((course) => {
+      const deptNames = getDepartmentNames(course).toLowerCase();
       const matchesSearch =
         (course.courseCode || "").toLowerCase().includes(searchTerm.toLowerCase()) ||
         (course.courseTitle || "").toLowerCase().includes(searchTerm.toLowerCase()) ||
-        (course.department || "").toLowerCase().includes(searchTerm.toLowerCase());
-      const matchesDept =
-        filterDepartment === "All" || course.department === filterDepartment;
+        deptNames.includes(searchTerm.toLowerCase());
+      const matchesDept = filterDepartment === "All" || deptNames.includes(filterDepartment.toLowerCase());
       return matchesSearch && matchesDept;
     });
   }, [courses, searchTerm, filterDepartment]);
@@ -25,7 +44,19 @@ const AssignedCourses = () => {
   // Get unique departments for filter dropdown
   const departmentOptions = useMemo(() => {
     const set = new Set();
-    courses.forEach((c) => c.department && set.add(c.department));
+    courses.forEach((c) => {
+      if (c.department) {
+        if (Array.isArray(c.department)) {
+          c.department.forEach((dept) => {
+            const deptName = typeof dept === "object" && dept.departmentName ? dept.departmentName : dept;
+            if (deptName) set.add(deptName);
+          });
+        } else {
+          const deptName = typeof c.department === "object" && c.department.departmentName ? c.department.departmentName : c.department;
+          if (deptName) set.add(deptName);
+        }
+      }
+    });
     return Array.from(set);
   }, [courses]);
 
@@ -59,9 +90,11 @@ const AssignedCourses = () => {
             {/* Filters */}
             <div className="flex gap-3">
               <select value={filterDepartment} onChange={(e) => setFilterDepartment(e.target.value)} className="px-4 py-2 bg-white border border-slate-300 rounded-lg text-slate-900">
-                <option value="All">All</option>
+                <option value="All">All Departments</option>
                 {departmentOptions.map((dept) => (
-                  <option key={dept} value={dept}>{dept}</option>
+                  <option key={dept} value={dept}>
+                    {dept}
+                  </option>
                 ))}
               </select>
             </div>
@@ -100,7 +133,7 @@ const AssignedCourses = () => {
                         <span className="font-bold text-orange-600">{course.courseCode}</span>
                       </td>
                       <td className="px-6 py-4 text-slate-900 font-medium">{course.courseTitle}</td>
-                      <td className="px-6 py-4 text-slate-600">{course.department}</td>
+                      <td className="px-6 py-4 text-slate-600">{getDepartmentNames(course)}</td>
                       <td className="px-6 py-4">
                         <div className="flex items-center gap-2 text-slate-700">
                           <Users className="w-4 h-4 text-slate-500" />

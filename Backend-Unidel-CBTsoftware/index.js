@@ -4,7 +4,7 @@ import dotenv from "dotenv";
 import express from "express";
 import morgan from "morgan";
 import { connectDB, disconnectDB } from "./config/db-config.js";
-import globalRateLimiter from "./core/security/rate-limiter.js";
+// import globalRateLimiter from "./core/security/rate-limiter.js";
 
 // Load environment variables
 dotenv.config();
@@ -35,7 +35,7 @@ app.use(cookieParser());
 app.use(express.urlencoded({ extended: true }));
 
 // Apply global rate limiter
-app.use(globalRateLimiter);
+// app.use(globalRateLimiter);
 
 // Development logging
 if (process.env.NODE_ENV === "development") {

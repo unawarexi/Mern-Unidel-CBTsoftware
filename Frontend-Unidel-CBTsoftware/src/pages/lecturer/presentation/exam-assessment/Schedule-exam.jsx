@@ -21,18 +21,31 @@ const ScheduleExam = () => {
   const handleSchedule = async (e) => {
     e.preventDefault();
     setError("");
+    
     if (!questionBankId) {
       setError("No question bank selected.");
       return;
     }
+    
     if (!form.startTime || !form.endTime || !form.duration) {
       setError("All fields are required.");
       return;
     }
+    
+    // ✅ Validate that end time is after start time
+    const start = new Date(form.startTime);
+    const end = new Date(form.endTime);
+    
+    if (end <= start) {
+      setError("End time must be after start time.");
+      return;
+    }
+    
     try {
+      // ✅ This now creates only ONE exam since we removed automatic creation on approval
       await createExamFromQuestionBank({
         questionBankId,
-        duration: form.duration,
+        duration: parseInt(form.duration), // Ensure it's a number
         startTime: form.startTime,
         endTime: form.endTime,
       });
