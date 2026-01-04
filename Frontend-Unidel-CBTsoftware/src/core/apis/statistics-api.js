@@ -5,6 +5,7 @@ const BASE_URL = import.meta.env.VITE_API_BASE_URL || "http://localhost:3000/api
 // ========== RAW API FUNCTIONS - ACTIVITY LOGS ==========
 
 export const createActivityLog = async (logData) => {
+  console.log("[API] createActivityLog called", logData);
   const response = await fetch(`${BASE_URL}/activity`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
@@ -13,12 +14,14 @@ export const createActivityLog = async (logData) => {
   });
   if (!response.ok) {
     const error = await response.json();
+    console.error("[API] createActivityLog error:", error);
     throw new Error(error.message || "Failed to create activity log");
   }
   return response.json();
 };
 
 export const getActivityLogs = async (params = {}) => {
+  console.log("[API] getActivityLogs called", params);
   const queryString = new URLSearchParams(params).toString();
   const url = queryString ? `${BASE_URL}/activity?${queryString}` : `${BASE_URL}/activity`;
   
@@ -28,6 +31,7 @@ export const getActivityLogs = async (params = {}) => {
   });
   if (!response.ok) {
     const error = await response.json();
+    console.error("[API] getActivityLogs error:", error);
     throw new Error(error.message || "Failed to fetch activity logs");
   }
   return response.json();
@@ -36,6 +40,7 @@ export const getActivityLogs = async (params = {}) => {
 // ========== RAW API FUNCTIONS - DASHBOARD STATISTICS ==========
 
 export const getAdminDashboardStats = async (params = {}) => {
+  console.log("[API] getAdminDashboardStats called", params);
   const queryString = new URLSearchParams(params).toString();
   const url = queryString ? `${BASE_URL}/admin/dashboard?${queryString}` : `${BASE_URL}/admin/dashboard`;
   
@@ -45,12 +50,14 @@ export const getAdminDashboardStats = async (params = {}) => {
   });
   if (!response.ok) {
     const error = await response.json();
+    console.error("[API] getAdminDashboardStats error:", error);
     throw new Error(error.message || "Failed to fetch admin dashboard stats");
   }
   return response.json();
 };
 
 export const getLecturerDashboardStats = async (params = {}) => {
+  console.log("[API] getLecturerDashboardStats called", params);
   const queryString = new URLSearchParams(params).toString();
   const url = queryString ? `${BASE_URL}/lecturer/dashboard?${queryString}` : `${BASE_URL}/lecturer/dashboard`;
   
@@ -60,12 +67,14 @@ export const getLecturerDashboardStats = async (params = {}) => {
   });
   if (!response.ok) {
     const error = await response.json();
+    console.error("[API] getLecturerDashboardStats error:", error);
     throw new Error(error.message || "Failed to fetch lecturer dashboard stats");
   }
   return response.json();
 };
 
 export const getStudentDashboardStats = async (params = {}) => {
+  console.log("[API] getStudentDashboardStats called", params);
   const queryString = new URLSearchParams(params).toString();
   const url = queryString ? `${BASE_URL}/student/dashboard?${queryString}` : `${BASE_URL}/student/dashboard`;
   
@@ -75,6 +84,7 @@ export const getStudentDashboardStats = async (params = {}) => {
   });
   if (!response.ok) {
     const error = await response.json();
+    console.error("[API] getStudentDashboardStats error:", error);
     throw new Error(error.message || "Failed to fetch student dashboard stats");
   }
   return response.json();
@@ -83,12 +93,14 @@ export const getStudentDashboardStats = async (params = {}) => {
 // ========== RAW API FUNCTIONS - EXAM ANALYTICS ==========
 
 export const getExamAnalytics = async (examId) => {
+  console.log("[API] getExamAnalytics called", examId);
   const response = await fetch(`${BASE_URL}/exam/${examId}/analytics`, {
     method: "GET",
     credentials: "include",
   });
   if (!response.ok) {
     const error = await response.json();
+    console.error("[API] getExamAnalytics error:", error);
     throw new Error(error.message || "Failed to fetch exam analytics");
   }
   return response.json();
@@ -97,6 +109,7 @@ export const getExamAnalytics = async (examId) => {
 // ========== RAW API FUNCTIONS - SYSTEM ANALYTICS ==========
 
 export const getSystemAnalytics = async (params = {}) => {
+  console.log("[API] getSystemAnalytics called", params);
   const queryString = new URLSearchParams(params).toString();
   const url = queryString ? `${BASE_URL}/system/analytics?${queryString}` : `${BASE_URL}/system/analytics`;
   
@@ -106,6 +119,7 @@ export const getSystemAnalytics = async (params = {}) => {
   });
   if (!response.ok) {
     const error = await response.json();
+    console.error("[API] getSystemAnalytics error:", error);
     throw new Error(error.message || "Failed to fetch system analytics");
   }
   return response.json();
@@ -114,6 +128,7 @@ export const getSystemAnalytics = async (params = {}) => {
 // ========== RAW API FUNCTIONS - EXPORT ==========
 
 export const exportStatistics = async (params = {}) => {
+  console.log("[API] exportStatistics called", params);
   const queryString = new URLSearchParams(params).toString();
   const url = queryString ? `${BASE_URL}/export?${queryString}` : `${BASE_URL}/export`;
   
@@ -123,6 +138,7 @@ export const exportStatistics = async (params = {}) => {
   });
   if (!response.ok) {
     const error = await response.json();
+    console.error("[API] exportStatistics error:", error);
     throw new Error(error.message || "Failed to export statistics");
   }
   return response.json();

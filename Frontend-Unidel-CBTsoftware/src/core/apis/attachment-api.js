@@ -4,6 +4,7 @@ const BASE_URL = import.meta.env.VITE_API_BASE_URL || "http://localhost:3000/api
 
 // Upload single file
 export const uploadAttachment = async (formData) => {
+  console.log("[API] uploadAttachment called");
   const response = await fetch(`${BASE_URL}/attachments/upload`, {
     method: "POST",
     credentials: "include",
@@ -11,6 +12,7 @@ export const uploadAttachment = async (formData) => {
   });
   if (!response.ok) {
     const error = await response.json();
+    console.error("[API] uploadAttachment error:", error);
     throw new Error(error.message || "Failed to upload file");
   }
   return response.json();
@@ -18,12 +20,14 @@ export const uploadAttachment = async (formData) => {
 
 // Get attachments for current user
 export const getUserAttachments = async () => {
+  console.log("[API] getUserAttachments called");
   const response = await fetch(`${BASE_URL}/attachments`, {
     method: "GET",
     credentials: "include",
   });
   if (!response.ok) {
     const error = await response.json();
+    console.error("[API] getUserAttachments error:", error);
     throw new Error(error.message || "Failed to fetch attachments");
   }
   return response.json();
@@ -31,6 +35,7 @@ export const getUserAttachments = async () => {
 
 // Delete attachment by URL (pass encoded fileUrl)
 export const deleteAttachment = async (fileUrl) => {
+  console.log("[API] deleteAttachment called", fileUrl);
   const encoded = encodeURIComponent(fileUrl);
   const response = await fetch(`${BASE_URL}/attachments/${encoded}`, {
     method: "DELETE",
@@ -38,6 +43,7 @@ export const deleteAttachment = async (fileUrl) => {
   });
   if (!response.ok) {
     const error = await response.json();
+    console.error("[API] deleteAttachment error:", error);
     throw new Error(error.message || "Failed to delete attachment");
   }
   return response.json();

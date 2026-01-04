@@ -5,6 +5,7 @@ const BASE_URL = import.meta.env.VITE_API_BASE_URL || "http://localhost:3000/api
 // ========== LECTURER API FUNCTIONS ==========
 
 export const createLecturer = async (data) => {
+  console.log("[API] createLecturer called", data);
   const response = await fetch(`${BASE_URL}/lecturers`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
@@ -13,36 +14,42 @@ export const createLecturer = async (data) => {
   });
   if (!response.ok) {
     const error = await response.json();
+    console.error("[API] createLecturer error:", error);
     throw new Error(error.message || "Failed to create lecturer");
   }
   return response.json();
 };
 
 export const getAllLecturers = async () => {
+  console.log("[API] getAllLecturers called");
   const response = await fetch(`${BASE_URL}/lecturers`, {
     method: "GET",
     credentials: "include",
   });
   if (!response.ok) {
     const error = await response.json();
+    console.error("[API] getAllLecturers error:", error);
     throw new Error(error.message || "Failed to fetch lecturers");
   }
   return response.json();
 };
 
 export const getLecturerById = async (id) => {
+  console.log("[API] getLecturerById called", id);
   const response = await fetch(`${BASE_URL}/lecturers/${id}`, {
     method: "GET",
     credentials: "include",
   });
   if (!response.ok) {
     const error = await response.json();
+    console.error("[API] getLecturerById error:", error);
     throw new Error(error.message || "Failed to fetch lecturer");
   }
   return response.json();
 };
 
 export const updateLecturer = async ({ id, data }) => {
+  console.log("[API] updateLecturer called", id, data);
   const response = await fetch(`${BASE_URL}/lecturers/${id}`, {
     method: "PUT",
     headers: { "Content-Type": "application/json" },
@@ -51,18 +58,21 @@ export const updateLecturer = async ({ id, data }) => {
   });
   if (!response.ok) {
     const error = await response.json();
+    console.error("[API] updateLecturer error:", error);
     throw new Error(error.message || "Failed to update lecturer");
   }
   return response.json();
 };
 
 export const deleteLecturer = async (id) => {
+  console.log("[API] deleteLecturer called", id);
   const response = await fetch(`${BASE_URL}/lecturers/${id}`, {
     method: "DELETE",
     credentials: "include",
   });
   if (!response.ok) {
     const error = await response.json();
+    console.error("[API] deleteLecturer error:", error);
     throw new Error(error.message || "Failed to delete lecturer");
   }
   return response.json();
@@ -71,6 +81,7 @@ export const deleteLecturer = async (id) => {
 // ========== STUDENT API FUNCTIONS ==========
 
 export const createStudent = async (data) => {
+  console.log("[API] createStudent called", data);
   const response = await fetch(`${BASE_URL}/students`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
@@ -79,36 +90,42 @@ export const createStudent = async (data) => {
   });
   if (!response.ok) {
     const error = await response.json();
+    console.error("[API] createStudent error:", error);
     throw new Error(error.message || "Failed to create student");
   }
   return response.json();
 };
 
 export const getAllStudents = async () => {
+  console.log("[API] getAllStudents called");
   const response = await fetch(`${BASE_URL}/students`, {
     method: "GET",
     credentials: "include",
   });
   if (!response.ok) {
     const error = await response.json();
+    console.error("[API] getAllStudents error:", error);
     throw new Error(error.message || "Failed to fetch students");
   }
   return response.json();
 };
 
 export const getStudentById = async (id) => {
+  console.log("[API] getStudentById called", id);
   const response = await fetch(`${BASE_URL}/students/${id}`, {
     method: "GET",
     credentials: "include",
   });
   if (!response.ok) {
     const error = await response.json();
+    console.error("[API] getStudentById error:", error);
     throw new Error(error.message || "Failed to fetch student");
   }
   return response.json();
 };
 
 export const updateStudent = async ({ id, data }) => {
+  console.log("[API] updateStudent called", id, data);
   const response = await fetch(`${BASE_URL}/students/${id}`, {
     method: "PUT",
     headers: { "Content-Type": "application/json" },
@@ -117,18 +134,21 @@ export const updateStudent = async ({ id, data }) => {
   });
   if (!response.ok) {
     const error = await response.json();
+    console.error("[API] updateStudent error:", error);
     throw new Error(error.message || "Failed to update student");
   }
   return response.json();
 };
 
 export const deleteStudent = async (id) => {
+  console.log("[API] deleteStudent called", id);
   const response = await fetch(`${BASE_URL}/students/${id}`, {
     method: "DELETE",
     credentials: "include",
   });
   if (!response.ok) {
     const error = await response.json();
+    console.error("[API] deleteStudent error:", error);
     throw new Error(error.message || "Failed to delete student");
   }
   return response.json();
@@ -137,6 +157,7 @@ export const deleteStudent = async (id) => {
 // ========== ADMIN API FUNCTIONS ==========
 
 export const createAdmin = async (data) => {
+  console.log("[API] createAdmin called", data);
   const response = await fetch(`${BASE_URL}/admins`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
@@ -145,36 +166,42 @@ export const createAdmin = async (data) => {
   });
   if (!response.ok) {
     const error = await response.json();
+    console.error("[API] createAdmin error:", error);
     throw new Error(error.message || "Failed to create admin");
   }
   return response.json();
 };
 
 export const getAllAdmins = async () => {
+  console.log("[API] getAllAdmins called");
   const response = await fetch(`${BASE_URL}/admins`, {
     method: "GET",
     credentials: "include",
   });
   if (!response.ok) {
     const error = await response.json();
+    console.error("[API] getAllAdmins error:", error);
     throw new Error(error.message || "Failed to fetch admins");
   }
   return response.json();
 };
 
 export const getAdminById = async (id) => {
+  console.log("[API] getAdminById called", id);
   const response = await fetch(`${BASE_URL}/admins/${id}`, {
     method: "GET",
     credentials: "include",
   });
   if (!response.ok) {
     const error = await response.json();
+    console.error("[API] getAdminById error:", error);
     throw new Error(error.message || "Failed to fetch admin");
   }
   return response.json();
 };
 
 export const updateAdmin = async ({ id, data }) => {
+  console.log("[API] updateAdmin called", id, data);
   const response = await fetch(`${BASE_URL}/admins/${id}`, {
     method: "PUT",
     headers: { "Content-Type": "application/json" },
@@ -183,18 +210,21 @@ export const updateAdmin = async ({ id, data }) => {
   });
   if (!response.ok) {
     const error = await response.json();
+    console.error("[API] updateAdmin error:", error);
     throw new Error(error.message || "Failed to update admin");
   }
   return response.json();
 };
 
 export const deleteAdmin = async (id) => {
+  console.log("[API] deleteAdmin called", id);
   const response = await fetch(`${BASE_URL}/admins/${id}`, {
     method: "DELETE",
     credentials: "include",
   });
   if (!response.ok) {
     const error = await response.json();
+    console.error("[API] deleteAdmin error:", error);
     throw new Error(error.message || "Failed to delete admin");
   }
   return response.json();
@@ -203,12 +233,14 @@ export const deleteAdmin = async (id) => {
 // ========== UTILITY API FUNCTIONS ==========
 
 export const getUserStats = async () => {
+  console.log("[API] getUserStats called");
   const response = await fetch(`${BASE_URL}/stats`, {
     method: "GET",
     credentials: "include",
   });
   if (!response.ok) {
     const error = await response.json();
+    console.error("[API] getUserStats error:", error);
     throw new Error(error.message || "Failed to fetch stats");
   }
   return response.json();
@@ -216,12 +248,14 @@ export const getUserStats = async () => {
 
 // NEW: Get stats for current user (all roles)
 export const getCurrentUserStats = async () => {
+  console.log("[API] getCurrentUserStats called");
   const response = await fetch(`${BASE_URL}/me/stats`, {
     method: "GET",
     credentials: "include",
   });
   if (!response.ok) {
     const error = await response.json();
+    console.error("[API] getCurrentUserStats error:", error);
     throw new Error(error.message || "Failed to fetch user stats");
   }
   return response.json();
@@ -230,12 +264,14 @@ export const getCurrentUserStats = async () => {
 // ========== LECTURER UTILITY API FUNCTIONS ==========
 
 export const getLecturerCourses = async () => {
+  console.log("[API] getLecturerCourses called");
   const response = await fetch(`${BASE_URL}/lecturers/me/courses`, {
     method: "GET",
     credentials: "include",
   });
   if (!response.ok) {
     const error = await response.json();
+    console.error("[API] getLecturerCourses error:", error);
     throw new Error(error.message || "Failed to fetch lecturer courses");
   }
   return response.json();
@@ -243,12 +279,14 @@ export const getLecturerCourses = async () => {
 
 // NEW: Get students for the logged-in lecturer
 export const getLecturerStudents = async () => {
+  console.log("[API] getLecturerStudents called");
   const response = await fetch(`${BASE_URL}/lecturers/me/students`, {
     method: "GET",
     credentials: "include",
   });
   if (!response.ok) {
     const error = await response.json();
+    console.error("[API] getLecturerStudents error:", error);
     throw new Error(error.message || "Failed to fetch lecturer students");
   }
   return response.json();
