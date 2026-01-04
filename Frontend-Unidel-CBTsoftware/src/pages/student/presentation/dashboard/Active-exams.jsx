@@ -8,6 +8,7 @@ import {
   TrendingUp, FileText, ChevronRight, RefreshCw, GraduationCap
 } from "lucide-react";
 import { useGetActiveExamsForStudentAction } from "../../../../store/exam-store";
+import { useGetMySubmissionsAction } from "../../../../store/submission-store";
 import { 
   getTimeRemaining, 
   getTimeUntil, 
@@ -20,6 +21,8 @@ import {
 const ActiveExams = () => {
   const navigate = useNavigate();
   const { activeExams = [], isLoading, error, refetch } = useGetActiveExamsForStudentAction();
+  // Fetch all submissions to know which exams are already submitted
+  const { submissions = [] } = useGetMySubmissionsAction({ status: "graded" });
   const [examTimers, setExamTimers] = useState({});
 
   // Update countdowns every second
@@ -62,6 +65,9 @@ const ActiveExams = () => {
   const handleStartExam = (examId) => {
     navigate(`/student/exams/take/${examId}`);
   };
+
+  // Helper: check if student has submitted this exam
+  const hasSubmitted = (examId) => submissions.some((s) => s.examId?._id === examId);
 
   if (isLoading) {
     return (
@@ -220,15 +226,14 @@ const ActiveExams = () => {
             <AnimatePresence>
               {activeExams.map((exam, index) => {
                 if (!exam || !exam._id) return null;
-                
                 const { status, color, icon: StatusIcon } = getExamStatus(exam);
                 const isLocked = status === "upcoming";
                 const isEnded = status === "ended";
                 const timer = examTimers[exam._id];
-                
-                const courseCode = exam.courseId?.courseCode || "N/A";
-                const courseTitle = exam.courseId?.courseTitle || "No title";
-                const department = exam.courseId?.department || "Unknown";
+                const submitted = hasSubmitted(exam._id);
+                // Grey out if submitted, but keep status color if still active
+                const isGreyed = submitted && !isEnded;
+                const isFullyGreyed = submitted && isEnded;
 
                 return (
                   <motion.div
@@ -237,11 +242,13 @@ const ActiveExams = () => {
                     animate={{ opacity: 1, y: 0 }}
                     exit={{ opacity: 0, y: -20 }}
                     transition={{ delay: index * 0.05 }}
-                    className={`bg-white rounded-xl shadow-sm border transition-all ${
-                      isLocked || isEnded
-                        ? "border-gray-200 opacity-75"
+                    className={`bg-white rounded-xl shadow-sm border transition-all
+                      ${isFullyGreyed ? "opacity-50 pointer-events-none" : ""}
+                      ${isGreyed ? "opacity-80" : ""}
+                      ${isLocked || isEnded
+                        ? "border-gray-200"
                         : "border-green-200 hover:shadow-md"
-                    }`}
+                      }`}
                   >
                     <div className="p-6">
                       {/* Header */}
@@ -269,13 +276,13 @@ const ActiveExams = () => {
                             </span>
                           </div>
                           <h3 className="text-lg font-bold text-gray-900 mb-1">
-                            {courseCode}
+                            {exam.courseId?.courseCode || "N/A"}
                           </h3>
                           <p className="text-sm text-gray-600 mb-1">
-                            {courseTitle}
+                            {exam.courseId?.courseTitle || "No title"}
                           </p>
                           <p className="text-xs text-gray-500">
-                            {department}
+                            {exam.courseId?.department || "Unknown"}
                           </p>
                         </div>
                       </div>
@@ -351,29 +358,36 @@ const ActiveExams = () => {
                       {/* Action Button */}
                       <button
                         onClick={() => handleStartExam(exam._id)}
-                        disabled={isLocked || isEnded}
+                        disabled={isLocked || isEnded || submitted}
                         className={`w-full py-3 rounded-lg font-medium transition-all flex items-center justify-center gap-2 ${
-                          isLocked || isEnded
+                          isLocked || isEnded || submitted
                             ? "bg-gray-100 text-gray-400 cursor-not-allowed"
                             : "bg-blue-600 text-white hover:bg-blue-700"
                         }`}
                       >
-                        {isLocked ? (
-                          <>
-                            <Lock className="w-4 h-4" />
-                            Locked
-                          </>
-                        ) : isEnded ? (
-                          <>
-                            <CheckCircle className="w-4 h-4" />
-                            Ended
-                          </>
-                        ) : (
-                          <>
-                            <Play className="w-4 h-4" />
-                            Begin Exam
-                          </>
-                        )}
+                        {submitted
+                          ? (
+                            <>
+                              <CheckCircle className="w-4 h-4" />
+                              Submitted
+                            </>
+                          )
+                          : isLocked ? (
+                            <>
+                              <Lock className="w-4 h-4" />
+                              Locked
+                            </>
+                          ) : isEnded ? (
+                            <>
+                              <CheckCircle className="w-4 h-4" />
+                              Ended
+                            </>
+                          ) : (
+                            <>
+                              <Play className="w-4 h-4" />
+                              Begin Exam
+                            </>
+                          )}
                       </button>
                     </div>
                   </motion.div>
