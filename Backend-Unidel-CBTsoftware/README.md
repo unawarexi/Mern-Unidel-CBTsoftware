@@ -433,4 +433,4 @@ Proprietary - University of Delta (UNIDEL)
 
 ---
 
-**Built with ❤️ for UNIDEL CBT System**
+**Built for UNIDEL CBT System**
