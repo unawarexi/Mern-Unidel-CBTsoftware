@@ -29,6 +29,9 @@ import {
   XCircle,
   Percent,
   Download,
+  Shield,
+  ShieldCheck,
+  ShieldAlert,
 } from "lucide-react";
 import {
   BarChart,
@@ -299,6 +302,18 @@ const StudentDashboard = () => {
       <Skeleton height={20} width="60%" />
     </div>
   );
+
+  // Security/Fraud data from dashboardStats
+  const securityOverview = dashboardStats?.security?.overview || {};
+  const myViolations = securityOverview.totalViolations || 0;
+  const myAutoSubmits = securityOverview.autoSubmittedExams || 0;
+  const myRank = securityOverview.rank || 0;
+  const totalStudents = securityOverview.totalStudents || 0;
+  const myPercentile = parseFloat(securityOverview.percentile || 0);
+
+  const violationsByType = dashboardStats?.security?.violationsByType || [];
+  const violationsByCourse = dashboardStats?.security?.violationsByCourse || [];
+  const securityTips = dashboardStats?.security?.tips || [];
 
   return (
     <div className="min-h-screen bg-gray-50 p-4 md:p-6">
@@ -664,6 +679,190 @@ const StudentDashboard = () => {
             </div>
           </motion.div>
         </div>
+
+        {/* Security/Integrity Section - Add after Row 3 */}
+        {myViolations > 0 && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            className="mb-4"
+          >
+            <div className="bg-gradient-to-r from-orange-500 to-red-500 rounded-xl p-6 shadow-lg mb-4">
+              <div className="flex items-center justify-between">
+                <div>
+                  <h2 className="text-2xl font-bold text-white mb-2">Academic Integrity Notice</h2>
+                  <p className="text-white text-opacity-90">Review your exam behavior to maintain integrity</p>
+                </div>
+                <div className="bg-white bg-opacity-20 rounded-xl p-4 backdrop-blur">
+                  <ShieldAlert className="w-12 h-12 text-white" />
+                </div>
+              </div>
+            </div>
+
+            {/* Security Metrics */}
+            <div className="grid grid-cols-1 sm:grid-cols-4 gap-4 mb-4">
+              <div className="bg-white rounded-xl p-5 shadow-sm border border-gray-100">
+                <div className="flex items-center justify-between mb-3">
+                  <div className="bg-red-50 p-3 rounded-lg">
+                    <AlertTriangle className="w-6 h-6 text-red-600" />
+                  </div>
+                  <div className="text-right">
+                    <div className="text-2xl font-bold text-gray-900">{myViolations}</div>
+                    <div className="text-xs text-gray-500">Violations</div>
+                  </div>
+                </div>
+                <div className="text-xs text-red-600">Detected in exams</div>
+              </div>
+
+              <div className="bg-white rounded-xl p-5 shadow-sm border border-gray-100">
+                <div className="flex items-center justify-between mb-3">
+                  <div className="bg-orange-50 p-3 rounded-lg">
+                    <XCircle className="w-6 h-6 text-orange-600" />
+                  </div>
+                  <div className="text-right">
+                    <div className="text-2xl font-bold text-gray-900">{myAutoSubmits}</div>
+                    <div className="text-xs text-gray-500">Auto-Submitted</div>
+                  </div>
+                </div>
+                <div className="text-xs text-orange-600">Due to violations</div>
+              </div>
+
+              <div className="bg-white rounded-xl p-5 shadow-sm border border-gray-100">
+                <div className="flex items-center justify-between mb-3">
+                  <div className="bg-blue-50 p-3 rounded-lg">
+                    <Target className="w-6 h-6 text-blue-600" />
+                  </div>
+                  <div className="text-right">
+                    <div className="text-2xl font-bold text-gray-900">#{myRank}</div>
+                    <div className="text-xs text-gray-500">Rank</div>
+                  </div>
+                </div>
+                <div className="text-xs text-blue-600">of {totalStudents} students</div>
+              </div>
+
+              <div className="bg-white rounded-xl p-5 shadow-sm border border-gray-100">
+                <div className="flex items-center justify-between mb-3">
+                  <div className="bg-purple-50 p-3 rounded-lg">
+                    <TrendingUp className="w-6 h-6 text-purple-600" />
+                  </div>
+                  <div className="text-right">
+                    <div className="text-2xl font-bold text-gray-900">{myPercentile}%</div>
+                    <div className="text-xs text-gray-500">Percentile</div>
+                  </div>
+                </div>
+                <div className="text-xs text-purple-600">Integrity score</div>
+              </div>
+            </div>
+
+            {/* Detailed Analytics */}
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+              {/* Courses with Violations */}
+              <div className="bg-white rounded-xl p-5 shadow-sm border border-gray-100">
+                <div className="flex items-center justify-between mb-4">
+                  <h3 className="text-lg font-bold text-gray-900">Violations by Course</h3>
+                  <BookOpen className="w-5 h-5 text-orange-600" />
+                </div>
+                <div className="space-y-3 max-h-[250px] overflow-y-auto">
+                  {statsLoading ? (
+                    <LoadingSkeleton />
+                  ) : violationsByCourse.length === 0 ? (
+                    <div className="text-center text-gray-500 py-8 text-sm">No data available</div>
+                  ) : (
+                    violationsByCourse.map((course, idx) => (
+                      <div key={idx} className="p-3 bg-orange-50 rounded-lg">
+                        <div className="flex items-center justify-between mb-2">
+                          <p className="text-sm font-semibold text-gray-900">{course.courseCode}</p>
+                          <div className="text-lg font-bold text-orange-600">{course.violationCount}</div>
+                        </div>
+                        <p className="text-xs text-gray-600 mb-1">{course.courseTitle}</p>
+                        {course.autoSubmitted && (
+                          <div className="text-xs text-red-600">Auto-submitted</div>
+                        )}
+                      </div>
+                    ))
+                  )}
+                </div>
+              </div>
+
+              {/* Violation Types */}
+              <div className="bg-white rounded-xl p-5 shadow-sm border border-gray-100">
+                <div className="flex items-center justify-between mb-4">
+                  <h3 className="text-lg font-bold text-gray-900">Violation Types</h3>
+                  <AlertCircle className="w-5 h-5 text-red-600" />
+                </div>
+                <div className="space-y-2">
+                  {statsLoading ? (
+                    <LoadingSkeleton />
+                  ) : violationsByType.length === 0 ? (
+                    <div className="text-center text-gray-500 py-8 text-sm">No data available</div>
+                  ) : (
+                    violationsByType.map((type, idx) => (
+                      <div key={idx} className="flex items-center justify-between p-2 bg-red-50 rounded">
+                        <span className="text-xs text-gray-700 capitalize">{type._id.replace(/_/g, " ")}</span>
+                        <div className="flex items-center gap-2">
+                          <span className="text-sm font-bold text-red-600">{type.count}</span>
+                          <span
+                            className={`px-2 py-0.5 rounded-full text-xs ${
+                              type.severity === "critical" || type.severity === "high"
+                                ? "bg-red-200 text-red-700"
+                                : type.severity === "medium"
+                                ? "bg-orange-200 text-orange-700"
+                                : "bg-gray-200 text-gray-700"
+                            }`}
+                          >
+                            {type.severity}
+                          </span>
+                        </div>
+                      </div>
+                    ))
+                  )}
+                </div>
+              </div>
+
+              {/* Security Tips */}
+              <div className="bg-white rounded-xl p-5 shadow-sm border border-gray-100">
+                <div className="flex items-center justify-between mb-4">
+                  <h3 className="text-lg font-bold text-gray-900">Integrity Tips</h3>
+                  <ShieldCheck className="w-5 h-5 text-green-600" />
+                </div>
+                <div className="space-y-3">
+                  {securityTips.map((tip, idx) => (
+                    <div key={idx} className="flex items-start gap-2 p-3 bg-green-50 rounded-lg">
+                      <CheckCircle className="w-4 h-4 text-green-600 mt-0.5 flex-shrink-0" />
+                      <p className="text-xs text-gray-700">{tip}</p>
+                    </div>
+                  ))}
+                </div>
+                <div className="mt-4 p-3 bg-blue-50 rounded-lg">
+                  <p className="text-xs text-blue-800">
+                    <strong>Remember:</strong> Maintaining academic integrity helps you build a strong reputation and genuine skills. Focus on fair exam practices!
+                  </p>
+                </div>
+              </div>
+            </div>
+          </motion.div>
+        )}
+
+        {/* Clean Record Badge - Show if no violations */}
+        {myViolations === 0 && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            className="bg-gradient-to-r from-green-500 to-emerald-500 rounded-xl p-6 shadow-lg mb-4"
+          >
+            <div className="flex items-center gap-4">
+              <div className="bg-white bg-opacity-20 rounded-xl p-4 backdrop-blur">
+                <ShieldCheck className="w-12 h-12 text-white" />
+              </div>
+              <div>
+                <h3 className="text-2xl font-bold text-white mb-1">Clean Record! 🎉</h3>
+                <p className="text-white text-opacity-90">
+                  No violations detected. You're maintaining excellent academic integrity. Keep it up!
+                </p>
+              </div>
+            </div>
+          </motion.div>
+        )}
 
         {/* Row 4: Quick Actions & Study Resources */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">

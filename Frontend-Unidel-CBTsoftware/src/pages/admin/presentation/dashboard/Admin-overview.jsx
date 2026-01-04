@@ -29,6 +29,8 @@ import {
   XCircle,
   TrendingDown as TrendingDownIcon,
   Percent,
+  Shield,
+  ShieldAlert,
 } from "lucide-react";
 import { BarChart, Bar, LineChart, Line, PieChart, Pie, Cell, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, AreaChart, Area, RadarChart, PolarGrid, PolarAngleAxis, PolarRadiusAxis, Radar, Legend, ComposedChart } from "recharts";
 import Skeleton from "react-loading-skeleton";
@@ -325,6 +327,17 @@ const AdminDashboard = () => {
       <Skeleton height={20} width="60%" />
     </div>
   );
+
+  // Security/Fraud data from dashboardStats
+  const securityOverview = dashboardStats?.security?.overview || {};
+  const totalViolations = securityOverview.totalViolations || 0;
+  const autoSubmittedExams = securityOverview.autoSubmittedExams || 0;
+  const violationRate = parseFloat(securityOverview.violationRate || 0);
+
+  const violationsByType = dashboardStats?.security?.violationsByType || [];
+  const topViolators = dashboardStats?.security?.highRisk?.students || [];
+  const highRiskCourses = dashboardStats?.security?.highRisk?.courses || [];
+  const highRiskDepartments = dashboardStats?.security?.highRisk?.departments || [];
 
   return (
     <div className="min-h-screen bg-gray-50 p-4 md:p-6">
@@ -731,6 +744,193 @@ const AdminDashboard = () => {
             </div>
           </motion.div>
         </div>
+
+        {/* Security/Fraud Analytics Section - Add after Row 4 */}
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          className="mb-4"
+        >
+          <div className="bg-gradient-to-r from-red-500 to-orange-500 rounded-xl p-6 shadow-lg mb-4">
+            <div className="flex items-center justify-between">
+              <div>
+                <h2 className="text-2xl font-bold text-white mb-2">Security & Fraud Detection</h2>
+                <p className="text-white text-opacity-90">Monitor exam integrity violations across the system</p>
+              </div>
+              <div className="bg-white bg-opacity-20 rounded-xl p-4 backdrop-blur">
+                <ShieldAlert className="w-12 h-12 text-white" />
+              </div>
+            </div>
+          </div>
+
+          {/* Security Metrics Grid */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-4">
+            <div className="bg-white rounded-xl p-5 shadow-sm border border-gray-100">
+              <div className="flex items-center justify-between mb-3">
+                <div className="bg-red-50 p-3 rounded-lg">
+                  <AlertTriangle className="w-6 h-6 text-red-600" />
+                </div>
+                <div className="text-right">
+                  <div className="text-2xl font-bold text-gray-900">{totalViolations}</div>
+                  <div className="text-xs text-gray-500">Total Violations</div>
+                </div>
+              </div>
+              <div className="text-xs text-red-600">{violationRate}% of submissions</div>
+            </div>
+
+            <div className="bg-white rounded-xl p-5 shadow-sm border border-gray-100">
+              <div className="flex items-center justify-between mb-3">
+                <div className="bg-orange-50 p-3 rounded-lg">
+                  <XCircle className="w-6 h-6 text-orange-600" />
+                </div>
+                <div className="text-right">
+                  <div className="text-2xl font-bold text-gray-900">{autoSubmittedExams}</div>
+                  <div className="text-xs text-gray-500">Auto-Submitted</div>
+                </div>
+              </div>
+              <div className="text-xs text-orange-600">Due to violations</div>
+            </div>
+
+            <div className="bg-white rounded-xl p-5 shadow-sm border border-gray-100">
+              <div className="flex items-center justify-between mb-3">
+                <div className="bg-blue-50 p-3 rounded-lg">
+                  <Users className="w-6 h-6 text-blue-600" />
+                </div>
+                <div className="text-right">
+                  <div className="text-2xl font-bold text-gray-900">{topViolators.length}</div>
+                  <div className="text-xs text-gray-500">High-Risk Students</div>
+                </div>
+              </div>
+              <div className="text-xs text-blue-600">3+ violations</div>
+            </div>
+
+            <div className="bg-white rounded-xl p-5 shadow-sm border border-gray-100">
+              <div className="flex items-center justify-between mb-3">
+                <div className="bg-purple-50 p-3 rounded-lg">
+                  <BookOpen className="w-6 h-6 text-purple-600" />
+                </div>
+                <div className="text-right">
+                  <div className="text-2xl font-bold text-gray-900">{highRiskCourses.length}</div>
+                  <div className="text-xs text-gray-500">High-Risk Courses</div>
+                </div>
+              </div>
+              <div className="text-xs text-purple-600">High violation rates</div>
+            </div>
+          </div>
+
+          {/* Detailed Fraud Analytics */}
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+            {/* Top Violators */}
+            <div className="bg-white rounded-xl p-5 shadow-sm border border-gray-100">
+              <div className="flex items-center justify-between mb-4">
+                <h3 className="text-lg font-bold text-gray-900">Top Violators</h3>
+                <ShieldAlert className="w-5 h-5 text-red-600" />
+              </div>
+              <div className="space-y-3 max-h-[300px] overflow-y-auto">
+                {statsLoading ? (
+                  <LoadingSkeleton />
+                ) : topViolators.length === 0 ? (
+                  <div className="text-center text-gray-500 py-8 text-sm">No violations detected</div>
+                ) : (
+                  topViolators.map((student, idx) => (
+                    <div key={idx} className="flex items-center justify-between p-3 bg-red-50 rounded-lg">
+                      <div className="flex-1">
+                        <p className="text-sm font-semibold text-gray-900">{student.studentName}</p>
+                        <p className="text-xs text-gray-600">{student.matricNumber}</p>
+                        <p className="text-xs text-gray-500">{student.department}</p>
+                      </div>
+                      <div className="text-right">
+                        <div className="text-lg font-bold text-red-600">{student.violationCount}</div>
+                        <div className="text-xs text-gray-500">violations</div>
+                        {student.autoSubmits > 0 && (
+                          <div className="text-xs text-orange-600">{student.autoSubmits} auto-submits</div>
+                        )}
+                      </div>
+                    </div>
+                  ))
+                )}
+              </div>
+            </div>
+
+            {/* High-Risk Courses */}
+            <div className="bg-white rounded-xl p-5 shadow-sm border border-gray-100">
+              <div className="flex items-center justify-between mb-4">
+                <h3 className="text-lg font-bold text-gray-900">High-Risk Courses</h3>
+                <BookOpen className="w-5 h-5 text-orange-600" />
+              </div>
+              <div className="space-y-3 max-h-[300px] overflow-y-auto">
+                {statsLoading ? (
+                  <LoadingSkeleton />
+                ) : highRiskCourses.length === 0 ? (
+                  <div className="text-center text-gray-500 py-8 text-sm">No high-risk courses</div>
+                ) : (
+                  highRiskCourses.map((course, idx) => (
+                    <div key={idx} className="p-3 bg-orange-50 rounded-lg">
+                      <div className="flex items-center justify-between mb-2">
+                        <p className="text-sm font-semibold text-gray-900">{course.courseCode}</p>
+                        <div className="text-lg font-bold text-orange-600">{Math.round(course.riskScore)}</div>
+                      </div>
+                      <p className="text-xs text-gray-600 mb-1">{course.courseTitle}</p>
+                      <div className="flex items-center justify-between text-xs text-gray-500">
+                        <span>{course.violationCount} violations</span>
+                        <span>{course.studentCount} students</span>
+                        {course.autoSubmits > 0 && (
+                          <span className="text-red-600">{course.autoSubmits} auto</span>
+                        )}
+                      </div>
+                    </div>
+                  ))
+                )}
+              </div>
+            </div>
+
+            {/* Violation Types & Departments */}
+            <div className="space-y-4">
+              {/* Violation Types */}
+              <div className="bg-white rounded-xl p-5 shadow-sm border border-gray-100">
+                <div className="flex items-center justify-between mb-4">
+                  <h3 className="text-base font-bold text-gray-900">Violation Types</h3>
+                  <AlertCircle className="w-5 h-5 text-blue-600" />
+                </div>
+                {statsLoading ? (
+                  <Skeleton height={100} />
+                ) : (
+                  <div className="space-y-2">
+                    {violationsByType.slice(0, 4).map((type, idx) => (
+                      <div key={idx} className="flex items-center justify-between py-1">
+                        <span className="text-xs text-gray-700 capitalize">{type._id.replace(/_/g, " ")}</span>
+                        <span className="text-sm font-bold text-gray-900">{type.count}</span>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+
+              {/* High-Risk Departments */}
+              <div className="bg-white rounded-xl p-5 shadow-sm border border-gray-100">
+                <div className="flex items-center justify-between mb-4">
+                  <h3 className="text-base font-bold text-gray-900">Departments</h3>
+                  <Target className="w-5 h-5 text-purple-600" />
+                </div>
+                {statsLoading ? (
+                  <Skeleton height={100} />
+                ) : (
+                  <div className="space-y-2">
+                    {highRiskDepartments.slice(0, 3).map((dept, idx) => (
+                      <div key={idx} className="p-2 bg-purple-50 rounded">
+                        <div className="flex items-center justify-between mb-1">
+                          <span className="text-xs font-semibold text-gray-900">{dept.departmentCode}</span>
+                          <span className="text-sm font-bold text-purple-600">{Math.round(dept.riskScore)}</span>
+                        </div>
+                        <div className="text-xs text-gray-500">{dept.violationCount} violations</div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+        </motion.div>
 
         {/* Quick Actions */}
         <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="bg-gradient-to-r from-blue-600 to-blue-700 rounded-xl p-6 shadow-lg">

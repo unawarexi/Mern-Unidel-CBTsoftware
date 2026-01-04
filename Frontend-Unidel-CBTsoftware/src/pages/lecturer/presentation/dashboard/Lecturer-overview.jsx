@@ -40,6 +40,8 @@ import {
   FileCheck,
   Clock3,
   AlertTriangle,
+  Shield,
+  ShieldAlert,
 } from "lucide-react";
 import {
   BarChart,
@@ -391,6 +393,16 @@ const LecturerOverview = () => {
       <Skeleton height={20} width="60%" />
     </div>
   );
+
+  // Security/Fraud data from dashboardStats
+  const securityOverview = dashboardStats?.security?.overview || {};
+  const violationsInCourses = securityOverview.totalViolations || 0;
+  const autoSubmittedByViolation = securityOverview.autoSubmittedExams || 0;
+  const violationRate = parseFloat(securityOverview.violationRate || 0);
+
+  const violationsByExam = dashboardStats?.security?.violationsByExam || [];
+  const studentsWithViolations = dashboardStats?.security?.studentsWithViolations || [];
+  const violationTypeDistribution = dashboardStats?.security?.violationTypeDistribution || [];
 
   return (
     <div className="min-h-screen bg-gray-50 p-4 md:p-6">
@@ -922,6 +934,183 @@ const LecturerOverview = () => {
             </div>
           </motion.div>
         </div>
+
+        {/* Security/Fraud Analytics Section - Add after Row 5 */}
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          className="mb-4"
+        >
+          <div className="bg-gradient-to-r from-red-500 to-orange-500 rounded-xl p-6 shadow-lg mb-4">
+            <div className="flex items-center justify-between">
+              <div>
+                <h2 className="text-2xl font-bold text-white mb-2">Exam Security Overview</h2>
+                <p className="text-white text-opacity-90">Monitor violations in your courses and exams</p>
+              </div>
+              <div className="bg-white bg-opacity-20 rounded-xl p-4 backdrop-blur">
+                <Shield className="w-12 h-12 text-white" />
+              </div>
+            </div>
+          </div>
+
+          {/* Security Metrics */}
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-4">
+            <div className="bg-white rounded-xl p-5 shadow-sm border border-gray-100">
+              <div className="flex items-center justify-between mb-3">
+                <div className="bg-red-50 p-3 rounded-lg">
+                  <AlertTriangle className="w-6 h-6 text-red-600" />
+                </div>
+                <div className="text-right">
+                  <div className="text-2xl font-bold text-gray-900">{violationsInCourses}</div>
+                  <div className="text-xs text-gray-500">Total Violations</div>
+                </div>
+              </div>
+              <div className="text-xs text-red-600">{violationRate}% of submissions</div>
+            </div>
+
+            <div className="bg-white rounded-xl p-5 shadow-sm border border-gray-100">
+              <div className="flex items-center justify-between mb-3">
+                <div className="bg-orange-50 p-3 rounded-lg">
+                  <XCircle className="w-6 h-6 text-orange-600" />
+                </div>
+                <div className="text-right">
+                  <div className="text-2xl font-bold text-gray-900">{autoSubmittedByViolation}</div>
+                  <div className="text-xs text-gray-500">Auto-Submitted</div>
+                </div>
+              </div>
+              <div className="text-xs text-orange-600">Due to violations</div>
+            </div>
+
+            <div className="bg-white rounded-xl p-5 shadow-sm border border-gray-100">
+              <div className="flex items-center justify-between mb-3">
+                <div className="bg-blue-50 p-3 rounded-lg">
+                  <Users className="w-6 h-6 text-blue-600" />
+                </div>
+                <div className="text-right">
+                  <div className="text-2xl font-bold text-gray-900">{studentsWithViolations.length}</div>
+                  <div className="text-xs text-gray-500">Students Flagged</div>
+                </div>
+              </div>
+              <div className="text-xs text-blue-600">In your courses</div>
+            </div>
+          </div>
+
+          {/* Detailed Fraud Analytics */}
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+            {/* Exams with Violations */}
+            <div className="bg-white rounded-xl p-5 shadow-sm border border-gray-100">
+              <div className="flex items-center justify-between mb-4">
+                <h3 className="text-lg font-bold text-gray-900">Exams by Violations</h3>
+                <FileSpreadsheet className="w-5 h-5 text-orange-600" />
+              </div>
+              <div className="space-y-3 max-h-[300px] overflow-y-auto">
+                {statsLoading ? (
+                  <LoadingSkeleton />
+                ) : violationsByExam.length === 0 ? (
+                  <div className="text-center text-gray-500 py-8 text-sm">No violations detected</div>
+                ) : (
+                  violationsByExam.map((exam, idx) => (
+                    <div key={idx} className="p-3 bg-orange-50 rounded-lg">
+                      <div className="flex items-center justify-between mb-2">
+                        <p className="text-sm font-semibold text-gray-900">{exam.courseCode}</p>
+                        <div className="text-lg font-bold text-orange-600">{exam.violationCount}</div>
+                      </div>
+                      <p className="text-xs text-gray-600 mb-1">{exam.courseTitle}</p>
+                      <div className="flex items-center justify-between text-xs text-gray-500">
+                        <span>{exam.studentCount} students</span>
+                        <span className="text-red-600">{exam.autoSubmits} auto-submits</span>
+                      </div>
+                      <div className="text-xs text-gray-400 mt-1">
+                        Avg: {exam.avgViolationsPerStudent?.toFixed(1)} violations/student
+                      </div>
+                    </div>
+                  ))
+                )}
+              </div>
+            </div>
+
+            {/* Students with Violations */}
+            <div className="bg-white rounded-xl p-5 shadow-sm border border-gray-100">
+              <div className="flex items-center justify-between mb-4">
+                <h3 className="text-lg font-bold text-gray-900">Flagged Students</h3>
+                <ShieldAlert className="w-5 h-5 text-red-600" />
+              </div>
+              <div className="space-y-3 max-h-[300px] overflow-y-auto">
+                {statsLoading ? (
+                  <LoadingSkeleton />
+                ) : studentsWithViolations.length === 0 ? (
+                  <div className="text-center text-gray-500 py-8 text-sm">No students flagged</div>
+                ) : (
+                  studentsWithViolations.map((student, idx) => (
+                    <div key={idx} className="flex items-center justify-between p-3 bg-red-50 rounded-lg">
+                      <div className="flex-1">
+                        <p className="text-sm font-semibold text-gray-900">{student.studentName}</p>
+                        <p className="text-xs text-gray-600">{student.matricNumber}</p>
+                        <div className="flex flex-wrap gap-1 mt-1">
+                          {student.violationTypes?.slice(0, 3).map((type, i) => (
+                            <span key={i} className="text-xs px-1.5 py-0.5 bg-red-100 text-red-600 rounded">
+                              {type.replace("_", " ")}
+                            </span>
+                          ))}
+                        </div>
+                      </div>
+                      <div className="text-right ml-2">
+                        <div className="text-lg font-bold text-red-600">{student.violationCount}</div>
+                        <div className="text-xs text-gray-500">violations</div>
+                      </div>
+                    </div>
+                  ))
+                )}
+              </div>
+            </div>
+
+            {/* Violation Type Distribution */}
+            <div className="bg-white rounded-xl p-5 shadow-sm border border-gray-100">
+              <div className="flex items-center justify-between mb-4">
+                <h3 className="text-lg font-bold text-gray-900">Violation Types</h3>
+                <AlertCircle className="w-5 h-5 text-blue-600" />
+              </div>
+              {statsLoading ? (
+                <LoadingSkeleton />
+              ) : violationTypeDistribution.length === 0 ? (
+                <div className="text-center text-gray-500 py-8 text-sm">No data available</div>
+              ) : (
+                <>
+                  <ResponsiveContainer width="100%" height={180}>
+                    <BarChart data={violationTypeDistribution}>
+                      <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
+                      <XAxis dataKey="_id" stroke="#9ca3af" style={{ fontSize: "10px" }} angle={-45} textAnchor="end" height={80} />
+                      <YAxis stroke="#9ca3af" style={{ fontSize: "10px" }} />
+                      <Tooltip />
+                      <Bar dataKey="count" fill="#ef4444" radius={[4, 4, 0, 0]} />
+                    </BarChart>
+                  </ResponsiveContainer>
+                  <div className="mt-3 space-y-1">
+                    {violationTypeDistribution.slice(0, 4).map((type, idx) => (
+                      <div key={idx} className="flex items-center justify-between text-xs">
+                        <span className="text-gray-600 capitalize">{type._id.replace(/_/g, " ")}</span>
+                        <div className="flex items-center gap-2">
+                          <span className="font-bold text-gray-900">{type.count}</span>
+                          <span
+                            className={`px-2 py-0.5 rounded-full text-xs ${
+                              type.severity === "critical" || type.severity === "high"
+                                ? "bg-red-100 text-red-600"
+                                : type.severity === "medium"
+                                ? "bg-orange-100 text-orange-600"
+                                : "bg-gray-100 text-gray-600"
+                            }`}
+                          >
+                            {type.severity}
+                          </span>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </>
+              )}
+            </div>
+          </div>
+        </motion.div>
 
         {/* Quick Actions */}
         <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="bg-gradient-to-r from-orange-500 to-orange-600 rounded-xl p-6 shadow-lg">
