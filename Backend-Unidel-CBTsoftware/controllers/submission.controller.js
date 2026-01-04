@@ -7,6 +7,7 @@ import Student from "../models/student.model.js";
 import Course from "../models/course.model.js";
 import * as Mailer from "../services/mailer.service.js";
 import EmailContentGenerator from "../core/mail/mail-content.js";
+import SecurityViolation from "../models/security.model.js";
 
 // Configure dayjs
 dayjs.extend(utc);
@@ -368,6 +369,13 @@ export const submitExam = async (req, res) => {
     submission.status = "submitted";
     submission.submissionType = "manual";
 
+    // Check for violations and flag if necessary
+    const violationCount = await SecurityViolation.countViolations(submission._id);
+    if (violationCount > 0) {
+      submission.flagged = true;
+      submission.flagReason = `${violationCount} security violation(s) detected during exam`;
+    }
+
     // Grade the submission
     submission = await gradeSubmission(submission, exam);
     await submission.save();
@@ -400,6 +408,7 @@ export const submitExam = async (req, res) => {
       success: true,
       message: "Exam submitted and graded successfully",
       submission,
+      violations: violationCount,
       serverTime: dayjs().toISOString(),
     });
   } catch (error) {
