@@ -10,6 +10,7 @@ import CreateDepartment from "./presentation/departments/Create-department";
 import Assignees from "./presentation/departments/Assignees";
 import ManageQuestionBanks from "./presentation/question-bank/Manage-question-banks";
 import PendingApprovals from "./presentation/question-bank/Pending-approvals";
+import AdminDashboard from "./presentation/dashboard/Admin-overview";
 
 
 // Main user routes based on UserLeftContainer menuItems
@@ -17,7 +18,7 @@ export default function AdminRoutes() {
   return (
     <Routes>
       {/* Dashboard */}
-      <Route path="dashboard" element={<NotAvailableYet />} />
+      <Route path="dashboard" element={<AdminDashboard />} />
       <Route path="dashboard/activity" element={<NotAvailableYet />} />
       <Route path="dashboard/health" element={<NotAvailableYet />} />
 
