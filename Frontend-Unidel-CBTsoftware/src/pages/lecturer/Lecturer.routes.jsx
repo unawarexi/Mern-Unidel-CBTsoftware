@@ -27,14 +27,14 @@ export default function LecturerRoutes() {
   return (
     <Routes>
       {/* Dashboard */}
-      <Route path="dashboard" element={<NotAvailableYet />} />
+      <Route path="dashboard" element={<LecturerOverview />} /> {/* Show overview by default */}
       <Route path="dashboard/overview" element={<LecturerOverview />} />
       <Route path="dashboard/exams" element={<NotAvailableYet />} />
       <Route path="dashboard/results" element={<NotAvailableYet />} />
       <Route path="dashboard/notices" element={<NotAvailableYet />} />
 
       {/* Courses */}
-      <Route path="courses" element={<NotAvailableYet />} />
+      <Route path="courses" element={<AssignedCourses />} /> {/* Show assigned courses by default */}
       <Route path="courses/assigned" element={<AssignedCourses />} />
       <Route path="courses/department" element={<DepartmentLevel />} />
       <Route path="courses/materials" element={<CourseMaterials />} />
@@ -43,16 +43,15 @@ export default function LecturerRoutes() {
       <Route path="courses/lecturers" element={<NotAvailableYet />} />
 
       {/* Question Bank */}
-      <Route path="questions" element={<NotAvailableYet />} />
+      <Route path="questions" element={<CreateQuestions />} /> {/* Show create/edit questions by default */}
       <Route path="questions/manage" element={<CreateQuestions />} />
       <Route path="questions/types/:id" element={<QuestionTypes />} />
       <Route path="questions/import-export" element={<ImportExport />} />
       <Route path="questions/docs" element={<UploadedDocs />} />
       <Route path="questions/approval" element={<Approval />} />
-      {/* Add new question bank routes here if needed */}
 
       {/* Exams */}
-      <Route path="exams" element={<NotAvailableYet />} />
+      <Route path="exams" element={<CreateExam />} /> {/* Show create exam by default */}
       <Route path="exams/create" element={<CreateExam />} />
       <Route path="exams/schedule" element={<ScheduleExam />} />
       <Route path="exams/manage" element={<ManageExams />} />
@@ -78,7 +77,6 @@ export default function LecturerRoutes() {
       <Route path="monitoring" element={<NotAvailableYet />} />
       <Route path="monitoring/live" element={<NotAvailableYet />} />
       <Route path="monitoring/integrity" element={<NotAvailableYet />} />
-      {/* Add new monitoring routes here if needed */}
 
       {/* Support */}
       <Route path="support" element={<NotAvailableYet />} />

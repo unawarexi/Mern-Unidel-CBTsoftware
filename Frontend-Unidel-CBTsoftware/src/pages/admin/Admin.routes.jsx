@@ -2,6 +2,7 @@ import React from "react";
 import { Routes, Route } from "react-router-dom";
 // Use the shared NotAvailableYet component for every route (until real screens exist).
 import NotAvailableYet from "../../components/Not-available";
+import AdminDashboard from "./presentation/dashboard/Admin-overview";
 import StudentsManagement from "./presentation/users-management/Students-management";
 import LecturersManagement from "./presentation/users-management/Lecturers-management";
 import AdminsManagement from "./presentation/users-management/Admins-management";
@@ -10,7 +11,6 @@ import CreateDepartment from "./presentation/departments/Create-department";
 import Assignees from "./presentation/departments/Assignees";
 import ManageQuestionBanks from "./presentation/question-bank/Manage-question-banks";
 import PendingApprovals from "./presentation/question-bank/Pending-approvals";
-import AdminDashboard from "./presentation/dashboard/Admin-overview";
 
 
 // Main user routes based on UserLeftContainer menuItems
@@ -23,24 +23,23 @@ export default function AdminRoutes() {
       <Route path="dashboard/health" element={<NotAvailableYet />} />
 
       {/* User Management */}
-      <Route path="users" element={<NotAvailableYet />} />
+      <Route path="users" element={<StudentsManagement />} /> {/* Show students management by default */}
       <Route path="users/students" element={<StudentsManagement />} />
       <Route path="users/lecturers" element={<LecturersManagement />} />
       <Route path="users/admins" element={<AdminsManagement />} />
 
       {/* Departments & Faculties */}
-      <Route path="departments" element={<NotAvailableYet />} />
+      <Route path="departments" element={<CreateDepartment />} /> {/* Show manage departments by default */}
       <Route path="departments/manage" element={<CreateDepartment />} />
       <Route path="departments/courses" element={<Assignees />} />
 
       {/* Courses */}
-      <Route path="courses" element={<NotAvailableYet />} />
+      <Route path="courses" element={<CourseCreation />} /> {/* Show course creation by default */}
       <Route path="courses/create" element={<CourseCreation />} />
       <Route path="courses/assign" element={<NotAvailableYet />} />
 
       {/* Exams */}
       <Route path="exams" element={<NotAvailableYet />} />
-      {/* <Route path="exams/all" element={<NotAvailableYet />} /> */}
       <Route path="exams/scheduled" element={<NotAvailableYet />} />
       <Route path="exams/active" element={<NotAvailableYet />} />
       <Route path="exams/ended" element={<NotAvailableYet />} />
@@ -48,7 +47,7 @@ export default function AdminRoutes() {
       <Route path="exams/analytics" element={<NotAvailableYet />} />
 
       {/* Question Bank */}
-      <Route path="question-bank" element={<NotAvailableYet />} />
+      <Route path="question-bank" element={<ManageQuestionBanks />} /> {/* Show manage question banks by default */}
       <Route path="question-bank/manage" element={<ManageQuestionBanks />} />
       <Route path="question-bank/approvals" element={<PendingApprovals />} />
 

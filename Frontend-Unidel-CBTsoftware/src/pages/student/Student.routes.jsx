@@ -10,7 +10,7 @@ export default function StudentRoutes() {
   return (
     <Routes>
       {/* Dashboard */}
-      <Route path="dashboard" element={<NotAvailableYet />} />
+      <Route path="dashboard" element={<Overview />} /> {/* Show overview by default */}
       <Route path="dashboard/overview" element={<Overview />} />
       <Route path="dashboard/active" element={<ActiveExams />} />
       <Route path="dashboard/results" element={<NotAvailableYet />} />
@@ -23,7 +23,7 @@ export default function StudentRoutes() {
       <Route path="courses/lecturers" element={<NotAvailableYet />} />
 
       {/* Exams */}
-      <Route path="exams" element={<NotAvailableYet />} />
+      <Route path="exams" element={<ActiveExams />} /> {/* Show active exams by default */}
       <Route path="exams/upcoming" element={<NotAvailableYet />} />
       <Route path="exams/active" element={<ActiveExams />} />
       <Route path="exams/take/:examId" element={<AnswerQuestions />} />
