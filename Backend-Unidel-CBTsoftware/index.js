@@ -18,6 +18,7 @@ import examRoutes from "./routes/exam.routes.js";
 import departmentRoutes from "./routes/department.routes.js"; // Add department routes import
 import submissionRoutes from "./routes/submission.routes.js";
 import statisticsRoutes from "./routes/statistics.route.js";
+import securityRoutes from "./routes/security.routes.js";
 import { startExamScheduler } from "./core/utils/time-lapse.util.js";
 
 // Create Express app
@@ -51,6 +52,7 @@ app.use("/api/exams", examRoutes);
 app.use("/api/departments", departmentRoutes);
 app.use("/api/submissions", submissionRoutes);
 app.use("/api/statistics", statisticsRoutes);
+app.use("/api/security", securityRoutes);
 
 // 404 handler middleware
 app.use((req, res, next) => {
