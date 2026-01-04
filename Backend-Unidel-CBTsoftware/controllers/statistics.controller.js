@@ -11,6 +11,7 @@ import Student from "../models/student.model.js";
 import Lecturer from "../models/lecturer.model.js";
 import Admin from "../models/admin.model.js";
 import Department from "../models/department.model.js";
+import SecurityViolation from "../models/security.model.js";
 
 // Configure dayjs
 dayjs.extend(utc);
@@ -237,6 +238,161 @@ export const getAdminDashboardStats = async (req, res) => {
       { $sort: { count: -1 } },
     ]);
 
+    // Security/Fraud Analytics
+    const totalViolations = await SecurityViolation.countDocuments({
+      timestamp: { $gte: start, $lte: end },
+    });
+
+    const autoSubmittedExams = await SecurityViolation.countDocuments({
+      autoSubmitTriggered: true,
+      timestamp: { $gte: start, $lte: end },
+    });
+
+    // Violations by type
+    const violationsByType = await SecurityViolation.aggregate([
+      { $match: { timestamp: { $gte: start, $lte: end } } },
+      {
+        $group: {
+          _id: "$violationType",
+          count: { $sum: 1 },
+          severity: { $first: "$severity" },
+        },
+      },
+      { $sort: { count: -1 } },
+    ]);
+
+    // Top students with violations
+    const topViolators = await SecurityViolation.aggregate([
+      { $match: { timestamp: { $gte: start, $lte: end } } },
+      {
+        $group: {
+          _id: "$studentId",
+          violationCount: { $sum: 1 },
+          autoSubmits: { $sum: { $cond: ["$autoSubmitTriggered", 1, 0] } },
+        },
+      },
+      { $sort: { violationCount: -1 } },
+      { $limit: 10 },
+      {
+        $lookup: {
+          from: "students",
+          localField: "_id",
+          foreignField: "_id",
+          as: "student",
+        },
+      },
+      { $unwind: "$student" },
+      {
+        $project: {
+          studentId: "$_id",
+          studentName: "$student.fullname",
+          matricNumber: "$student.matricNumber",
+          department: "$student.department",
+          violationCount: 1,
+          autoSubmits: 1,
+        },
+      },
+    ]);
+
+    // Violations by course
+    const violationsByCourse = await SecurityViolation.aggregate([
+      { $match: { timestamp: { $gte: start, $lte: end } } },
+      {
+        $lookup: {
+          from: "exams",
+          localField: "examId",
+          foreignField: "_id",
+          as: "exam",
+        },
+      },
+      { $unwind: "$exam" },
+      {
+        $lookup: {
+          from: "courses",
+          localField: "exam.courseId",
+          foreignField: "_id",
+          as: "course",
+        },
+      },
+      { $unwind: "$course" },
+      {
+        $group: {
+          _id: "$course._id",
+          courseCode: { $first: "$course.courseCode" },
+          courseTitle: { $first: "$course.courseTitle" },
+          violationCount: { $sum: 1 },
+          uniqueStudents: { $addToSet: "$studentId" },
+          autoSubmits: { $sum: { $cond: ["$autoSubmitTriggered", 1, 0] } },
+        },
+      },
+      {
+        $project: {
+          courseCode: 1,
+          courseTitle: 1,
+          violationCount: 1,
+          studentCount: { $size: "$uniqueStudents" },
+          autoSubmits: 1,
+          riskScore: {
+            $multiply: [
+              { $divide: ["$violationCount", { $size: "$uniqueStudents" }] },
+              100,
+            ],
+          },
+        },
+      },
+      { $sort: { riskScore: -1 } },
+      { $limit: 10 },
+    ]);
+
+    // Violations by department
+    const violationsByDepartment = await SecurityViolation.aggregate([
+      { $match: { timestamp: { $gte: start, $lte: end } } },
+      {
+        $lookup: {
+          from: "students",
+          localField: "studentId",
+          foreignField: "_id",
+          as: "student",
+        },
+      },
+      { $unwind: "$student" },
+      {
+        $lookup: {
+          from: "departments",
+          localField: "student.department",
+          foreignField: "_id",
+          as: "department",
+        },
+      },
+      { $unwind: "$department" },
+      {
+        $group: {
+          _id: "$department._id",
+          departmentName: { $first: "$department.departmentName" },
+          departmentCode: { $first: "$department.departmentCode" },
+          violationCount: { $sum: 1 },
+          uniqueStudents: { $addToSet: "$studentId" },
+          autoSubmits: { $sum: { $cond: ["$autoSubmitTriggered", 1, 0] } },
+        },
+      },
+      {
+        $project: {
+          departmentName: 1,
+          departmentCode: 1,
+          violationCount: 1,
+          studentCount: { $size: "$uniqueStudents" },
+          autoSubmits: 1,
+          riskScore: {
+            $multiply: [
+              { $divide: ["$violationCount", { $size: "$uniqueStudents" }] },
+              100,
+            ],
+          },
+        },
+      },
+      { $sort: { riskScore: -1 } },
+    ]);
+
     res.status(200).json({
       success: true,
       data: {
@@ -269,6 +425,19 @@ export const getAdminDashboardStats = async (req, res) => {
         },
         distribution: {
           studentsByDepartment,
+        },
+        security: {
+          overview: {
+            totalViolations,
+            autoSubmittedExams,
+            violationRate: totalSubmissions > 0 ? ((totalViolations / totalSubmissions) * 100).toFixed(2) : 0,
+          },
+          violationsByType,
+          highRisk: {
+            students: topViolators,
+            courses: violationsByCourse,
+            departments: violationsByDepartment,
+          },
         },
       },
     });
@@ -305,7 +474,7 @@ export const getLecturerDashboardStats = async (req, res) => {
     // Students enrolled in lecturer's courses
     const totalStudents = await Student.countDocuments({ courses: { $in: courseIds } });
 
-    // Submissions for lecturer's exams
+    // Submissions for lecturer's exams - get examIds once
     const lecturerExams = await Exam.find({ lecturerId }).select("_id");
     const examIds = lecturerExams.map((e) => e._id);
 
@@ -393,6 +562,128 @@ export const getLecturerDashboardStats = async (req, res) => {
       { $sort: { avgScore: -1 } },
     ]);
 
+    // Security/Fraud Analytics for lecturer's exams (reuse examIds)
+    const violationsInLecturerExams = await SecurityViolation.countDocuments({
+      examId: { $in: examIds },
+      timestamp: { $gte: start, $lte: end },
+    });
+
+    const autoSubmittedByViolation = await SecurityViolation.countDocuments({
+      examId: { $in: examIds },
+      autoSubmitTriggered: true,
+      timestamp: { $gte: start, $lte: end },
+    });
+
+    // Violations by exam
+    const violationsByExam = await SecurityViolation.aggregate([
+      {
+        $match: {
+          examId: { $in: examIds },
+          timestamp: { $gte: start, $lte: end },
+        },
+      },
+      {
+        $lookup: {
+          from: "exams",
+          localField: "examId",
+          foreignField: "_id",
+          as: "exam",
+        },
+      },
+      { $unwind: "$exam" },
+      {
+        $lookup: {
+          from: "courses",
+          localField: "exam.courseId",
+          foreignField: "_id",
+          as: "course",
+        },
+      },
+      { $unwind: "$course" },
+      {
+        $group: {
+          _id: "$examId",
+          courseCode: { $first: "$course.courseCode" },
+          courseTitle: { $first: "$course.courseTitle" },
+          startTime: { $first: "$exam.startTime" },
+          violationCount: { $sum: 1 },
+          uniqueStudents: { $addToSet: "$studentId" },
+          autoSubmits: { $sum: { $cond: ["$autoSubmitTriggered", 1, 0] } },
+        },
+      },
+      {
+        $project: {
+          courseCode: 1,
+          courseTitle: 1,
+          startTime: 1,
+          violationCount: 1,
+          studentCount: { $size: "$uniqueStudents" },
+          autoSubmits: 1,
+          avgViolationsPerStudent: {
+            $divide: ["$violationCount", { $size: "$uniqueStudents" }],
+          },
+        },
+      },
+      { $sort: { violationCount: -1 } },
+      { $limit: 10 },
+    ]);
+
+    // Students with violations in lecturer's courses
+    const studentsWithViolations = await SecurityViolation.aggregate([
+      {
+        $match: {
+          examId: { $in: examIds },
+          timestamp: { $gte: start, $lte: end },
+        },
+      },
+      {
+        $group: {
+          _id: "$studentId",
+          violationCount: { $sum: 1 },
+          violationTypes: { $addToSet: "$violationType" },
+          autoSubmits: { $sum: { $cond: ["$autoSubmitTriggered", 1, 0] } },
+        },
+      },
+      { $sort: { violationCount: -1 } },
+      { $limit: 10 },
+      {
+        $lookup: {
+          from: "students",
+          localField: "_id",
+          foreignField: "_id",
+          as: "student",
+        },
+      },
+      { $unwind: "$student" },
+      {
+        $project: {
+          studentName: "$student.fullname",
+          matricNumber: "$student.matricNumber",
+          violationCount: 1,
+          violationTypes: 1,
+          autoSubmits: 1,
+        },
+      },
+    ]);
+
+    // Violation types distribution
+    const violationTypeDistribution = await SecurityViolation.aggregate([
+      {
+        $match: {
+          examId: { $in: examIds },
+          timestamp: { $gte: start, $lte: end },
+        },
+      },
+      {
+        $group: {
+          _id: "$violationType",
+          count: { $sum: 1 },
+          severity: { $first: "$severity" },
+        },
+      },
+      { $sort: { count: -1 } },
+    ]);
+
     res.status(200).json({
       success: true,
       data: {
@@ -416,6 +707,16 @@ export const getLecturerDashboardStats = async (req, res) => {
         },
         performance: {
           examPerformance,
+        },
+        security: {
+          overview: {
+            totalViolations: violationsInLecturerExams,
+            autoSubmittedExams: autoSubmittedByViolation,
+            violationRate: totalSubmissions > 0 ? ((violationsInLecturerExams / totalSubmissions) * 100).toFixed(2) : 0,
+          },
+          violationsByExam,
+          studentsWithViolations,
+          violationTypeDistribution,
         },
       },
     });
@@ -546,6 +847,83 @@ export const getStudentDashboardStats = async (req, res) => {
       { $sort: { _id: 1 } },
     ]);
 
+    // Student's own violations
+    const myViolations = await SecurityViolation.countDocuments({
+      studentId: studentId,
+      timestamp: { $gte: start, $lte: end },
+    });
+
+    const myAutoSubmits = await SecurityViolation.countDocuments({
+      studentId: studentId,
+      autoSubmitTriggered: true,
+      timestamp: { $gte: start, $lte: end },
+    });
+
+    // Violation breakdown by type
+    const myViolationsByType = await SecurityViolation.aggregate([
+      {
+        $match: {
+          studentId: studentId,
+          timestamp: { $gte: start, $lte: end },
+        },
+      },
+      {
+        $group: {
+          _id: "$violationType",
+          count: { $sum: 1 },
+          severity: { $first: "$severity" },
+        },
+      },
+      { $sort: { count: -1 } },
+    ]);
+
+    // Violations by course (courses where student violated most)
+    const myViolationsByCourse = await SecurityViolation.aggregate([
+      { $match: { studentId: studentId } },
+      {
+        $lookup: {
+          from: "exams",
+          localField: "examId",
+          foreignField: "_id",
+          as: "exam",
+        },
+      },
+      { $unwind: "$exam" },
+      {
+        $lookup: {
+          from: "courses",
+          localField: "exam.courseId",
+          foreignField: "_id",
+          as: "course",
+        },
+      },
+      { $unwind: "$course" },
+      {
+        $group: {
+          _id: "$course._id",
+          courseCode: { $first: "$course.courseCode" },
+          courseTitle: { $first: "$course.courseTitle" },
+          violationCount: { $sum: 1 },
+          autoSubmitted: { $max: "$autoSubmitTriggered" },
+          violationTypes: { $addToSet: "$violationType" },
+        },
+      },
+      { $sort: { violationCount: -1 } },
+      { $limit: 5 },
+    ]);
+
+    // Student's rank/comparison (for self-awareness)
+    const studentRank = await SecurityViolation.aggregate([
+      { $group: { _id: "$studentId", violationCount: { $sum: 1 } } },
+      { $sort: { violationCount: -1 } },
+    ]);
+
+    const myRank = studentRank.findIndex(
+      (s) => s._id.toString() === studentId.toString()
+    ) + 1;
+
+    const totalStudentsTracked = studentRank.length;
+
     res.status(200).json({
       success: true,
       data: {
@@ -566,6 +944,26 @@ export const getStudentDashboardStats = async (req, res) => {
           byCourse: performanceByCourse,
           recentGrades,
         },
+        security: {
+          overview: {
+            totalViolations: myViolations,
+            autoSubmittedExams: myAutoSubmits,
+            rank: myRank || 0,
+            totalStudents: totalStudentsTracked,
+            percentile: totalStudentsTracked > 0 && myRank > 0 ? ((1 - myRank / totalStudentsTracked) * 100).toFixed(1) : 0,
+          },
+          violationsByType: myViolationsByType,
+          violationsByCourse: myViolationsByCourse,
+          tips: myViolations > 0 ? [
+            "Avoid switching tabs during exams",
+            "Stay in fullscreen mode",
+            "Focus on the exam window only",
+            "Disable notifications during exams",
+          ] : [
+            "Great job! No violations detected",
+            "Keep maintaining exam integrity",
+          ],
+        },
       },
     });
   } catch (error) {
@@ -573,8 +971,6 @@ export const getStudentDashboardStats = async (req, res) => {
     res.status(500).json({ success: false, message: error.message });
   }
 };
-
-// ==================== EXAM ANALYTICS ====================
 
 /**
  * Get detailed exam analytics
@@ -798,6 +1194,111 @@ export const exportStatistics = async (req, res) => {
     });
   } catch (error) {
     console.error("Export statistics error:", error);
+    res.status(500).json({ success: false, message: error.message });
+  }
+};
+
+/**
+ * Get fraud-specific analytics (Admin/Lecturer)
+ * GET /api/statistics/fraud/analytics
+ */
+export const getFraudAnalytics = async (req, res) => {
+  try {
+    const { period = "month", startDate, endDate, departmentId, courseId } = req.query;
+    const { startDate: start, endDate: end } = getDateRange(period, startDate, endDate);
+
+    const matchQuery = { timestamp: { $gte: start, $lte: end } };
+
+    // If lecturer, filter by their exams only
+    if (req.user.role === "lecturer") {
+      const lecturerExams = await Exam.find({ lecturerId: req.user._id }).select("_id");
+      matchQuery.examId = { $in: lecturerExams.map((e) => e._id) };
+    }
+
+    // Department filter (admin only)
+    if (departmentId && req.user.role === "admin") {
+      const studentsInDept = await Student.find({ department: departmentId }).select("_id");
+      matchQuery.studentId = { $in: studentsInDept.map((s) => s._id) };
+    }
+
+    // Course filter
+    if (courseId) {
+      const courseExams = await Exam.find({ courseId }).select("_id");
+      matchQuery.examId = { $in: courseExams.map((e) => e._id) };
+    }
+
+    // Overall fraud metrics
+    const totalViolations = await SecurityViolation.countDocuments(matchQuery);
+    const uniqueViolators = await SecurityViolation.distinct("studentId", matchQuery);
+    const autoSubmissions = await SecurityViolation.countDocuments({
+      ...matchQuery,
+      autoSubmitTriggered: true,
+    });
+
+    // Fraud trend over time
+    const fraudTrend = await SecurityViolation.aggregate([
+      { $match: matchQuery },
+      {
+        $group: {
+          _id: getGroupingFormat(period),
+          violationCount: { $sum: 1 },
+          uniqueStudents: { $addToSet: "$studentId" },
+          autoSubmits: { $sum: { $cond: ["$autoSubmitTriggered", 1, 0] } },
+        },
+      },
+      { $sort: { _id: 1 } },
+    ]);
+
+    // Severity breakdown
+    const severityBreakdown = await SecurityViolation.aggregate([
+      { $match: matchQuery },
+      {
+        $group: {
+          _id: "$severity",
+          count: { $sum: 1 },
+        },
+      },
+      { $sort: { count: -1 } },
+    ]);
+
+    // Most common violation patterns
+    const violationPatterns = await SecurityViolation.aggregate([
+      { $match: matchQuery },
+      { $sort: { timestamp: 1 } },
+      {
+        $group: {
+          _id: {
+            studentId: "$studentId",
+            examId: "$examId",
+          },
+          violations: { $push: "$violationType" },
+          count: { $sum: 1 },
+        },
+      },
+      { $match: { count: { $gte: 2 } } },
+      { $limit: 20 },
+    ]);
+
+    res.status(200).json({
+      success: true,
+      data: {
+        overview: {
+          totalViolations,
+          uniqueViolators: uniqueViolators.length,
+          autoSubmissions,
+          averageViolationsPerStudent: uniqueViolators.length > 0 ? (totalViolations / uniqueViolators.length).toFixed(2) : 0,
+        },
+        trends: {
+          fraudTrend,
+        },
+        breakdown: {
+          severityBreakdown,
+        },
+        patterns: violationPatterns,
+      },
+    });
+  } catch (error) {
+    console.error("Get fraud analytics error:", error);
     res.status(500).json({ success: false, message: error.message });
   }
 };

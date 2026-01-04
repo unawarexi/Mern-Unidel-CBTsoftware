@@ -9,6 +9,7 @@ import {
   getExamAnalytics,
   getSystemAnalytics,
   exportStatistics,
+  getFraudAnalytics,
 } from "../controllers/statistics.controller.js";
 
 const router = express.Router();
@@ -27,6 +28,9 @@ router.get("/exam/:examId/analytics", protect, authorize("lecturer", "admin", "s
 
 // System analytics
 router.get("/system/analytics", protect, authorize("admin", "superadmin"), getSystemAnalytics);
+
+// Fraud analytics
+router.get("/fraud/analytics", protect, authorize("admin", "superadmin", "lecturer"), getFraudAnalytics);
 
 // Export
 router.get("/export", protect, authorize("admin", "superadmin"), exportStatistics);

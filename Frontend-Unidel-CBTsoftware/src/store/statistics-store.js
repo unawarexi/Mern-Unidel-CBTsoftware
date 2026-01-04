@@ -9,6 +9,7 @@ import {
   useGetExamAnalytics,
   useGetSystemAnalytics,
   useExportStatistics,
+  useGetFraudAnalytics,
 } from "../core/apis/statistics-api";
 
 const useStatisticsStore = create((set) => ({
@@ -16,6 +17,7 @@ const useStatisticsStore = create((set) => ({
   dashboardStats: null,
   examAnalytics: null,
   activityLogs: [],
+  fraudAnalytics: null,
   isLoading: false,
   error: null,
 
@@ -33,6 +35,7 @@ const useStatisticsStore = create((set) => ({
   setDashboardStats: (stats) => set({ dashboardStats: stats }),
   setExamAnalytics: (analytics) => set({ examAnalytics: analytics }),
   setActivityLogs: (logs) => set({ activityLogs: logs }),
+  setFraudAnalytics: (analytics) => set({ fraudAnalytics: analytics }),
   setLoading: (isLoading) => set({ isLoading }),
   setError: (error) => set({ error }),
   clearError: () => set({ error: null }),
@@ -238,6 +241,32 @@ export const useExportStatisticsAction = () => {
     exportStatistics,
     isLoading: exportStatisticsMutation.isPending,
     error: exportStatisticsMutation.error,
+  };
+};
+
+// ========== FRAUD ANALYTICS HOOKS ==========
+
+export const useGetFraudAnalyticsAction = (params = {}) => {
+  const { setFraudAnalytics, setError } = useStatisticsStore();
+  const { data, isLoading, error, refetch } = useGetFraudAnalytics(params);
+
+  useEffect(() => {
+    if (data) {
+      setFraudAnalytics(data.data);
+    }
+  }, [data, setFraudAnalytics]);
+
+  useEffect(() => {
+    if (error) {
+      setError(error.message);
+    }
+  }, [error, setError]);
+
+  return {
+    fraudAnalytics: data?.data,
+    isLoading,
+    error,
+    refetch,
   };
 };
 

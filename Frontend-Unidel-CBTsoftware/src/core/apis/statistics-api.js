@@ -144,6 +144,25 @@ export const exportStatistics = async (params = {}) => {
   return response.json();
 };
 
+// ========== RAW API FUNCTIONS - FRAUD ANALYTICS ==========
+
+export const getFraudAnalytics = async (params = {}) => {
+  console.log("[API] getFraudAnalytics called", params);
+  const queryString = new URLSearchParams(params).toString();
+  const url = queryString ? `${BASE_URL}/fraud/analytics?${queryString}` : `${BASE_URL}/fraud/analytics`;
+  
+  const response = await fetch(url, {
+    method: "GET",
+    credentials: "include",
+  });
+  if (!response.ok) {
+    const error = await response.json();
+    console.error("[API] getFraudAnalytics error:", error);
+    throw new Error(error.message || "Failed to fetch fraud analytics");
+  }
+  return response.json();
+};
+
 // ========== STANDARD QUERY OPTIONS ==========
 
 const STANDARD_QUERY_OPTIONS = {
@@ -224,5 +243,15 @@ export const useGetSystemAnalytics = (params = {}) => {
 export const useExportStatistics = () => {
   return useMutation({
     mutationFn: exportStatistics,
+  });
+};
+
+// ========== REACT QUERY HOOKS - FRAUD ANALYTICS ==========
+
+export const useGetFraudAnalytics = (params = {}) => {
+  return useQuery({
+    queryKey: ["fraud-analytics", params],
+    queryFn: () => getFraudAnalytics(params),
+    ...STANDARD_QUERY_OPTIONS,
   });
 };
