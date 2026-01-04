@@ -31,6 +31,7 @@ const useAuthStore = create((set) => ({
 
   // Actions
   setUser: (user) => {
+    console.log("[STORE] setUser called", user);
     try {
       if (user) localStorage.setItem("authUser", JSON.stringify(user));
       else localStorage.removeItem("authUser");
@@ -49,6 +50,7 @@ const useAuthStore = create((set) => ({
   setFirstLogin: (isFirstLogin) => set({ isFirstLogin }),
 
   clearAuth: () => {
+    console.log("[STORE] clearAuth called");
     try {
       localStorage.removeItem("authUser");
     } catch (e) {
@@ -71,6 +73,7 @@ export const useAuthLogin = () => {
   const loginMutation = useLogin();
 
   const login = async (credentials) => {
+    console.log("[STORE] useAuthLogin called", credentials);
     setLoading(true);
     setError(null);
     showLoader();
@@ -89,6 +92,7 @@ export const useAuthLogin = () => {
 
       return data;
     } catch (error) {
+      console.error("[STORE] useAuthLogin error:", error);
       setError(error.message);
       showToast(error.message || "Login failed", "error");
       throw error;
@@ -110,6 +114,7 @@ export const useAuthLogout = () => {
   const logoutMutation = useLogout();
 
   const logout = async () => {
+    console.log("[STORE] useAuthLogout called");
     setLoading(true);
     setError(null);
     showLoader();
@@ -119,6 +124,7 @@ export const useAuthLogout = () => {
       clearAuth();
       showToast("Logged out successfully", "success");
     } catch (error) {
+      console.error("[STORE] useAuthLogout error:", error);
       setError(error.message);
       showToast(error.message || "Logout failed", "error");
       // Clear auth anyway even if logout API fails
@@ -142,6 +148,7 @@ export const useAuthChangePasswordFirstLogin = () => {
   const changePasswordMutation = useChangePasswordFirstLogin();
 
   const changePassword = async (passwordData) => {
+    console.log("[STORE] useAuthChangePasswordFirstLogin called", passwordData);
     setLoading(true);
     setError(null);
     showLoader();
@@ -153,6 +160,7 @@ export const useAuthChangePasswordFirstLogin = () => {
       showToast("Password changed successfully", "success");
       return data;
     } catch (error) {
+      console.error("[STORE] useAuthChangePasswordFirstLogin error:", error);
       setError(error.message);
       showToast(error.message || "Password change failed", "error");
       throw error;
@@ -175,6 +183,7 @@ export const useAuthForgotPassword = () => {
 
   const forgotPassword = async (payload) => {
     // payload: { email, role?, identifier? }
+    console.log("[STORE] useAuthForgotPassword called", payload);
     setLoading(true);
     setError(null);
     showLoader();
@@ -184,6 +193,7 @@ export const useAuthForgotPassword = () => {
       showToast("Password reset email sent successfully", "success");
       return data;
     } catch (error) {
+      console.error("[STORE] useAuthForgotPassword error:", error);
       setError(error.message);
       showToast(error.message || "Request failed", "error");
       throw error;
@@ -205,6 +215,7 @@ export const useAuthResetPassword = () => {
   const resetPasswordMutation = useResetPassword();
 
   const resetPassword = async (resetData) => {
+    console.log("[STORE] useAuthResetPassword called", resetData);
     setLoading(true);
     setError(null);
     showLoader();
@@ -214,6 +225,7 @@ export const useAuthResetPassword = () => {
       showToast("Password reset successful", "success");
       return data;
     } catch (error) {
+      console.error("[STORE] useAuthResetPassword error:", error);
       setError(error.message);
       showToast(error.message || "Password reset failed", "error");
       throw error;
@@ -235,6 +247,7 @@ export const useAuthAdminSignup = () => {
   const signupMutation = useAdminSignup();
 
   const signup = async (signupData) => {
+    console.log("[STORE] useAuthAdminSignup called", signupData);
     setLoading(true);
     setError(null);
     showLoader();
@@ -245,7 +258,7 @@ export const useAuthAdminSignup = () => {
       showToast("Admin account created", "success");
       return data;
     } catch (error) {
-      console.log(error.message);
+      console.error("[STORE] useAuthAdminSignup error:", error);
       setError(error.message);
       showToast(error.message || "Signup failed", "error");
       throw error;
@@ -267,6 +280,7 @@ export const useAuthUpdateProfile = () => {
   const updateProfileMutation = useUpdateProfile();
 
   const updateProfile = async (profileData) => {
+    console.log("[STORE] useAuthUpdateProfile called", profileData);
     setLoading(true);
     setError(null);
 
@@ -276,6 +290,7 @@ export const useAuthUpdateProfile = () => {
       showToast("Profile updated successfully", "success");
       return data;
     } catch (error) {
+      console.error("[STORE] useAuthUpdateProfile error:", error);
       setError(error.message);
       showToast(error.message || "Profile update failed", "error");
       throw error;
@@ -296,6 +311,7 @@ export const useAuthChangePassword = () => {
   const changePasswordMutation = useChangePassword();
 
   const changePassword = async (passwordData) => {
+    console.log("[STORE] useAuthChangePassword called", passwordData);
     setLoading(true);
     setError(null);
 
@@ -304,6 +320,7 @@ export const useAuthChangePassword = () => {
       showToast("Password changed successfully", "success");
       return data;
     } catch (error) {
+      console.error("[STORE] useAuthChangePassword error:", error);
       setError(error.message);
       showToast(error.message || "Password change failed", "error");
       throw error;
