@@ -4,6 +4,7 @@ import NotAvailableYet from "../../components/Not-available";
 import Overview from "./presentation/dashboard/Student-overview";
 import ActiveExams from "./presentation/dashboard/Active-exams";
 import AnswerQuestions from "./presentation/dashboard/Answer-questions";
+import CompletedExams from "./presentation/exams-assessments/Completed-exams";
 
 export default function StudentRoutes() {
   return (
@@ -26,7 +27,7 @@ export default function StudentRoutes() {
       <Route path="exams/upcoming" element={<NotAvailableYet />} />
       <Route path="exams/active" element={<ActiveExams />} />
       <Route path="exams/take/:examId" element={<AnswerQuestions />} />
-      <Route path="exams/completed" element={<NotAvailableYet />} />
+      <Route path="exams/completed" element={<CompletedExams />} />
       <Route path="exams/history" element={<NotAvailableYet />} />
 
       {/* Results & Analytics */}
