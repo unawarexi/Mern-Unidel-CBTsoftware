@@ -57,6 +57,14 @@ export const createCourse = async (req, res) => {
       lecturers: lecturers || [],
     });
 
+    // Update lecturers' courses array (bidirectional relationship)
+    if (lecturers && lecturers.length > 0) {
+      await Lecturer.updateMany(
+        { _id: { $in: lecturers } },
+        { $addToSet: { courses: course._id } }
+      );
+    }
+
     // Populate before sending response
     await course.populate("lecturers", "fullname email lecturerId");
     await course.populate("department", "departmentName departmentCode");
@@ -262,13 +270,24 @@ export const assignLecturers = async (req, res) => {
     }
 
     // Add lecturers (avoid duplicates)
+    const newLecturers = [];
     lecturers.forEach((lecturerId) => {
       if (!course.lecturers.includes(lecturerId)) {
         course.lecturers.push(lecturerId);
+        newLecturers.push(lecturerId);
       }
     });
 
     await course.save();
+
+    // Update lecturers' courses array (bidirectional relationship)
+    if (newLecturers.length > 0) {
+      await Lecturer.updateMany(
+        { _id: { $in: newLecturers } },
+        { $addToSet: { courses: course._id } }
+      );
+    }
+
     await course.populate("lecturers", "fullname email lecturerId");
 
     res.status(200).json({
@@ -313,6 +332,13 @@ export const removeLecturers = async (req, res) => {
     course.lecturers = course.lecturers.filter((lecturerId) => !lecturers.includes(lecturerId.toString()));
 
     await course.save();
+
+    // Remove course from lecturers' courses array (bidirectional relationship)
+    await Lecturer.updateMany(
+      { _id: { $in: lecturers } },
+      { $pull: { courses: course._id } }
+    );
+
     await course.populate("lecturers", "fullname email lecturerId");
 
     res.status(200).json({

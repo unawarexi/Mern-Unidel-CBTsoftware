@@ -135,7 +135,7 @@ const LecturerSignIn = () => {
 
       {/* Right Side - Image Background */}
       <div className="hidden lg:block lg:w-1/2 relative overflow-hidden">
-        <div className="absolute inset-0 bg-cover bg-center" style={{ backgroundImage: `url(${Images.heroImage})` }} aria-hidden="true" />
+        <div className="absolute inset-0 bg-cover bg-center" style={{ backgroundImage: `url(${Images.lecturerImage})` }} aria-hidden="true" />
         <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/40 to-transparent" />
         <div className="relative h-full flex flex-col justify-between p-8 lg:p-12 text-white">
           <div className="max-w-md">

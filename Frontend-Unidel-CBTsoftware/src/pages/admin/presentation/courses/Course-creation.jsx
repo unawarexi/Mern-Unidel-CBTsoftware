@@ -5,12 +5,15 @@ import { BookOpen, Search, Edit2, Trash2, X, UserPlus, UserMinus, GraduationCap 
 import { useCreateCourseAction, useGetAllCoursesAction, useUpdateCourseAction, useDeleteCourseAction, useAssignToCourseAction, useRemoveFromCourseAction } from "../../../../store/course-store";
 import { useGetAllLecturersAction, useGetAllStudentsAction } from "../../../../store/user-store";
 import { useGetAllDepartmentsAction } from "../../../../store/department-store";
+import DeleteModal from "../../../../components/Delete-modal";
 
 const CourseCreation = () => {
   const [showModal, setShowModal] = useState(false);
   const [showAssignModal, setShowAssignModal] = useState(false);
   const [showRemoveModal, setShowRemoveModal] = useState(false);
   const [showAllPopup, setShowAllPopup] = useState(false);
+  const [deleteModalOpen, setDeleteModalOpen] = useState(false);
+  const [courseToDelete, setCourseToDelete] = useState(null);
   const [searchTerm, setSearchTerm] = useState("");
   const [filterDepartment, setFilterDepartment] = useState("All");
   const [editingCourse, setEditingCourse] = useState(null);
@@ -77,14 +80,20 @@ const CourseCreation = () => {
     setShowModal(true);
   };
 
-  const handleDelete = async (id) => {
-    if (confirm("Are you sure you want to delete this course?")) {
-      try {
-        await deleteCourse(id);
-        if (refetch) refetch();
-      } catch (err) {
-        console.error(err);
-      }
+  const handleDelete = async (course) => {
+    setCourseToDelete(course);
+    setDeleteModalOpen(true);
+  };
+
+  const handleDeleteConfirm = async () => {
+    if (!courseToDelete) return;
+    try {
+      await deleteCourse(courseToDelete._id);
+      if (refetch) refetch();
+      setDeleteModalOpen(false);
+      setCourseToDelete(null);
+    } catch (err) {
+      console.error(err);
     }
   };
 
@@ -292,7 +301,7 @@ const CourseCreation = () => {
                             <motion.button whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.9 }} onClick={() => handleEdit(course)} className="p-2 hover:bg-blue-100 rounded-lg text-blue-900 transition-colors" title="Edit Course">
                               <Edit2 size={18} />
                             </motion.button>
-                            <motion.button whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.9 }} onClick={() => handleDelete(course._id)} className="p-2 hover:bg-red-100 rounded-lg text-red-600 transition-colors" title="Delete Course">
+                            <motion.button whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.9 }} onClick={() => handleDelete(course)} className="p-2 hover:bg-red-100 rounded-lg text-red-600 transition-colors" title="Delete Course">
                               <Trash2 size={18} />
                             </motion.button>
                           </div>
@@ -313,7 +322,7 @@ const CourseCreation = () => {
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
-              className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50"
+              className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-40"
               onClick={() => {
                 setShowModal(false);
                 setEditingCourse(null);
@@ -430,7 +439,7 @@ const CourseCreation = () => {
         {/* Assign/Remove Lecturers/Students Modal */}
         <AnimatePresence>
           {(showAssignModal || showRemoveModal) && (
-            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50" onClick={() => { setShowAssignModal(false); setShowRemoveModal(false); }}>
+            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-40" onClick={() => { setShowAssignModal(false); setShowRemoveModal(false); }}>
               <motion.div initial={{ scale: 0.9, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0.9, opacity: 0 }} onClick={(e) => e.stopPropagation()} className="bg-white rounded-xl p-6 w-full max-w-md border border-slate-200 shadow-xl">
                 <div className="flex items-center justify-between mb-6">
                   <h2 className="text-2xl font-bold text-slate-900">
@@ -531,7 +540,7 @@ const CourseCreation = () => {
         {/* See All Popup */}
         <AnimatePresence>
           {showAllPopup && (
-            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50" onClick={() => setShowAllPopup(false)}>
+            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-40" onClick={() => setShowAllPopup(false)}>
               <motion.div initial={{ scale: 0.9, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0.9, opacity: 0 }} onClick={(e) => e.stopPropagation()} className="bg-white rounded-xl p-6 w-full max-w-lg border border-slate-200 shadow-xl">
                 <div className="flex items-center justify-between mb-6">
                   <h2 className="text-2xl font-bold text-slate-900">
@@ -569,6 +578,18 @@ const CourseCreation = () => {
           )}
         </AnimatePresence>
       </motion.div>
+      
+      <DeleteModal
+        isOpen={deleteModalOpen}
+        onClose={() => {
+          setDeleteModalOpen(false);
+          setCourseToDelete(null);
+        }}
+        onConfirm={handleDeleteConfirm}
+        title="Delete Course"
+        message="Are you sure you want to delete this course?"
+        itemName={courseToDelete?.courseTitle}
+      />
     </div>
   );
 };

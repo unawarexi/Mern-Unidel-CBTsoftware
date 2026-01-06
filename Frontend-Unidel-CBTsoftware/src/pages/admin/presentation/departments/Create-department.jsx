@@ -7,6 +7,7 @@ import {
   useGetAllDepartmentsAction,
   useDeleteDepartmentAction,
 } from "../../../../store/department-store";
+import DeleteModal from "../../../../components/Delete-modal";
 
 const initialForm = {
   departmentName: "",
@@ -21,6 +22,8 @@ const CreateDepartment = () => {
   const [showModal, setShowModal] = useState(false);
   const [formData, setFormData] = useState(initialForm);
   const [editing, setEditing] = useState(null);
+  const [deleteModalOpen, setDeleteModalOpen] = useState(false);
+  const [deptToDelete, setDeptToDelete] = useState(null);
 
   const { createDepartment } = useCreateDepartmentAction();
   const { departments = [], refetch, isLoading } = useGetAllDepartmentsAction();
@@ -67,14 +70,20 @@ const CreateDepartment = () => {
     setShowModal(true);
   };
 
-  const handleDelete = async (id) => {
-    if (confirm("Are you sure you want to delete this department?")) {
-      try {
-        await deleteDepartment(id);
-        if (refetch) refetch();
-      } catch (err) {
-        // error handled by store
-      }
+  const handleDelete = async (dept) => {
+    setDeptToDelete(dept);
+    setDeleteModalOpen(true);
+  };
+
+  const handleDeleteConfirm = async () => {
+    if (!deptToDelete) return;
+    try {
+      await deleteDepartment(deptToDelete._id);
+      if (refetch) refetch();
+      setDeleteModalOpen(false);
+      setDeptToDelete(null);
+    } catch (err) {
+      // error handled by store
     }
   };
 
@@ -141,7 +150,7 @@ const CreateDepartment = () => {
                         <motion.button
                           whileHover={{ scale: 1.1 }}
                           whileTap={{ scale: 0.9 }}
-                          onClick={() => handleDelete(dept._id)}
+                          onClick={() => handleDelete(dept)}
                           className="p-2 hover:bg-red-100 rounded-lg text-red-600 transition-colors"
                         >
                           <Trash2 size={18} />
@@ -283,6 +292,18 @@ const CreateDepartment = () => {
           )}
         </AnimatePresence>
       </motion.div>
+      
+      <DeleteModal
+        isOpen={deleteModalOpen}
+        onClose={() => {
+          setDeleteModalOpen(false);
+          setDeptToDelete(null);
+        }}
+        onConfirm={handleDeleteConfirm}
+        title="Delete Department"
+        message="Are you sure you want to delete this department?"
+        itemName={deptToDelete?.departmentName}
+      />
     </div>
   );
 };

@@ -15,6 +15,7 @@ import { useGetAllDepartmentsAction } from "../../../../store/department-store";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
+import DeleteModal from "../../../../components/Delete-modal";
 
 // Zod schema for student form validation
 const studentSchema = z.object({
@@ -33,6 +34,8 @@ const StudentsManagement = () => {
   const [filterLevel, setFilterLevel] = useState("All");
   const [filterCourse, setFilterCourse] = useState("All");
   const [editingStudent, setEditingStudent] = useState(null);
+  const [deleteModalOpen, setDeleteModalOpen] = useState(false);
+  const [studentToDelete, setStudentToDelete] = useState(null);
   const [formData, setFormData] = useState({
     fullname: "",
     email: "",
@@ -126,14 +129,20 @@ const StudentsManagement = () => {
     setShowModal(true);
   };
 
-  const handleDelete = async (id) => {
-    if (confirm("Are you sure you want to remove this student?")) {
-      try {
-        await deleteStudent(id);
-        if (refetch) refetch();
-      } catch (err) {
-        console.error(err);
-      }
+  const handleDelete = async (student) => {
+    setStudentToDelete(student);
+    setDeleteModalOpen(true);
+  };
+
+  const handleDeleteConfirm = async () => {
+    if (!studentToDelete) return;
+    try {
+      await deleteStudent(studentToDelete._id);
+      if (refetch) refetch();
+      setDeleteModalOpen(false);
+      setStudentToDelete(null);
+    } catch (err) {
+      console.error(err);
     }
   };
 
@@ -304,7 +313,7 @@ const StudentsManagement = () => {
                             <motion.button whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.9 }} onClick={() => handleEdit(student)} className="p-2 hover:bg-blue-100 rounded-lg text-blue-900 transition-colors">
                               <Edit2 size={18} />
                             </motion.button>
-                            <motion.button whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.9 }} onClick={() => handleDelete(student._id)} className="p-2 hover:bg-red-100 rounded-lg text-red-600 transition-colors">
+                            <motion.button whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.9 }} onClick={() => handleDelete(student)} className="p-2 hover:bg-red-100 rounded-lg text-red-600 transition-colors">
                               <Trash2 size={18} />
                             </motion.button>
                           </div>
@@ -509,6 +518,18 @@ const StudentsManagement = () => {
           )}
         </AnimatePresence>
       </motion.div>
+      
+      <DeleteModal
+        isOpen={deleteModalOpen}
+        onClose={() => {
+          setDeleteModalOpen(false);
+          setStudentToDelete(null);
+        }}
+        onConfirm={handleDeleteConfirm}
+        title="Delete Student"
+        message="Are you sure you want to delete this student?"
+        itemName={studentToDelete?.fullname}
+      />
     </div>
   );
 };

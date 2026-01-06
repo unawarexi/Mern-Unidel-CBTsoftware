@@ -11,7 +11,7 @@ import {
 import { useUploadAttachmentAction, useGetUserAttachmentsAction } from "../../../../store/attachment-store";
 import { useGetAllCoursesAction } from "../../../../store/course-store"; // already imported
 import { useGetAllDepartmentsAction } from "../../../../store/department-store";
-
+import DeleteModal from "../../../../components/Delete-modal";
 const LecturersManagement = () => {
   const [showModal, setShowModal] = useState(false);
   const [showUploadModal, setShowUploadModal] = useState(false);
@@ -20,6 +20,8 @@ const LecturersManagement = () => {
   const [filterLevel, setFilterLevel] = useState("All");
   const [filterCourse, setFilterCourse] = useState("All");
   const [editingLecturer, setEditingLecturer] = useState(null);
+  const [deleteModalOpen, setDeleteModalOpen] = useState(false);
+  const [lecturerToDelete, setLecturerToDelete] = useState(null);
   const [formData, setFormData] = useState({
     fullname: "",
     email: "",
@@ -97,14 +99,20 @@ const LecturersManagement = () => {
     setShowModal(true);
   };
 
-  const handleDelete = async (id) => {
-    if (confirm("Are you sure you want to remove this lecturer?")) {
-      try {
-        await deleteLecturer(id);
-        if (refetch) refetch();
-      } catch (err) {
-        console.error(err);
-      }
+  const handleDelete = async (lecturer) => {
+    setLecturerToDelete(lecturer);
+    setDeleteModalOpen(true);
+  };
+
+  const handleDeleteConfirm = async () => {
+    if (!lecturerToDelete) return;
+    try {
+      await deleteLecturer(lecturerToDelete._id);
+      if (refetch) refetch();
+      setDeleteModalOpen(false);
+      setLecturerToDelete(null);
+    } catch (err) {
+      console.error(err);
     }
   };
 
@@ -301,7 +309,7 @@ const LecturersManagement = () => {
                             <motion.button whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.9 }} onClick={() => handleEdit(lecturer)} className="p-2 hover:bg-blue-100 rounded-lg text-blue-900 transition-colors">
                               <Edit2 size={18} />
                             </motion.button>
-                            <motion.button whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.9 }} onClick={() => handleDelete(lecturer._id)} className="p-2 hover:bg-red-100 rounded-lg text-red-600 transition-colors">
+                            <motion.button whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.9 }} onClick={() => handleDelete(lecturer)} className="p-2 hover:bg-red-100 rounded-lg text-red-600 transition-colors">
                               <Trash2 size={18} />
                             </motion.button>
                           </div>
@@ -517,6 +525,18 @@ const LecturersManagement = () => {
           )}
         </AnimatePresence>
       </motion.div>
+      
+      <DeleteModal
+        isOpen={deleteModalOpen}
+        onClose={() => {
+          setDeleteModalOpen(false);
+          setLecturerToDelete(null);
+        }}
+        onConfirm={handleDeleteConfirm}
+        title="Delete Lecturer"
+        message="Are you sure you want to delete this lecturer?"
+        itemName={lecturerToDelete?.fullname}
+      />
     </div>
   );
 };

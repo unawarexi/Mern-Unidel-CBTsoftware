@@ -207,7 +207,7 @@ const SignIn = () => {
         {/* Background image */}
         <div
           className="absolute inset-0 bg-cover bg-center"
-          style={{ backgroundImage: `url(${Images.heroImage})` }}
+          style={{ backgroundImage: `url(${Images.studentImage})` }}
           aria-hidden="true"
         />
 
