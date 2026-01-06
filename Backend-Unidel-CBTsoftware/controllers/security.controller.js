@@ -1,6 +1,9 @@
 import SecurityViolation from "../models/security.model.js";
 import ExamSubmission from "../models/submission.model.js";
 import Exam from "../models/exam.model.js";
+import Student from "../models/student.model.js";
+import * as Mailer from "../services/mailer.service.js";
+import EmailContentGenerator from "../core/mail/mail-content.js";
 
 // Violation threshold before auto-submit (configurable)
 const VIOLATION_THRESHOLD = 3;
@@ -31,7 +34,7 @@ export const reportViolation = async (req, res) => {
       studentId,
       examId,
       status: "started",
-    });
+    }).populate("examId", "courseId");
 
     if (!submission) {
       return res.status(404).json({
@@ -58,6 +61,30 @@ export const reportViolation = async (req, res) => {
     // Check if threshold exceeded
     const totalViolations = await SecurityViolation.countViolations(submissionId);
     const shouldAutoSubmit = totalViolations >= VIOLATION_THRESHOLD;
+
+    // Send warning email to student if violations are accumulating
+    if (totalViolations >= 2 && !shouldAutoSubmit) {
+      try {
+        const student = await Student.findById(studentId).select("fullname email");
+        const exam = await Exam.findById(examId).populate("courseId", "courseCode courseTitle");
+        
+        if (student) {
+          const mailGen = new EmailContentGenerator();
+          const emailContent = mailGen.securityViolation({
+            studentName: student.fullname,
+            examTitle: `${exam.courseId.courseCode} — ${exam.courseId.courseTitle}`,
+            violationType,
+            totalViolations,
+            remainingAttempts: VIOLATION_THRESHOLD - totalViolations,
+            violationThreshold: VIOLATION_THRESHOLD,
+            studentId: student._id,
+          });
+          await Mailer.sendTemplatedMail(student.email, emailContent);
+        }
+      } catch (emailError) {
+        console.error("Error sending violation warning email:", emailError);
+      }
+    }
 
     // If threshold exceeded, auto-submit exam
     if (shouldAutoSubmit && submission.status === "started") {

@@ -2,6 +2,8 @@ import Course from "../models/course.model.js";
 import Student from "../models/student.model.js";
 import Lecturer from "../models/lecturer.model.js";
 import { uploadToCloudinary, deleteFromCloudinary } from "../services/cloudinary.service.js";
+import * as Mailer from "../services/mailer.service.js";
+import EmailContentGenerator from "../core/mail/mail-content.js";
 
 // @desc    Create new course
 export const createCourse = async (req, res) => {
@@ -434,7 +436,10 @@ export const assignToCourse = async (req, res) => {
     const { id } = req.params; // course id
     const { students = [], lecturers = [] } = req.body;
 
-    const course = await Course.findById(id);
+    const course = await Course.findById(id)
+      .populate("department", "departmentName")
+      .populate("lecturers", "fullname");
+    
     if (!course) return res.status(404).json({ message: "Course not found" });
 
     // Add lecturers
@@ -449,12 +454,38 @@ export const assignToCourse = async (req, res) => {
 
     // Add students
     if (students.length) {
+      const newStudents = students.filter(sid => !course.students.map(String).includes(sid));
       course.students = Array.from(new Set([...course.students.map(String), ...students]));
+      
       // Update each student's courses
       await Student.updateMany(
         { _id: { $in: students } },
         { $addToSet: { courses: course._id } }
       );
+
+      // Send enrollment email to newly added students
+      if (newStudents.length > 0) {
+        const enrolledStudents = await Student.find({ _id: { $in: newStudents } }).select("fullname email");
+        const lecturerNames = course.lecturers.map(l => l.fullname || "").join(", ");
+        
+        for (const student of enrolledStudents) {
+          try {
+            const mailGen = new EmailContentGenerator();
+            const emailContent = mailGen.courseEnrollment({
+              studentName: student.fullname,
+              courseCode: course.courseCode,
+              courseTitle: course.courseTitle,
+              department: course.department?.departmentName || "—",
+              lecturers: lecturerNames || "—",
+              courseId: course._id,
+              studentId: student._id,
+            });
+            await Mailer.sendTemplatedMail(student.email, emailContent);
+          } catch (emailError) {
+            console.error(`Error sending enrollment email to ${student.email}:`, emailError);
+          }
+        }
+      }
     }
 
     await course.save();

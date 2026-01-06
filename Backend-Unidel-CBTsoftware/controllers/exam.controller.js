@@ -12,6 +12,8 @@ import {
   extractTextFromDocxPath,
   extractQuestionsFromFile,
 } from "../core/utils/pdf-docx-export.js";
+import * as Mailer from "../services/mailer.service.js";
+import EmailContentGenerator from "../core/mail/mail-content.js";
 
 
 
@@ -383,7 +385,9 @@ export const approveQuestionBank = async (req, res) => {
     const adminId = req.user._id;
     const { comments } = req.body;
 
-    const questionBank = await QuestionBank.findById(id);
+    const questionBank = await QuestionBank.findById(id)
+      .populate("lecturerId", "fullname email")
+      .populate("courseId", "courseCode courseTitle");
 
     if (!questionBank) {
       return res.status(404).json({ message: "Question bank not found" });
@@ -403,9 +407,23 @@ export const approveQuestionBank = async (req, res) => {
 
     await questionBank.save();
 
-    // ❌ REMOVE automatic exam creation - lecturer will schedule it manually
-    // const exam = new Exam({...});
-    // await exam.save();
+    // Send approval email to lecturer
+    try {
+      const mailGen = new EmailContentGenerator();
+      const emailContent = mailGen.questionBankApproved({
+        lecturerName: questionBank.lecturerId.fullname,
+        questionBankTitle: questionBank.title,
+        courseCode: questionBank.courseId.courseCode,
+        courseTitle: questionBank.courseId.courseTitle,
+        totalQuestions: questionBank.questions.length,
+        approvedBy: req.user.fullname || "Admin",
+        questionBankId: questionBank._id,
+        lecturerId: questionBank.lecturerId._id,
+      });
+      await Mailer.sendTemplatedMail(questionBank.lecturerId.email, emailContent);
+    } catch (emailError) {
+      console.error("Error sending approval email:", emailError);
+    }
 
     res.status(200).json({
       message: "Question bank approved successfully. Lecturer can now schedule exams from it.",
@@ -430,7 +448,9 @@ export const rejectQuestionBank = async (req, res) => {
       return res.status(400).json({ message: "Comments required for rejection" });
     }
 
-    const questionBank = await QuestionBank.findById(id);
+    const questionBank = await QuestionBank.findById(id)
+      .populate("lecturerId", "fullname email")
+      .populate("courseId", "courseCode courseTitle");
 
     if (!questionBank) {
       return res.status(404).json({ message: "Question bank not found" });
@@ -449,6 +469,24 @@ export const rejectQuestionBank = async (req, res) => {
     };
 
     await questionBank.save();
+
+    // Send rejection email to lecturer
+    try {
+      const mailGen = new EmailContentGenerator();
+      const emailContent = mailGen.questionBankRejected({
+        lecturerName: questionBank.lecturerId.fullname,
+        questionBankTitle: questionBank.title,
+        courseCode: questionBank.courseId.courseCode,
+        courseTitle: questionBank.courseId.courseTitle,
+        comments,
+        reviewedBy: req.user.fullname || "Admin",
+        questionBankId: questionBank._id,
+        lecturerId: questionBank.lecturerId._id,
+      });
+      await Mailer.sendTemplatedMail(questionBank.lecturerId.email, emailContent);
+    } catch (emailError) {
+      console.error("Error sending rejection email:", emailError);
+    }
 
     res.status(200).json({
       message: "Question bank rejected",
@@ -659,7 +697,8 @@ export const publishExam = async (req, res) => {
     const { id } = req.params;
     const lecturerId = req.user._id;
 
-    const exam = await Exam.findById(id);
+    const exam = await Exam.findById(id)
+      .populate("courseId", "courseCode courseTitle students");
 
     if (!exam) {
       return res.status(404).json({ message: "Exam not found" });
@@ -675,6 +714,32 @@ export const publishExam = async (req, res) => {
 
     exam.status = "active";
     await exam.save();
+
+    // Send notification to all enrolled students
+    if (exam.courseId && exam.courseId.students && exam.courseId.students.length > 0) {
+      const mailGen = new EmailContentGenerator();
+      const students = await Student.find({ _id: { $in: exam.courseId.students } }).select("fullname email");
+      
+      for (const student of students) {
+        try {
+          const emailContent = mailGen.examPublished({
+            studentName: student.fullname,
+            examTitle: `${exam.courseId.courseCode} Exam`,
+            courseCode: exam.courseId.courseCode,
+            courseTitle: exam.courseId.courseTitle,
+            startTime: exam.startTime.toLocaleString(),
+            endTime: exam.endTime.toLocaleString(),
+            duration: exam.duration,
+            totalQuestions: exam.questions.length,
+            examId: exam._id,
+            studentId: student._id,
+          });
+          await Mailer.sendTemplatedMail(student.email, emailContent);
+        } catch (emailError) {
+          console.error(`Error sending exam notification to ${student.email}:`, emailError);
+        }
+      }
+    }
 
     res.status(200).json({
       message: "Exam published successfully",

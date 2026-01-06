@@ -648,44 +648,6 @@ export const getExamStatistics = async (req, res) => {
 };
 
 /**
- * Add feedback to a submission (Lecturer)
- * PUT /api/submissions/:id/feedback
- */
-export const addFeedback = async (req, res) => {
-  try {
-    const { id } = req.params;
-    const { feedback } = req.body;
-    const lecturerId = req.user._id;
-
-    const submission = await ExamSubmission.findById(id).populate("examId");
-
-    if (!submission) {
-      return res.status(404).json({ success: false, message: "Submission not found" });
-    }
-
-    if (submission.examId.lecturerId.toString() !== lecturerId.toString()) {
-      return res.status(403).json({
-        success: false,
-        message: "Not authorized to add feedback",
-      });
-    }
-
-    submission.lecturerFeedback = feedback;
-    await submission.save();
-
-    res.status(200).json({
-      success: true,
-      message: "Feedback added successfully",
-      submission,
-      serverTime: dayjs().toISOString(),
-    });
-  } catch (error) {
-    console.error("Add feedback error:", error);
-    res.status(500).json({ success: false, message: error.message });
-  }
-};
-
-/**
  * Flag a submission (Lecturer)
  * PUT /api/submissions/:id/flag
  */
@@ -695,7 +657,9 @@ export const flagSubmission = async (req, res) => {
     const { reason } = req.body;
     const lecturerId = req.user._id;
 
-    const submission = await ExamSubmission.findById(id).populate("examId");
+    const submission = await ExamSubmission.findById(id)
+      .populate("examId")
+      .populate("studentId", "fullname email");
 
     if (!submission) {
       return res.status(404).json({ success: false, message: "Submission not found" });
@@ -712,6 +676,21 @@ export const flagSubmission = async (req, res) => {
     submission.flagReason = reason;
     await submission.save();
 
+    // Send notification to student
+    try {
+      const exam = await Exam.findById(submission.examId._id).populate("courseId", "courseCode courseTitle");
+      const mailGen = new EmailContentGenerator();
+      const emailContent = mailGen.submissionFlagged({
+        studentName: submission.studentId.fullname,
+        examTitle: `${exam.courseId.courseCode} — ${exam.courseId.courseTitle}`,
+        flagReason: reason,
+        studentId: submission.studentId._id,
+      });
+      await Mailer.sendTemplatedMail(submission.studentId.email, emailContent);
+    } catch (emailError) {
+      console.error("Error sending flagged submission email:", emailError);
+    }
+
     res.status(200).json({
       success: true,
       message: "Submission flagged successfully",
@@ -720,6 +699,62 @@ export const flagSubmission = async (req, res) => {
     });
   } catch (error) {
     console.error("Flag submission error:", error);
+    res.status(500).json({ success: false, message: error.message });
+  }
+};
+
+/**
+ * Add feedback to a submission (Lecturer)
+ * PUT /api/submissions/:id/feedback
+ */
+export const addFeedback = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { feedback } = req.body;
+    const lecturerId = req.user._id;
+
+    const submission = await ExamSubmission.findById(id)
+      .populate("examId")
+      .populate("studentId", "fullname email");
+
+    if (!submission) {
+      return res.status(404).json({ success: false, message: "Submission not found" });
+    }
+
+    if (submission.examId.lecturerId.toString() !== lecturerId.toString()) {
+      return res.status(403).json({
+        success: false,
+        message: "Not authorized to add feedback",
+      });
+    }
+
+    submission.lecturerFeedback = feedback;
+    await submission.save();
+
+    // Send notification to student
+    try {
+      const exam = await Exam.findById(submission.examId._id).populate("courseId", "courseCode courseTitle");
+      const mailGen = new EmailContentGenerator();
+      const emailContent = mailGen.feedbackReceived({
+        studentName: submission.studentId.fullname,
+        examTitle: `${exam.courseId.courseCode} — ${exam.courseId.courseTitle}`,
+        feedback,
+        submissionId: submission._id,
+        studentId: submission.studentId._id,
+      });
+      await Mailer.sendTemplatedMail(submission.studentId.email, emailContent);
+    } catch (emailError) {
+      console.error("Error sending feedback email:", emailError);
+    }
+
+    res.status(200).json({
+      success: true,
+      message: "Feedback added successfully",
+      submission,
+      serverTime: dayjs().toISOString(),
+    });
+  } catch (error) {
+    console.error("Add feedback error:", error);
     res.status(500).json({ success: false, message: error.message });
   }
 };
