@@ -570,7 +570,13 @@
             <div class="logo-container">
               <div class="university-logo">
                 <!-- Replace with actual UNIDEL logo -->
-                <img src="unidel-logo.png" alt="UNIDEL Logo" width="80" height="80" style="border-radius: 8px" />
+                <img 
+                  src="https://res.cloudinary.com/dkt3rfpgz/image/upload/v1767626977/unidel2_hrn11f.png" 
+                  alt="University of Delta Logo" 
+                  width="80" 
+                  height="80" 
+                  style="display:block;border-radius:8px;object-fit:contain;" 
+                />
               </div>
               <div class="university-name">UNIVERSITY OF DELTA</div>
             </div>
@@ -626,7 +632,7 @@
           {{/if}}
 
           <!-- Feature Cards (Optional) -->
-          {{#if FEATURE_CARDS}}
+          <!-- {{#if FEATURE_CARDS}}
           <div class="feature-cards">
             {{#each FEATURE_CARDS}}
             <div class="feature-card">
@@ -636,8 +642,9 @@
             </div>
             {{/each}}
           </div>
-          {{/if}}
-
+          {{/if}} -->
+          
+    
           <!-- Action Buttons -->
           {{#if BUTTONS}}
           <div class="button-container">
@@ -646,6 +653,37 @@
             {{/each}}
           </div>
           {{/if}}
+
+          <!-- Additional Content -->
+          <!-- {{#if ADDITIONAL_CONTENT}}
+          <div style="margin-top: 24px">{{ADDITIONAL_CONTENT}}</div>
+          {{/if}}
+        </div> -->
+
+
+           <div class="feature-cards">
+            <div class="feature-card">
+              <div class="feature-icon">
+                <i class="fas fa-shield-alt"></i>
+              </div>
+              <div class="feature-title">Secure Testing</div>
+              <div class="feature-description">Advanced proctoring and anti-cheating measures ensure exam integrity</div>
+            </div>
+            <div class="feature-card">
+              <div class="feature-icon">
+                <i class="fas fa-bolt"></i>
+              </div>
+              <div class="feature-title">Real-time Results</div>
+              <div class="feature-description">Instant grading and immediate feedback on exam performance</div>
+            </div>
+            <div class="feature-card">
+              <div class="feature-icon">
+                <i class="fas fa-chart-line"></i>
+              </div>
+              <div class="feature-title">Analytics Dashboard</div>
+              <div class="feature-description">Comprehensive insights and performance tracking for students</div>
+            </div>
+          </div>
 
           <!-- Attachments Section -->
           {{#if ATTACHMENTS}}
@@ -663,11 +701,8 @@
           </div>
           {{/if}}
 
-          <!-- Additional Content -->
-          {{#if ADDITIONAL_CONTENT}}
-          <div style="margin-top: 24px">{{ADDITIONAL_CONTENT}}</div>
-          {{/if}}
-        </div>
+
+          
 
         <!-- FOOTER SECTION -->
         <div class="email-footer">

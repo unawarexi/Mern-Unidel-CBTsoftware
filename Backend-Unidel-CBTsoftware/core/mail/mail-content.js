@@ -5,6 +5,7 @@ class EmailContentGenerator {
     this.baseUrl = process.env.BASE_URL || "https://cbt.unidel.edu.ng";
     this.supportEmail = "support@unidel.edu.ng";
     this.unsubscribeBaseUrl = `${this.baseUrl}/unsubscribe`;
+    this.logoUrl = process.env.UNIDEL_LOGO_URL || "https://via.placeholder.com/80"; // Fallback placeholder
   }
 
   generateUnsubscribeLink(userId, emailType) {
@@ -37,6 +38,7 @@ class EmailContentGenerator {
           title: "Important",
           content: `
             <p style="color:#92400E;">For security, click the button below to set a new password before signing in.</p>
+            <p style="color:#6b7280;font-size:13px;">If you did not expect this account, contact the CBT support: <a href="mailto:${this.supportEmail}">${this.supportEmail}</a>.</p>
           `,
         },
       ],
@@ -47,9 +49,10 @@ class EmailContentGenerator {
           primary: true,
         },
       ],
-      ADDITIONAL_CONTENT: `
-        <p style="color:#6b7280;font-size:13px;">If you did not expect this account, contact the CBT support: <a href="mailto:${this.supportEmail}">${this.supportEmail}</a>.</p>
-      `,
+      // ADDITIONAL_CONTENT: `
+      //   <p style="color:#6b7280;font-size:13px;">If you did not expect this account, contact the CBT support: <a href="mailto:${this.supportEmail}">${this.supportEmail}</a>.</p>
+      // `,
+
       UNSUBSCRIBE_LINK: this.generateUnsubscribeLink(userData.userId, "account"),
     };
   }
@@ -197,7 +200,7 @@ class EmailContentGenerator {
 
   // 7) Grade / result notification
   gradeNotification(gradeData) {
-    const percent = (gradeData.score != null && gradeData.total != null) ? ((gradeData.score / gradeData.total) * 100).toFixed(2) : null;
+    const percent = gradeData.score != null && gradeData.total != null ? ((gradeData.score / gradeData.total) * 100).toFixed(2) : null;
     return {
       EMAIL_TITLE: `UNIDEL CBT — Your result for ${gradeData.examTitle || ""} is available`,
       GREETING: `Hello ${gradeData.studentName || ""},`,
@@ -240,6 +243,243 @@ class EmailContentGenerator {
     };
   }
 
+  // 9) Question bank approved (Lecturer)
+  questionBankApproved(data) {
+    return {
+      EMAIL_TITLE: "UNIDEL CBT — Question Bank Approved",
+      GREETING: `Hello ${data.lecturerName || ""},`,
+      MAIN_CONTENT: `
+        <p>Your question bank <strong>"${data.questionBankTitle || ""}"</strong> has been approved by the administrator.</p>
+        <p>You can now schedule exams using this question bank.</p>
+      `,
+      CONTENT_SECTIONS: [
+        {
+          title: "Question Bank Details",
+          content: `
+            <ul style="margin-left:18px;color:#475569;">
+              <li><strong>Title:</strong> ${data.questionBankTitle || "—"}</li>
+              <li><strong>Course:</strong> ${data.courseCode || ""} — ${data.courseTitle || ""}</li>
+              <li><strong>Total Questions:</strong> ${data.totalQuestions || "—"}</li>
+              <li><strong>Approved By:</strong> ${data.approvedBy || "Admin"}</li>
+            </ul>
+          `,
+        },
+      ],
+      BUTTONS: [
+        {
+          text: "View Question Bank",
+          url: data.viewUrl || `${this.baseUrl}/question-banks/${data.questionBankId || ""}`,
+          primary: true,
+        },
+        {
+          text: "Schedule Exam",
+          url: data.scheduleUrl || `${this.baseUrl}/exams/create?qbId=${data.questionBankId || ""}`,
+          primary: false,
+        },
+      ],
+      UNSUBSCRIBE_LINK: this.generateUnsubscribeLink(data.lecturerId, "question-banks"),
+    };
+  }
+
+  // 10) Question bank rejected (Lecturer)
+  questionBankRejected(data) {
+    return {
+      EMAIL_TITLE: "UNIDEL CBT — Question Bank Needs Revision",
+      GREETING: `Hello ${data.lecturerName || ""},`,
+      MAIN_CONTENT: `
+        <p>Your question bank <strong>"${data.questionBankTitle || ""}"</strong> requires revision before approval.</p>
+      `,
+      INFO_BOX: {
+        type: "alert",
+        title: "Admin Comments",
+        content: data.comments || "Please review and resubmit.",
+      },
+      CONTENT_SECTIONS: [
+        {
+          title: "Question Bank Details",
+          content: `
+            <ul style="margin-left:18px;color:#475569;">
+              <li><strong>Title:</strong> ${data.questionBankTitle || "—"}</li>
+              <li><strong>Course:</strong> ${data.courseCode || ""} — ${data.courseTitle || ""}</li>
+              <li><strong>Reviewed By:</strong> ${data.reviewedBy || "Admin"}</li>
+            </ul>
+          `,
+        },
+      ],
+      BUTTONS: [
+        {
+          text: "Edit Question Bank",
+          url: data.editUrl || `${this.baseUrl}/question-banks/${data.questionBankId || ""}/edit`,
+          primary: true,
+        },
+      ],
+      UNSUBSCRIBE_LINK: this.generateUnsubscribeLink(data.lecturerId, "question-banks"),
+    };
+  }
+
+  // 11) Exam published notification (Students in course)
+  examPublished(data) {
+    return {
+      EMAIL_TITLE: `UNIDEL CBT — New Exam Available: ${data.examTitle || ""}`,
+      GREETING: `Hello ${data.studentName || ""},`,
+      MAIN_CONTENT: `
+        <p>A new exam has been published for your course <strong>${data.courseCode || ""} — ${data.courseTitle || ""}</strong>.</p>
+      `,
+      EXAM_DETAILS: [
+        { label: "Exam Title", value: data.examTitle || "—" },
+        { label: "Start Time", value: data.startTime || "—" },
+        { label: "End Time", value: data.endTime || "—" },
+        { label: "Duration", value: data.duration ? `${data.duration} minutes` : "—" },
+        { label: "Total Questions", value: data.totalQuestions || "—" },
+      ],
+      INFO_BOX: {
+        type: "warning",
+        title: "Important",
+        content: "Make sure to log in at least 15 minutes before the exam starts. Late submissions will not be accepted.",
+      },
+      BUTTONS: [
+        {
+          text: "View Exam Details",
+          url: data.viewUrl || `${this.baseUrl}/exams/${data.examId || ""}`,
+          primary: true,
+        },
+      ],
+      UNSUBSCRIBE_LINK: this.generateUnsubscribeLink(data.studentId, "exams"),
+    };
+  }
+
+  // 12) Security violation warning (Student)
+  securityViolation(data) {
+    return {
+      EMAIL_TITLE: "UNIDEL CBT — Security Violation Detected",
+      GREETING: `Hello ${data.studentName || ""},`,
+      MAIN_CONTENT: `
+        <p>A security violation was detected during your exam <strong>${data.examTitle || ""}</strong>.</p>
+      `,
+      INFO_BOX: {
+        type: "alert",
+        title: "⚠️ Warning",
+        content: `
+          Violation Type: <strong>${data.violationType || "Unknown"}</strong><br>
+          Total Violations: <strong>${data.totalViolations || 0}</strong><br>
+          Remaining Attempts: <strong>${data.remainingAttempts || 0}</strong>
+        `,
+      },
+      CONTENT_SECTIONS: [
+        {
+          content: `
+            <p style="color:#DC2626;">If you reach ${data.violationThreshold || 3} violations, your exam will be automatically submitted.</p>
+            <p>Violations include: switching tabs, minimizing browser, copying/pasting, opening developer tools, etc.</p>
+          `,
+        },
+      ],
+      UNSUBSCRIBE_LINK: this.generateUnsubscribeLink(data.studentId, "security"),
+    };
+  }
+
+  // 13) Course enrollment notification (Student)
+  courseEnrollment(data) {
+    return {
+      EMAIL_TITLE: "UNIDEL CBT — Enrolled in New Course",
+      GREETING: `Hello ${data.studentName || ""},`,
+      MAIN_CONTENT: `
+        <p>You have been enrolled in <strong>${data.courseCode || ""} — ${data.courseTitle || ""}</strong>.</p>
+      `,
+      CONTENT_SECTIONS: [
+        {
+          title: "Course Information",
+          content: `
+            <ul style="margin-left:18px;color:#475569;">
+              <li><strong>Course Code:</strong> ${data.courseCode || "—"}</li>
+              <li><strong>Course Title:</strong> ${data.courseTitle || "—"}</li>
+              <li><strong>Department:</strong> ${data.department || "—"}</li>
+              <li><strong>Lecturer(s):</strong> ${data.lecturers || "—"}</li>
+            </ul>
+          `,
+        },
+      ],
+      BUTTONS: [
+        {
+          text: "View Course",
+          url: data.viewUrl || `${this.baseUrl}/courses/${data.courseId || ""}`,
+          primary: true,
+        },
+      ],
+      UNSUBSCRIBE_LINK: this.generateUnsubscribeLink(data.studentId, "courses"),
+    };
+  }
+
+  // 14) Submission flagged (Student)
+  submissionFlagged(data) {
+    return {
+      EMAIL_TITLE: "UNIDEL CBT — Exam Submission Flagged for Review",
+      GREETING: `Hello ${data.studentName || ""},`,
+      MAIN_CONTENT: `
+        <p>Your submission for <strong>${data.examTitle || ""}</strong> has been flagged for manual review.</p>
+      `,
+      INFO_BOX: {
+        type: "alert",
+        title: "Reason",
+        content: data.flagReason || "Security violations detected during exam.",
+      },
+      CONTENT_SECTIONS: [
+        {
+          content: `
+            <p>This does not necessarily mean you will receive a penalty. A lecturer or administrator will review your submission.</p>
+            <p>If you believe this is an error, please contact ${this.supportEmail}.</p>
+          `,
+        },
+      ],
+      UNSUBSCRIBE_LINK: this.generateUnsubscribeLink(data.studentId, "submissions"),
+    };
+  }
+
+  // 15) Lecturer feedback added (Student)
+  feedbackReceived(data) {
+    return {
+      EMAIL_TITLE: `UNIDEL CBT — Feedback for ${data.examTitle || ""}`,
+      GREETING: `Hello ${data.studentName || ""},`,
+      MAIN_CONTENT: `
+        <p>Your lecturer has added feedback to your submission for <strong>${data.examTitle || ""}</strong>.</p>
+      `,
+      CONTENT_SECTIONS: [
+        {
+          title: "Lecturer Feedback",
+          content: `<p style="background:#F9FAFB;padding:12px;border-radius:6px;">${data.feedback || "No feedback provided."}</p>`,
+        },
+      ],
+      BUTTONS: [
+        {
+          text: "View Submission",
+          url: data.viewUrl || `${this.baseUrl}/submissions/${data.submissionId || ""}`,
+          primary: true,
+        },
+      ],
+      UNSUBSCRIBE_LINK: this.generateUnsubscribeLink(data.studentId, "feedback"),
+    };
+  }
+
+  // Example: Exam results with attachments
+  examResultsWithAttachments(data) {
+    return {
+      EMAIL_TITLE: `UNIDEL CBT — Exam Results Available`,
+      GREETING: `Hello ${data.studentName || ""},`,
+      MAIN_CONTENT: `
+        <p>Your exam results for <strong>${data.examTitle || ""}</strong> are now available.</p>
+      `,
+      BUTTONS: [
+        {
+          text: "View Results",
+          url: data.viewUrl || `${this.baseUrl}/results/${data.examId || ""}`,
+          primary: true,
+        },
+      ],
+      // Only include ATTACHMENTS if there are actual files
+      ATTACHMENTS: data.attachments || undefined, // undefined will hide the section
+      UNSUBSCRIBE_LINK: this.generateUnsubscribeLink(data.studentId, "results"),
+    };
+  }
+
   // Utility helpers
   generateFooterContent(unsubscribeLink) {
     return `
@@ -279,6 +519,11 @@ class EmailContentGenerator {
     const required = requiredFields[emailType];
     if (!required) return true;
     return required.every((field) => data && data.hasOwnProperty(field) && data[field] !== null && data[field] !== "");
+  }
+
+  // Add method to get logo URL for templates
+  getLogoUrl() {
+    return this.logoUrl;
   }
 }
 
