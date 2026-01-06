@@ -12,12 +12,7 @@ export const createLecturer = async (data) => {
     credentials: "include",
     body: JSON.stringify({ ...data, level: data.level }),
   });
-  if (!response.ok) {
-    const error = await response.json();
-    console.error("[API] createLecturer error:", error);
-    throw new Error(error.message || "Failed to create lecturer");
-  }
-  return response.json();
+  return handleResponse(response);
 };
 
 export const getAllLecturers = async () => {
@@ -26,12 +21,7 @@ export const getAllLecturers = async () => {
     method: "GET",
     credentials: "include",
   });
-  if (!response.ok) {
-    const error = await response.json();
-    console.error("[API] getAllLecturers error:", error);
-    throw new Error(error.message || "Failed to fetch lecturers");
-  }
-  return response.json();
+  return handleResponse(response);
 };
 
 export const getLecturerById = async (id) => {
@@ -40,12 +30,7 @@ export const getLecturerById = async (id) => {
     method: "GET",
     credentials: "include",
   });
-  if (!response.ok) {
-    const error = await response.json();
-    console.error("[API] getLecturerById error:", error);
-    throw new Error(error.message || "Failed to fetch lecturer");
-  }
-  return response.json();
+  return handleResponse(response);
 };
 
 export const updateLecturer = async ({ id, data }) => {
@@ -56,12 +41,7 @@ export const updateLecturer = async ({ id, data }) => {
     credentials: "include",
     body: JSON.stringify({ ...data, level: data.level }),
   });
-  if (!response.ok) {
-    const error = await response.json();
-    console.error("[API] updateLecturer error:", error);
-    throw new Error(error.message || "Failed to update lecturer");
-  }
-  return response.json();
+  return handleResponse(response);
 };
 
 export const deleteLecturer = async (id) => {
@@ -70,12 +50,7 @@ export const deleteLecturer = async (id) => {
     method: "DELETE",
     credentials: "include",
   });
-  if (!response.ok) {
-    const error = await response.json();
-    console.error("[API] deleteLecturer error:", error);
-    throw new Error(error.message || "Failed to delete lecturer");
-  }
-  return response.json();
+  return handleResponse(response);
 };
 
 // ========== STUDENT API FUNCTIONS ==========
@@ -88,12 +63,7 @@ export const createStudent = async (data) => {
     credentials: "include",
     body: JSON.stringify({ ...data, level: data.level }),
   });
-  if (!response.ok) {
-    const error = await response.json();
-    console.error("[API] createStudent error:", error);
-    throw new Error(error.message || "Failed to create student");
-  }
-  return response.json();
+  return handleResponse(response);
 };
 
 export const getAllStudents = async () => {
@@ -102,12 +72,7 @@ export const getAllStudents = async () => {
     method: "GET",
     credentials: "include",
   });
-  if (!response.ok) {
-    const error = await response.json();
-    console.error("[API] getAllStudents error:", error);
-    throw new Error(error.message || "Failed to fetch students");
-  }
-  return response.json();
+  return handleResponse(response);
 };
 
 export const getStudentById = async (id) => {
@@ -116,12 +81,7 @@ export const getStudentById = async (id) => {
     method: "GET",
     credentials: "include",
   });
-  if (!response.ok) {
-    const error = await response.json();
-    console.error("[API] getStudentById error:", error);
-    throw new Error(error.message || "Failed to fetch student");
-  }
-  return response.json();
+  return handleResponse(response);
 };
 
 export const updateStudent = async ({ id, data }) => {
@@ -132,12 +92,7 @@ export const updateStudent = async ({ id, data }) => {
     credentials: "include",
     body: JSON.stringify({ ...data, level: data.level }),
   });
-  if (!response.ok) {
-    const error = await response.json();
-    console.error("[API] updateStudent error:", error);
-    throw new Error(error.message || "Failed to update student");
-  }
-  return response.json();
+  return handleResponse(response);
 };
 
 export const deleteStudent = async (id) => {
@@ -146,12 +101,7 @@ export const deleteStudent = async (id) => {
     method: "DELETE",
     credentials: "include",
   });
-  if (!response.ok) {
-    const error = await response.json();
-    console.error("[API] deleteStudent error:", error);
-    throw new Error(error.message || "Failed to delete student");
-  }
-  return response.json();
+  return handleResponse(response);
 };
 
 // ========== ADMIN API FUNCTIONS ==========
@@ -164,12 +114,7 @@ export const createAdmin = async (data) => {
     credentials: "include",
     body: JSON.stringify(data),
   });
-  if (!response.ok) {
-    const error = await response.json();
-    console.error("[API] createAdmin error:", error);
-    throw new Error(error.message || "Failed to create admin");
-  }
-  return response.json();
+  return handleResponse(response);
 };
 
 export const getAllAdmins = async () => {
@@ -178,12 +123,7 @@ export const getAllAdmins = async () => {
     method: "GET",
     credentials: "include",
   });
-  if (!response.ok) {
-    const error = await response.json();
-    console.error("[API] getAllAdmins error:", error);
-    throw new Error(error.message || "Failed to fetch admins");
-  }
-  return response.json();
+  return handleResponse(response);
 };
 
 export const getAdminById = async (id) => {
@@ -192,12 +132,7 @@ export const getAdminById = async (id) => {
     method: "GET",
     credentials: "include",
   });
-  if (!response.ok) {
-    const error = await response.json();
-    console.error("[API] getAdminById error:", error);
-    throw new Error(error.message || "Failed to fetch admin");
-  }
-  return response.json();
+  return handleResponse(response);
 };
 
 export const updateAdmin = async ({ id, data }) => {
@@ -208,12 +143,7 @@ export const updateAdmin = async ({ id, data }) => {
     credentials: "include",
     body: JSON.stringify(data),
   });
-  if (!response.ok) {
-    const error = await response.json();
-    console.error("[API] updateAdmin error:", error);
-    throw new Error(error.message || "Failed to update admin");
-  }
-  return response.json();
+  return handleResponse(response);
 };
 
 export const deleteAdmin = async (id) => {
@@ -222,12 +152,7 @@ export const deleteAdmin = async (id) => {
     method: "DELETE",
     credentials: "include",
   });
-  if (!response.ok) {
-    const error = await response.json();
-    console.error("[API] deleteAdmin error:", error);
-    throw new Error(error.message || "Failed to delete admin");
-  }
-  return response.json();
+  return handleResponse(response);
 };
 
 // ========== UTILITY API FUNCTIONS ==========
@@ -238,12 +163,7 @@ export const getUserStats = async () => {
     method: "GET",
     credentials: "include",
   });
-  if (!response.ok) {
-    const error = await response.json();
-    console.error("[API] getUserStats error:", error);
-    throw new Error(error.message || "Failed to fetch stats");
-  }
-  return response.json();
+  return handleResponse(response);
 };
 
 // NEW: Get stats for current user (all roles)
@@ -253,12 +173,7 @@ export const getCurrentUserStats = async () => {
     method: "GET",
     credentials: "include",
   });
-  if (!response.ok) {
-    const error = await response.json();
-    console.error("[API] getCurrentUserStats error:", error);
-    throw new Error(error.message || "Failed to fetch user stats");
-  }
-  return response.json();
+  return handleResponse(response);
 };
 
 // ========== LECTURER UTILITY API FUNCTIONS ==========
@@ -269,12 +184,7 @@ export const getLecturerCourses = async () => {
     method: "GET",
     credentials: "include",
   });
-  if (!response.ok) {
-    const error = await response.json();
-    console.error("[API] getLecturerCourses error:", error);
-    throw new Error(error.message || "Failed to fetch lecturer courses");
-  }
-  return response.json();
+  return handleResponse(response);
 };
 
 // NEW: Get students for the logged-in lecturer
@@ -284,11 +194,31 @@ export const getLecturerStudents = async () => {
     method: "GET",
     credentials: "include",
   });
+  return handleResponse(response);
+};
+
+// Helper function to handle API responses with session expiry detection
+const handleResponse = async (response) => {
+  // Check for session expiry (401 or 403)
+  if (response.status === 401 || response.status === 403) {
+    const errorData = await response.json().catch(() => ({ message: "Session expired" }));
+
+    // Dispatch custom event for session expiry
+    window.dispatchEvent(new CustomEvent("session-expired", {
+      detail: {
+        status: response.status,
+        message: errorData.message || "Session expired"
+      }
+    }));
+
+    throw new Error(errorData.message || "Session expired");
+  }
+
   if (!response.ok) {
     const error = await response.json();
-    console.error("[API] getLecturerStudents error:", error);
-    throw new Error(error.message || "Failed to fetch lecturer students");
+    throw new Error(error.message || "Request failed");
   }
+
   return response.json();
 };
 

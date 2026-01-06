@@ -80,15 +80,21 @@ export const adminSignup = async (data) => {
   return response.json();
 };
 
-// Get current user
+// Get current user with session expiry detection
 export const getCurrentUser = async () => {
   const response = await fetch(`${BASE_URL}/me`, {
     method: "GET",
     credentials: "include",
   });
 
-  // If not authenticated, return null user instead of throwing
-  if (response.status === 401) {
+  // If not authenticated or session expired, dispatch event and return null
+  if (response.status === 401 || response.status === 403) {
+    window.dispatchEvent(new CustomEvent("session-expired", {
+      detail: {
+        status: response.status,
+        message: "Session expired"
+      }
+    }));
     return { user: null };
   }
 
@@ -98,7 +104,6 @@ export const getCurrentUser = async () => {
   }
 
   const data = await response.json();
-  // Accept both { user } and { data } shapes, always return { user }
   return { user: data.user || data.data || null };
 };
 

@@ -63,6 +63,47 @@ const useAuthStore = create((set) => ({
       isFirstLogin: false,
     });
   },
+
+  // Add session expiry handler
+  handleSessionExpiry: (navigate) => {
+    const user = useAuthStore.getState().user;
+    const role = (user?.role || user?.type || "").toString().toLowerCase();
+    
+    // Determine redirect route based on role
+    let redirectRoute = "/portal-signin";
+    if (role === "admin" || role === "superadmin") {
+      redirectRoute = "/admin-signin";
+    } else if (role === "lecturer") {
+      redirectRoute = "/lecturer-signin";
+    }
+    
+    // Clear auth state
+    try {
+      localStorage.removeItem("authUser");
+    } catch (e) {
+      // ignore
+    }
+    
+    set({
+      user: null,
+      isAuthenticated: false,
+      error: null,
+      isFirstLogin: false,
+      toast: {
+        visible: true,
+        message: "Your session has expired. Please login again.",
+        type: "warning",
+        duration: 5000,
+      },
+    });
+    
+    // Navigate to appropriate signin page
+    if (navigate) {
+      navigate(redirectRoute, { replace: true });
+    }
+    
+    console.log(`🔒 Session expired, redirecting to ${redirectRoute}`);
+  },
 }));
 
 // ========== WRAPPER HOOKS FOR COMPONENTS ==========

@@ -108,6 +108,27 @@ const SectionsApp = () => {
   );
 };
 
+// New component to handle session expiry
+const SessionExpiryHandler = () => {
+  const navigate = useNavigate();
+  const handleSessionExpiry = useAuthStore((state) => state.handleSessionExpiry);
+
+  useEffect(() => {
+    const handleExpiry = (event) => {
+      console.log("🔔 Session expired event received:", event.detail);
+      handleSessionExpiry(navigate);
+    };
+
+    window.addEventListener("session-expired", handleExpiry);
+
+    return () => {
+      window.removeEventListener("session-expired", handleExpiry);
+    };
+  }, [navigate, handleSessionExpiry]);
+
+  return null;
+};
+
 // Main App Component
 const App = () => {
   // Get toast state from both stores
@@ -130,6 +151,9 @@ const App = () => {
       <AuthInitializer />
 
       <Router>
+        {/* Add session expiry handler */}
+        <SessionExpiryHandler />
+
         {/* Global Toast */}
         <Toast
           visible={toastToShow.visible}
