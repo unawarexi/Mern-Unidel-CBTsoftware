@@ -53,6 +53,7 @@ class EmailContentGenerator {
       //   <p style="color:#6b7280;font-size:13px;">If you did not expect this account, contact the CBT support: <a href="mailto:${this.supportEmail}">${this.supportEmail}</a>.</p>
       // `,
 
+      FEATURE_CARDS: true, // Show feature cards only on account creation
       UNSUBSCRIBE_LINK: this.generateUnsubscribeLink(userData.userId, "account"),
     };
   }

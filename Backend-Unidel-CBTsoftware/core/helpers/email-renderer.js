@@ -85,6 +85,36 @@ function renderAttachments(attachments = []) {
   `;
 }
 
+function renderFeatureCards(showFeatureCards = false) {
+  if (!showFeatureCards) return "";
+
+  return `
+    <div class="feature-cards">
+      <div class="feature-card">
+        <div class="feature-icon">
+          <i class="fas fa-shield-alt"></i>
+        </div>
+        <div class="feature-title">Secure Testing</div>
+        <div class="feature-description">Advanced proctoring and anti-cheating measures ensure exam integrity</div>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon">
+          <i class="fas fa-bolt"></i>
+        </div>
+        <div class="feature-title">Real-time Results</div>
+        <div class="feature-description">Instant grading and immediate feedback on exam performance</div>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon">
+          <i class="fas fa-chart-line"></i>
+        </div>
+        <div class="feature-title">Analytics Dashboard</div>
+        <div class="feature-description">Comprehensive insights and performance tracking for students</div>
+      </div>
+    </div>
+  `;
+}
+
 // Read and cache template
 let cachedTemplate = null;
 function getTemplate() {
@@ -131,6 +161,9 @@ export function render(templateData = {}) {
 
   // ATTACHMENTS block (conditional)
   html = safeReplace(html, /{{#if ATTACHMENTS}}[\s\S]*?{{\/if}}/g, renderAttachments(templateData.ATTACHMENTS));
+
+  // FEATURE_CARDS block (conditional)
+  html = safeReplace(html, /{{#if FEATURE_CARDS}}[\s\S]*?{{\/if}}/g, renderFeatureCards(templateData.FEATURE_CARDS));
 
   // Enhanced cleanup of remaining handlebars-like syntax
   // This handles multiple edge cases:
