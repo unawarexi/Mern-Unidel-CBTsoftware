@@ -1,6 +1,6 @@
 /* eslint-disable no-unused-vars */
 import React, { useEffect, useState } from "react";
-import { Eye, EyeOff, BookOpen, AlertCircle } from "lucide-react";
+import { Eye, EyeOff, BookOpen, AlertCircle, FileText, Users, BarChart3 } from "lucide-react";
 import { Images } from "../../constants/image-strings";
 import { Link, useNavigate } from "react-router-dom";
 import { ButtonSpinner } from "../../components/Spinners";
@@ -64,49 +64,78 @@ const LecturerSignIn = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 flex">
-      <div className="w-full lg:w-1/2 flex items-center justify-center p-6 sm:p-8 lg:p-12">
-        <div className="w-full max-w-md">
-          <div className="mb-8">
-            <div className="flex items-center gap-2 mb-6">
-              <div className="w-10 h-10 bg-orange-600 rounded-lg flex items-center justify-center">
-                <BookOpen className="w-6 h-6 text-white" />
+    <div className="min-h-screen bg-gradient-to-br from-orange-50 via-white to-amber-50 flex">
+      {/* Left Side - Sign In Form */}
+      <div className="w-full lg:w-[45%] flex items-center justify-center p-6 sm:p-8 lg:p-12 relative z-10">
+        <div className="w-full max-w-lg">
+          {/* Logo and Header */}
+          <div className="mb-10">
+            <div className="flex items-center gap-3 mb-8">
+              <div className="w-12 h-12 bg-gradient-to-br from-orange-600 to-red-600 rounded-xl flex items-center justify-center shadow-lg shadow-orange-500/30">
+                <BookOpen className="w-7 h-7 text-white" />
               </div>
               <div>
-                <h3 className="text-lg font-bold text-gray-900">UNIDEL Lecturer</h3>
-                <p className="text-xs text-gray-500">Faculty Portal</p>
+                <h3 className="text-xl font-bold text-gray-900">UNIDEL Lecturer</h3>
+                <p className="text-sm text-gray-500">Faculty Portal</p>
               </div>
             </div>
-            <h1 className="text-3xl font-bold text-gray-900 mb-2">Lecturer Sign In</h1>
-            <p className="text-gray-600">Access your lecturer dashboard to manage tests and review results.</p>
+            <h1 className="text-4xl font-bold text-gray-900 mb-3 bg-gradient-to-r from-orange-600 to-red-600 bg-clip-text text-transparent">
+              Faculty Access
+            </h1>
+            <p className="text-gray-600 text-lg">Sign in to manage courses and assessments</p>
           </div>
 
-          <form onSubmit={handleSubmit(onSubmit)} className="space-y-5">
+          {/* Sign In Form */}
+          <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
             <div>
-              <label htmlFor="employeeId" className="block text-sm font-medium text-gray-700 mb-1.5">Employee ID</label>
+              <label htmlFor="employeeId" className="block text-sm font-semibold text-gray-700 mb-2">
+                Employee ID
+              </label>
               <input
                 id="employeeId"
                 {...register("employeeId")}
                 placeholder="EMP12345"
-                className={`w-full px-4 py-3 bg-white border rounded-lg text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 transition-all ${errors.employeeId ? "border-red-500 focus:ring-red-200" : "border-gray-300 focus:ring-orange-200 focus:border-orange-500"}`}
+                className={`w-full px-4 py-3.5 bg-white border-2 rounded-xl text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-4 transition-all ${
+                  errors.employeeId ? "border-red-500 focus:ring-red-100" : "border-gray-200 focus:ring-orange-100 focus:border-orange-500"
+                }`}
               />
-              {errors.employeeId && <div className="flex items-center gap-1 mt-1.5 text-red-600 text-sm"><AlertCircle className="w-4 h-4" /><span>{errors.employeeId.message}</span></div>}
+              {errors.employeeId && (
+                <div className="flex items-center gap-2 mt-2 text-red-600 text-sm">
+                  <AlertCircle className="w-4 h-4" />
+                  <span>{errors.employeeId.message}</span>
+                </div>
+              )}
             </div>
+
             <div>
-              <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-1.5">Email Address</label>
+              <label htmlFor="email" className="block text-sm font-semibold text-gray-700 mb-2">
+                Email Address
+              </label>
               <input
                 id="email"
                 type="email"
                 {...register("email")}
                 placeholder="you@unidel.edu.ng"
-                className={`w-full px-4 py-3 bg-white border rounded-lg text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 transition-all ${errors.email ? "border-red-500 focus:ring-red-200" : "border-gray-300 focus:ring-orange-200 focus:border-orange-500"}`}
+                className={`w-full px-4 py-3.5 bg-white border-2 rounded-xl text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-4 transition-all ${
+                  errors.email ? "border-red-500 focus:ring-red-100" : "border-gray-200 focus:ring-orange-100 focus:border-orange-500"
+                }`}
               />
-              {errors.email && <div className="flex items-center gap-1 mt-1.5 text-red-600 text-sm"><AlertCircle className="w-4 h-4" /><span>{errors.email.message}</span></div>}
+              {errors.email && (
+                <div className="flex items-center gap-2 mt-2 text-red-600 text-sm">
+                  <AlertCircle className="w-4 h-4" />
+                  <span>{errors.email.message}</span>
+                </div>
+              )}
             </div>
+
             <div>
-              <div className="flex items-center justify-between mb-1.5">
-                <label htmlFor="password" className="block text-sm font-medium text-gray-700">Password</label>
-                <Link to="/forgot-password" className="text-sm text-orange-600 hover:text-orange-700 font-medium">Forgot password?</Link>
+              <div className="flex items-center justify-between mb-2">
+                <label htmlFor="password" className="block text-sm font-semibold text-gray-700">
+                  Password
+                </label>
+                <Link to="/forgot-password" className="text-sm text-orange-600 hover:text-orange-700 font-semibold">
+                  Forgot?
+                </Link>
               </div>
               <div className="relative">
                 <input
@@ -114,42 +143,98 @@ const LecturerSignIn = () => {
                   type={showPassword ? "text" : "password"}
                   {...register("password")}
                   placeholder="Enter your password"
-                  className={`w-full px-4 py-3 bg-white border rounded-lg text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 transition-all pr-12 ${errors.password ? "border-red-500 focus:ring-red-200" : "border-gray-300 focus:ring-orange-200 focus:border-orange-500"}`}
+                  className={`w-full px-4 py-3.5 bg-white border-2 rounded-xl text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-4 transition-all pr-12 ${
+                    errors.password ? "border-red-500 focus:ring-red-100" : "border-gray-200 focus:ring-orange-100 focus:border-orange-500"
+                  }`}
                 />
-                <button type="button" onClick={() => setShowPassword(!showPassword)} className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-700 transition-colors">
+                <button type="button" onClick={() => setShowPassword(!showPassword)} className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors">
                   {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
                 </button>
               </div>
-              {errors.password && <div className="flex items-center gap-1 mt-1.5 text-red-600 text-sm"><AlertCircle className="w-4 h-4" /><span>{errors.password.message}</span></div>}
+              {errors.password && (
+                <div className="flex items-center gap-2 mt-2 text-red-600 text-sm">
+                  <AlertCircle className="w-4 h-4" />
+                  <span>{errors.password.message}</span>
+                </div>
+              )}
             </div>
-            <button type="submit" disabled={isLoading} className={`w-full bg-orange-600 text-white py-3 px-4 rounded-lg font-medium hover:bg-orange-700 ${isLoading ? "opacity-80 pointer-events-none" : ""}`}>
-              {isLoading ? <span className="flex items-center gap-2"><ButtonSpinner size={16} /> Sign In</span> : "Sign In"}
+
+            <button
+              type="submit"
+              disabled={isLoading}
+              className={`w-full bg-gradient-to-r from-orange-600 to-red-600 text-white py-4 px-4 rounded-xl font-semibold hover:from-orange-700 hover:to-red-700 focus:outline-none focus:ring-4 focus:ring-orange-200 transition-all shadow-lg shadow-orange-500/30 ${
+                isLoading ? "opacity-80 pointer-events-none" : ""
+              }`}
+            >
+              {isLoading ? (
+                <span className="flex items-center justify-center gap-2">
+                  <ButtonSpinner size={18} /> Signing in...
+                </span>
+              ) : (
+                "Sign In to Portal"
+              )}
             </button>
           </form>
 
-          <div className="mt-6 text-center">
-            <p className="text-sm text-gray-600">Need assistance? <a href="#support" className="text-orange-600 hover:text-orange-700 font-medium">Contact Support</a></p>
+          <div className="mt-8 text-center">
+            <p className="text-sm text-gray-600">
+              Need assistance?{" "}
+              <a href="#support" className="text-orange-600 hover:text-orange-700 font-semibold">
+                Contact IT Support
+              </a>
+            </p>
           </div>
         </div>
       </div>
 
-      {/* Right Side - Image Background */}
-      <div className="hidden lg:block lg:w-1/2 relative overflow-hidden">
-        <div className="absolute inset-0 bg-cover bg-center" style={{ backgroundImage: `url(${Images.lecturerImage})` }} aria-hidden="true" />
-        <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/40 to-transparent" />
-        <div className="relative h-full flex flex-col justify-between p-8 lg:p-12 text-white">
-          <div className="max-w-md">
-            <h4 className="text-sm lg:text-base font-semibold uppercase tracking-wide text-orange-200">Faculty Access</h4>
-            <p className="mt-1 text-xs lg:text-sm text-orange-100">Lecturer portal</p>
+      {/* Right Side - Hero Image with Enhanced Overlay */}
+      <div className="hidden lg:block lg:w-[55%] relative">
+        <div className="absolute inset-0 bg-cover bg-center" style={{ backgroundImage: `url(${Images.lecturerImage})` }} />
+        <div className="absolute inset-0 bg-gradient-to-br from-orange-900/95 via-red-900/90 to-amber-900/95" />
+        
+        <div className="relative h-full flex flex-col justify-between p-12 text-white">
+          {/* Top Badge */}
+          <div className="inline-flex items-center gap-2 bg-white/10 backdrop-blur-sm px-4 py-2 rounded-full border border-white/20 self-start">
+            <BookOpen className="w-4 h-4 text-orange-300" />
+            <span className="text-sm font-medium">Faculty Portal</span>
           </div>
 
-          <div className="mt-auto max-w-lg">
-            <h2 className="text-2xl lg:text-4xl font-bold leading-tight">Manage Assessments & Student Progress</h2>
-            <p className="mt-4 text-sm lg:text-lg text-orange-100">Sign in to author and invigilate tests, grade submissions and review analytics for your courses.</p>
+          {/* Center Content */}
+          <div className="max-w-xl space-y-6">
+            <h2 className="text-5xl font-bold leading-tight">
+              Empower Your Teaching Journey
+            </h2>
+            <p className="text-xl text-orange-100 leading-relaxed">
+              Comprehensive tools to create, manage, and assess student performance with precision and ease.
+            </p>
+            
+            {/* Features */}
+            <div className="grid grid-cols-2 gap-4 mt-8">
+              <div className="bg-white/10 backdrop-blur-sm p-4 rounded-xl border border-white/20">
+                <FileText className="w-8 h-8 text-orange-300 mb-2" />
+                <h3 className="font-semibold mb-1">Create Assessments</h3>
+                <p className="text-sm text-orange-200">Design comprehensive tests</p>
+              </div>
+              <div className="bg-white/10 backdrop-blur-sm p-4 rounded-xl border border-white/20">
+                <Users className="w-8 h-8 text-orange-300 mb-2" />
+                <h3 className="font-semibold mb-1">Manage Students</h3>
+                <p className="text-sm text-orange-200">Track progress effectively</p>
+              </div>
+            </div>
           </div>
 
-          <div className="absolute top-8 right-8 w-28 h-28 bg-white bg-opacity-8 rounded-full blur-3xl pointer-events-none" />
-          <div className="absolute bottom-8 left-8 w-36 h-36 bg-white bg-opacity-6 rounded-full blur-3xl pointer-events-none" />
+          {/* Bottom Stats */}
+          <div className="flex items-center gap-8 text-sm">
+            <div>
+              <div className="text-3xl font-bold text-orange-300">500+</div>
+              <div className="text-orange-200">Active Lecturers</div>
+            </div>
+            <div className="w-px h-12 bg-white/20" />
+            <div>
+              <div className="text-3xl font-bold text-orange-300">1000+</div>
+              <div className="text-orange-200">Courses Managed</div>
+            </div>
+          </div>
         </div>
       </div>
     </div>
