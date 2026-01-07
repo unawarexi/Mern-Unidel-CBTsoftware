@@ -323,7 +323,7 @@ const StudentDashboard = () => {
           <div className="flex items-center justify-between flex-wrap gap-4">
             <div>
               <h1 className="text-3xl font-bold text-gray-900 mb-1">
-                Welcome back, {user?.fullname?.split(" ")[0] || "Student"}! 👋
+                Welcome back, {user?.fullname?.split(" ")[0] || "Student"}! 
               </h1>
               <p className="text-gray-600">Here's your academic overview and upcoming activities</p>
             </div>
@@ -855,7 +855,7 @@ const StudentDashboard = () => {
                 <ShieldCheck className="w-12 h-12 text-white" />
               </div>
               <div>
-                <h3 className="text-2xl font-bold text-white mb-1">Clean Record! 🎉</h3>
+                <h3 className="text-2xl font-bold text-white mb-1">Clean Record! </h3>
                 <p className="text-white text-opacity-90">
                   No violations detected. You're maintaining excellent academic integrity. Keep it up!
                 </p>

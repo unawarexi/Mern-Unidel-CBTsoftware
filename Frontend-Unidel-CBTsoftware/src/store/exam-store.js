@@ -190,7 +190,7 @@ export const useGetQuestionBankByIdAction = (id) => {
 
   if (error) {
     setError(error.message);
-    console.log("❌ Failed to fetch question bank:", error.message);
+    console.log(" Failed to fetch question bank:", error.message);
   }
 
   return {
@@ -433,7 +433,7 @@ export const useGetPendingApprovalsAction = () => {
 
   if (error) {
     setError(error.message);
-    console.log("❌ Failed to fetch pending approvals:", error.message);
+    console.log(" Failed to fetch pending approvals:", error.message);
   }
 
   return {
@@ -581,7 +581,7 @@ export const useGetLecturerExamsAction = (filters = {}) => {
 
   if (error) {
     setError(error.message);
-    console.log("❌ Failed to fetch exams:", error.message);
+    console.log(" Failed to fetch exams:", error.message);
   }
 
   return {
@@ -599,11 +599,11 @@ export const useGetActiveExamsForStudentAction = () => {
 
   if (error) {
     setError(error.message);
-    console.log("❌ Failed to fetch active exams:", error.message);
+    console.log(" Failed to fetch active exams:", error.message);
   }
 
   if (data) {
-    console.log("✅ Active exams fetched:", data.exams?.length || 0);
+    console.log(" Active exams fetched:", data.exams?.length || 0);
   }
 
   return {
@@ -621,14 +621,14 @@ export const useGetExamByIdAction = (id) => {
 
   useEffect(() => {
     if (data?.exam) {
-      console.log("✅ Exam fetched successfully", data.exam);
+      console.log(" Exam fetched successfully", data.exam);
     }
   }, [data]);
 
   useEffect(() => {
     if (error) {
       setError(error.message);
-      console.log("❌ Failed to fetch exam:", error.message);
+      console.log(" Failed to fetch exam:", error.message);
     }
   }, [error, setError]);
 

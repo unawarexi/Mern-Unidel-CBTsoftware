@@ -46,7 +46,7 @@ const AnswerQuestions = () => {
   // Remove excessive console logs or reduce them
   useEffect(() => {
     if (exam) {
-      console.log("📊 Exam loaded:", exam._id, "Questions:", exam.questions?.length);
+      console.log(" Exam loaded:", exam._id, "Questions:", exam.questions?.length);
     }
   }, [exam]);
 
@@ -87,19 +87,19 @@ const AnswerQuestions = () => {
     const initializeExam = async () => {
       // Add more specific condition checks
       if (!exam || !exam.questions || exam.questions.length === 0) {
-        console.log("⏳ Waiting for exam data...");
+        console.log(" Waiting for exam data...");
         return;
       }
       
       if (examStarted || starting || submission) {
-        console.log("⏭️ Exam already started or starting...");
+        console.log("️ Exam already started or starting...");
         return;
       }
 
-      console.log("🚀 Starting exam...");
+      console.log(" Starting exam...");
       try {
         const result = await startExam(examId);
-        console.log("✅ Exam started:", result.submission._id);
+        console.log(" Exam started:", result.submission._id);
         setSubmission(result.submission);
         setExamStarted(true);
         
@@ -118,7 +118,7 @@ const AnswerQuestions = () => {
           setAnswers(existingAnswers);
         }
       } catch (error) {
-        console.error("❌ Failed to start exam:", error);
+        console.error(" Failed to start exam:", error);
       }
     };
 
@@ -145,16 +145,16 @@ const AnswerQuestions = () => {
   const debouncedSave = useCallback(
     debounce(async (questionId, answer) => {
       if (!submission?._id) {
-        console.warn("⚠️ No submission ID for auto-save");
+        console.warn("️ No submission ID for auto-save");
         return;
       }
       
       setAutoSaving(true);
       try {
         await saveAnswer(submission._id, questionId, answer);
-        console.log("💾 Answer auto-saved");
+        console.log(" Answer auto-saved");
       } catch (error) {
-        console.error("❌ Auto-save failed:", error);
+        console.error(" Auto-save failed:", error);
       } finally {
         setAutoSaving(false);
       }
@@ -163,7 +163,7 @@ const AnswerQuestions = () => {
   );
 
   const handleAnswerChange = (questionId, answer) => {
-    console.log("✏️ Answer changed:", { questionId, answer });
+    console.log("️ Answer changed:", { questionId, answer });
     setAnswers((prev) => ({ ...prev, [questionId]: answer }));
     debouncedSave(questionId, answer);
   };
@@ -214,25 +214,25 @@ const AnswerQuestions = () => {
   const handleAutoSubmit = async () => {
     if (!submission?._id) return;
     
-    console.log("⏰ Auto-submitting exam...");
+    console.log(" Auto-submitting exam...");
     try {
       await submitExam(submission._id);
       navigate("/student/exams/completed");
     } catch (error) {
-      console.error("❌ Auto-submit failed:", error);
+      console.error(" Auto-submit failed:", error);
     }
   };
 
   const handleManualSubmit = async () => {
     if (!submission?._id) return;
     
-    console.log("📤 Manually submitting exam...");
+    console.log(" Manually submitting exam...");
     try {
       await submitExam(submission._id);
       setShowSubmitModal(false);
       navigate("/student/exams/completed");
     } catch (error) {
-      console.error("❌ Submit failed:", error);
+      console.error(" Submit failed:", error);
     }
   };
 

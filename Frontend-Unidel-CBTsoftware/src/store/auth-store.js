@@ -102,7 +102,7 @@ const useAuthStore = create((set) => ({
       navigate(redirectRoute, { replace: true });
     }
     
-    console.log(`🔒 Session expired, redirecting to ${redirectRoute}`);
+    console.log(` Session expired, redirecting to ${redirectRoute}`);
   },
 }));
 
@@ -390,10 +390,10 @@ export const useAuthCurrentUser = () => {
       const userObj = data.user || data.data;
       if (userObj) {
         setUser(userObj);
-        console.log("✅ User synced from API:", userObj);
+        console.log(" User synced from API:", userObj);
       } else {
         // server returned unauthenticated (e.g., token expired) - clear stored user
-        console.log("⚠️ No user data returned, clearing auth");
+        console.log("️ No user data returned, clearing auth");
         clearAuth();
       }
     }
@@ -401,7 +401,7 @@ export const useAuthCurrentUser = () => {
 
   useEffect(() => {
     if (error) {
-      console.error("❌ Auth error:", error.message);
+      console.error(" Auth error:", error.message);
       setError(error.message);
 
       // If it's an authentication error (token expired, invalid, etc), clear auth
@@ -409,7 +409,7 @@ export const useAuthCurrentUser = () => {
       const isAuthError = authErrors.some((keyword) => error.message?.toLowerCase().includes(keyword));
 
       if (isAuthError) {
-        console.log("🔒 Token expired or invalid, clearing auth");
+        console.log(" Token expired or invalid, clearing auth");
         clearAuth();
       }
     }

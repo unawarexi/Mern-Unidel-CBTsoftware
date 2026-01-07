@@ -4,7 +4,7 @@ Modern React application for conducting secure online examinations with real-tim
 
 ---
 
-## 🚀 Quick Start
+##  Quick Start
 
 ### Prerequisites
 
@@ -40,7 +40,7 @@ VITE_APP_ENV=development
 
 ---
 
-## 📁 Project Structure
+##  Project Structure
 
 ```
 src/
@@ -64,7 +64,7 @@ src/
 
 ---
 
-## ✨ Key Features
+##  Key Features
 
 ### 1. **Role-Based Dashboards**
 
@@ -130,7 +130,7 @@ src/
 
 ---
 
-## 🛠️ Tech Stack
+## ️ Tech Stack
 
 - **React 18** - UI library
 - **Vite** - Build tool (fast HMR)
@@ -145,7 +145,7 @@ src/
 
 ---
 
-## 📡 API Integration
+##  API Integration
 
 ### State Management Pattern
 
@@ -186,7 +186,7 @@ export const useGetActiveExamsForStudentAction = () => {
 
 ---
 
-## 🎨 UI Components
+##  UI Components
 
 ### Key Components
 
@@ -217,7 +217,7 @@ export const useGetActiveExamsForStudentAction = () => {
 
 ---
 
-## 🔒 Security Features
+##  Security Features
 
 ### Client-Side Fraud Detection
 
@@ -269,7 +269,7 @@ Response:
 
 ---
 
-## 🚀 Build & Deploy
+##  Build & Deploy
 
 ### Production Build
 
@@ -311,7 +311,7 @@ VITE_APP_ENV=production
 
 ---
 
-## 🐛 Troubleshooting
+##  Troubleshooting
 
 **Port already in use**
 ```bash
@@ -337,10 +337,10 @@ VITE_APP_ENV=production
 
 ---
 
-## 📄 License
+##  License
 
 Proprietary - University of Delta (UNIDEL)
 
 ---
 
-**Built with ❤️ for UNIDEL CBT System**
+**Built with ️ for UNIDEL CBT System**

@@ -32,7 +32,7 @@ const ScheduleExam = () => {
       return;
     }
     
-    // ✅ Validate that end time is after start time
+    //  Validate that end time is after start time
     const start = new Date(form.startTime);
     const end = new Date(form.endTime);
     
@@ -42,7 +42,7 @@ const ScheduleExam = () => {
     }
     
     try {
-      // ✅ This now creates only ONE exam since we removed automatic creation on approval
+      //  This now creates only ONE exam since we removed automatic creation on approval
       await createExamFromQuestionBank({
         questionBankId,
         duration: parseInt(form.duration), // Ensure it's a number

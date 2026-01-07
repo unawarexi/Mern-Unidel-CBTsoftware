@@ -30,10 +30,10 @@ const AuthInitializer = () => {
 
   useEffect(() => {
     if (error) {
-      console.log("❌ Failed to fetch current user on app init");
+      console.log(" Failed to fetch current user on app init");
     }
     if (user) {
-      console.log("✅ Current user loaded:", user);
+      console.log(" Current user loaded:", user);
     }
   }, [user, error]);
 
@@ -59,7 +59,7 @@ const GuestOnly = ({ children }) => {
         target = "/student";
       }
 
-      console.log(`🔄 Redirecting authenticated ${role} to ${target}`);
+      console.log(` Redirecting authenticated ${role} to ${target}`);
       navigate(target, { replace: true });
     }
   }, [isAuthenticated, user, navigate]);
@@ -80,14 +80,14 @@ const ProtectedRoute = ({ children, allowedRoles = [] }) => {
 
   // Redirect to signin if not authenticated
   if (!isAuthenticated || !user) {
-    console.log("🔒 Not authenticated, redirecting to signin");
+    console.log(" Not authenticated, redirecting to signin");
     return <Navigate to="/portal-signin" replace />;
   }
 
   // Check role permissions
   const role = (user.role || user.type || "").toString().toLowerCase();
   if (allowedRoles.length > 0 && !allowedRoles.includes(role)) {
-    console.log(`⛔ Role ${role} not allowed, redirecting to home`);
+    console.log(` Role ${role} not allowed, redirecting to home`);
     return <Navigate to="/" replace />;
   }
 
@@ -115,7 +115,7 @@ const SessionExpiryHandler = () => {
 
   useEffect(() => {
     const handleExpiry = (event) => {
-      console.log("🔔 Session expired event received:", event.detail);
+      console.log(" Session expired event received:", event.detail);
       handleSessionExpiry(navigate);
     };
 

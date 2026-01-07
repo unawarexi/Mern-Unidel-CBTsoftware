@@ -14,7 +14,7 @@ const Footer = () => {
         </div>
 
         <p className="text-sm text-slate-300 sm:ml-4 sm:pl-4 sm:border-l sm:border-slate-700 sm:py-2 sm:mt-0 mt-4">
-          © {new Date().getFullYear()} UNIDEL — <span className="text-slate-300 ml-1">Student Portal</span>
+           {new Date().getFullYear()} UNIDEL — <span className="text-slate-300 ml-1">Student Portal</span>
         </p>
 
         <div className="inline-flex sm:ml-auto sm:mt-0 mt-4 justify-center sm:justify-start space-x-4">

@@ -412,7 +412,7 @@ const LecturerOverview = () => {
           <div className="flex items-center justify-between flex-wrap gap-4">
             <div>
               <h1 className="text-3xl font-bold text-gray-900 mb-1">
-                Welcome, {user?.fullname?.split(" ")[0] || "Lecturer"}! 👋
+                Welcome, {user?.fullname?.split(" ")[0] || "Lecturer"}! 
               </h1>
               <p className="text-gray-600">Manage your courses, exams, and track student performance</p>
             </div>

@@ -53,7 +53,7 @@ export const useReportViolationAction = () => {
       
       // Don't show toast for violations during exam (too disruptive)
       // Just log it
-      console.log("⚠️ Violation reported:", response);
+      console.log("️ Violation reported:", response);
       
       return response;
     } catch (error) {
@@ -80,14 +80,14 @@ export const useGetSubmissionViolationsAction = (submissionId) => {
   useEffect(() => {
     if (error) {
       setError(error.message);
-      console.log("❌ Failed to fetch submission violations:", error.message);
+      console.log(" Failed to fetch submission violations:", error.message);
     }
   }, [error, setError]);
 
   useEffect(() => {
     if (data?.violations) {
       setViolations(data.violations);
-      console.log("✅ Submission violations fetched successfully", data.violations.length);
+      console.log(" Submission violations fetched successfully", data.violations.length);
     }
   }, [data, setViolations]);
 
@@ -107,7 +107,7 @@ export const useGetMyViolationStatsAction = () => {
   useEffect(() => {
     if (error) {
       setError(error.message);
-      console.log("❌ Failed to fetch violation stats:", error.message);
+      console.log(" Failed to fetch violation stats:", error.message);
     }
   }, [error, setError]);
 
@@ -115,7 +115,7 @@ export const useGetMyViolationStatsAction = () => {
     if (data) {
       setViolationStats(data.stats);
       setViolations(data.violations || []);
-      console.log("✅ Violation stats fetched successfully", data.stats);
+      console.log(" Violation stats fetched successfully", data.stats);
     }
   }, [data, setViolationStats, setViolations]);
 
@@ -135,14 +135,14 @@ export const useGetExamViolationsAction = (examId) => {
   useEffect(() => {
     if (error) {
       setError(error.message);
-      console.log("❌ Failed to fetch exam violations:", error.message);
+      console.log(" Failed to fetch exam violations:", error.message);
     }
   }, [error, setError]);
 
   useEffect(() => {
     if (data?.violations) {
       setExamViolations(data.violations);
-      console.log("✅ Exam violations fetched successfully", data.violations.length);
+      console.log(" Exam violations fetched successfully", data.violations.length);
     }
   }, [data, setExamViolations]);
 

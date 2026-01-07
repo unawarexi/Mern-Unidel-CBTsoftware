@@ -126,7 +126,7 @@ const Footer = () => {
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 text-xs sm:text-sm">
             <div className="text-gray-500 text-left">
               <p>
-                © {new Date().getFullYear()} University of Delta (UNIDEL) —{" "}
+                 {new Date().getFullYear()} University of Delta (UNIDEL) —{" "}
                 <a href="#" className="text-gray-700 hover:text-orange-600 font-medium transition-colors">
                   Computer Based Test Platform
                 </a>

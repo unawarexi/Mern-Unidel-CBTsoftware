@@ -106,12 +106,12 @@ export const useGetLecturerByIdAction = (id) => {
 
   if (data?.data) {
     setSelectedUser(data.data, "lecturer");
-    console.log("✅ Lecturer fetched successfully", data.data);
+    console.log(" Lecturer fetched successfully", data.data);
   }
 
   if (error) {
     setError(error.message);
-    console.log("❌ Failed to fetch lecturer:", error.message);
+    console.log(" Failed to fetch lecturer:", error.message);
   }
 
   return {
@@ -192,7 +192,7 @@ export const useGetLecturerCoursesAction = () => {
 
   if (error) {
     setError(error.message);
-    console.log("❌ Failed to fetch lecturer courses:", error.message);
+    console.log(" Failed to fetch lecturer courses:", error.message);
   }
 
   return {
@@ -243,11 +243,11 @@ export const useGetAllStudentsAction = () => {
 
   if (error) {
     setError(error.message);
-    console.log("❌ Failed to fetch students:", error.message);
+    console.log(" Failed to fetch students:", error.message);
   }
 
   if (data) {
-    console.log("✅ Students fetched successfully");
+    console.log(" Students fetched successfully");
   }
 
   return {
@@ -264,12 +264,12 @@ export const useGetStudentByIdAction = (id) => {
 
   if (data?.data) {
     setSelectedUser(data.data, "student");
-    console.log("✅ Student fetched successfully", data.data);
+    console.log(" Student fetched successfully", data.data);
   }
 
   if (error) {
     setError(error.message);
-    console.log("❌ Failed to fetch student:", error.message);
+    console.log(" Failed to fetch student:", error.message);
   }
 
   return {
@@ -384,11 +384,11 @@ export const useGetAllAdminsAction = () => {
 
   if (error) {
     setError(error.message);
-    console.log("❌ Failed to fetch admins:", error.message);
+    console.log(" Failed to fetch admins:", error.message);
   }
 
   if (data) {
-    console.log("✅ Admins fetched successfully");
+    console.log(" Admins fetched successfully");
   }
 
   return {
@@ -405,12 +405,12 @@ export const useGetAdminByIdAction = (id) => {
 
   if (data?.data) {
     setSelectedUser(data.data, "admin");
-    console.log("✅ Admin fetched successfully", data.data);
+    console.log(" Admin fetched successfully", data.data);
   }
 
   if (error) {
     setError(error.message);
-    console.log("❌ Failed to fetch admin:", error.message);
+    console.log(" Failed to fetch admin:", error.message);
   }
 
   return {
@@ -496,13 +496,13 @@ export const useGetUserStatsAction = () => {
   useEffect(() => {
     if (error) {
       setError(error.message);
-      console.log("❌ Failed to fetch user stats:", error.message);
+      console.log(" Failed to fetch user stats:", error.message);
     }
   }, [error, setError]);
 
   useEffect(() => {
     if (data) {
-      console.log("✅ User stats fetched successfully", data);
+      console.log(" User stats fetched successfully", data);
     }
   }, [data]);
 

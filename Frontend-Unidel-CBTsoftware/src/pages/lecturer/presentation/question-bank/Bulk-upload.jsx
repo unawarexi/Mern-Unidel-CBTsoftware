@@ -57,7 +57,7 @@ const BulkUpload = ({ onQuestionsParsed, metaFieldsFilled, metaValues }) => {
           onQuestionsParsed(result.questions || []);
         }
       } else {
-        setSuccess("⚠️ No questions found in file. Please check the format.");
+        setSuccess("️ No questions found in file. Please check the format.");
         setUploadedQuestions([]);
       }
     } catch (err) {

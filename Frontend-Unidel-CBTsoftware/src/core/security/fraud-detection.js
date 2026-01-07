@@ -26,7 +26,7 @@ class FraudDetectionSystem {
     }
 
     this.isActive = true;
-    console.log("🛡️ Fraud detection system activated");
+    console.log("️ Fraud detection system activated");
 
     // 1. Tab/Window Hidden Detection (High Priority)
     this.addListener(document, "visibilitychange", () => {
@@ -82,7 +82,7 @@ class FraudDetectionSystem {
     // 7. Navigation Blocking
     this.blockNavigation();
 
-    console.log("✅ All fraud detection listeners activated");
+    console.log(" All fraud detection listeners activated");
   }
 
   /**
@@ -145,7 +145,7 @@ class FraudDetectionSystem {
     if (!this.isActive) return;
 
     this.violationCount++;
-    console.warn(`⚠️ Violation #${this.violationCount}:`, violationType);
+    console.warn(`️ Violation #${this.violationCount}:`, violationType);
 
     try {
       const response = await this.onViolation({
@@ -162,7 +162,7 @@ class FraudDetectionSystem {
 
       // Check if auto-submit triggered
       if (response?.autoSubmitted) {
-        console.error("🚨 Auto-submit triggered due to violations");
+        console.error(" Auto-submit triggered due to violations");
         this.cleanup();
         this.onAutoSubmit(response);
       }
@@ -186,7 +186,7 @@ class FraudDetectionSystem {
   async requestFullscreen() {
     try {
       await document.documentElement.requestFullscreen();
-      console.log("📺 Fullscreen mode activated");
+      console.log("Fullscreen mode activated");
     } catch (error) {
       console.warn("Fullscreen request failed:", error);
     }
@@ -198,7 +198,7 @@ class FraudDetectionSystem {
   cleanup() {
     if (!this.isActive) return;
 
-    console.log("🧹 Cleaning up fraud detection system");
+    console.log(" Cleaning up fraud detection system");
 
     // Remove all event listeners
     this.listeners.forEach(({ target, event, handler }) => {
@@ -217,7 +217,7 @@ class FraudDetectionSystem {
     }
 
     this.isActive = false;
-    console.log("✅ Fraud detection system deactivated");
+    console.log(" Fraud detection system deactivated");
   }
 }
 

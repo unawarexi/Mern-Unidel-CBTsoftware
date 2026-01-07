@@ -85,12 +85,12 @@ export const useGetCourseByIdAction = (id) => {
 
   if (data?.data) {
     setSelectedCourse(data.data);
-    console.log("✅ Course fetched successfully", data.data);
+    console.log(" Course fetched successfully", data.data);
   }
 
   if (error) {
     setError(error.message);
-    console.log("❌ Failed to fetch course:", error.message);
+    console.log(" Failed to fetch course:", error.message);
   }
 
   return {
