@@ -1,3 +1,41 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+@layer utilities {
+  @keyframes glow-pulse {
+    0%, 100% {
+      opacity: 0.4;
+      transform: scale(1);
+    }
+    50% {
+      opacity: 0.6;
+      transform: scale(1.1);
+    }
+  }
+
+  @keyframes glow-pulse-delayed {
+    0%, 100% {
+      opacity: 0.3;
+      transform: scale(1);
+    }
+    50% {
+      opacity: 0.5;
+      transform: scale(1.15);
+    }
+  }
+
+  .animate-glow-pulse {
+    animation: glow-pulse 4s ease-in-out infinite;
+  }
+
+  .animate-glow-pulse-delayed {
+    animation: glow-pulse-delayed 5s ease-in-out infinite;
+    animation-delay: 1s;
+  }
+
+  .animate-glow-pulse-slow {
+    animation: glow-pulse 6s ease-in-out infinite;
+    animation-delay: 2s;
+  }
+}

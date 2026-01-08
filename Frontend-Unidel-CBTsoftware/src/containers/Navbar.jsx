@@ -1,8 +1,9 @@
 import React, { useState, useEffect, useRef } from "react";
 import { Search, Globe, Menu, X, ChevronDown } from "lucide-react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 
 const Navbar = () => {
+  const navigate = useNavigate();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isPagesDropdownOpen, setIsPagesDropdownOpen] = useState(false);
   const dropdownRef = useRef(null);
@@ -19,7 +20,14 @@ const Navbar = () => {
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
-  const pagesMenuItems = ["About Us", "Contact", "Courses", "Student Portal", "Faculty", "Admissions"];
+  const pagesMenuItems = [
+    { label: "About Us", href: "#about", isRoute: false },
+    { label: "Contact", href: "#contact", isRoute: false },
+    { label: "Courses", href: "#courses", isRoute: false },
+    { label: "Student Portal", href: "/portal-signin", isRoute: true },
+    { label: "Faculty", href: "#faculties", isRoute: false },
+    { label: "Admissions", href: "#contact", isRoute: false },
+  ];
 
   const toggleMobileMenu = () => {
     setIsMobileMenuOpen(!isMobileMenuOpen);
@@ -28,6 +36,14 @@ const Navbar = () => {
 
   const togglePagesDropdown = () => {
     setIsPagesDropdownOpen(!isPagesDropdownOpen);
+  };
+
+  const handlePageItemClick = (item) => {
+    if (item.isRoute) {
+      navigate(item.href);
+    }
+    setIsPagesDropdownOpen(false);
+    setIsMobileMenuOpen(false);
   };
 
   return (
@@ -47,8 +63,8 @@ const Navbar = () => {
             <a href="#home" className="text-gray-700 hover:text-gray-900 font-medium transition-colors">
               Home
             </a>
-            <a href="#course" className="text-gray-700 hover:text-gray-900 font-medium transition-colors">
-              Our Course
+            <a href="#courses" className="text-gray-700 hover:text-gray-900 font-medium transition-colors">
+              Our Courses
             </a>
 
             {/* Pages Dropdown */}
@@ -64,19 +80,35 @@ const Navbar = () => {
               {isPagesDropdownOpen && (
                 <div className="absolute top-full left-0 mt-2 w-48 bg-white rounded-lg shadow-lg border border-gray-100 py-2 animate-in fade-in slide-in-from-top-2">
                   {pagesMenuItems.map((item, index) => (
-                    <a key={index} href={`#${item.toLowerCase().replace(/\s+/g, "-")}`} className="block px-4 py-2 text-gray-700 hover:bg-orange-50 hover:text-orange-600 transition-colors" onClick={() => setIsPagesDropdownOpen(false)}>
-                      {item}
-                    </a>
+                    item.isRoute ? (
+                      <Link
+                        key={index}
+                        to={item.href}
+                        className="block px-4 py-2 text-gray-700 hover:bg-orange-50 hover:text-orange-600 transition-colors"
+                        onClick={() => setIsPagesDropdownOpen(false)}
+                      >
+                        {item.label}
+                      </Link>
+                    ) : (
+                      <a
+                        key={index}
+                        href={item.href}
+                        className="block px-4 py-2 text-gray-700 hover:bg-orange-50 hover:text-orange-600 transition-colors"
+                        onClick={() => setIsPagesDropdownOpen(false)}
+                      >
+                        {item.label}
+                      </a>
+                    )
                   ))}
                 </div>
               )}
             </div>
 
-            <a href="#mentors" className="text-gray-700 hover:text-gray-900 font-medium transition-colors">
-              Mentors
+            <a href="#team" className="text-gray-700 hover:text-gray-900 font-medium transition-colors">
+              Our Team
             </a>
-            <a href="#resources" className="text-gray-700 hover:text-gray-900 font-medium transition-colors">
-              Resources
+            <a href="#pricing" className="text-gray-700 hover:text-gray-900 font-medium transition-colors">
+              Pricing
             </a>
           </nav>
 
@@ -108,11 +140,11 @@ const Navbar = () => {
         {isMobileMenuOpen && (
           <div className="lg:hidden py-4 border-t border-gray-100 animate-in slide-in-from-top">
             <nav className="flex flex-col space-y-1">
-              <a href="#home" className="px-4 py-3 text-gray-700 hover:bg-gray-50 hover:text-gray-900 font-medium rounded-lg transition-colors">
+              <a href="#home" className="px-4 py-3 text-gray-700 hover:bg-gray-50 hover:text-gray-900 font-medium rounded-lg transition-colors" onClick={() => setIsMobileMenuOpen(false)}>
                 Home
               </a>
-              <a href="#course" className="px-4 py-3 text-gray-700 hover:bg-gray-50 hover:text-gray-900 font-medium rounded-lg transition-colors">
-                Our Course
+              <a href="#courses" className="px-4 py-3 text-gray-700 hover:bg-gray-50 hover:text-gray-900 font-medium rounded-lg transition-colors" onClick={() => setIsMobileMenuOpen(false)}>
+                Our Courses
               </a>
 
               {/* Mobile Pages Dropdown */}
@@ -128,27 +160,35 @@ const Navbar = () => {
                 {isPagesDropdownOpen && (
                   <div className="mt-1 ml-4 pl-4 border-l-2 border-orange-200 space-y-1">
                     {pagesMenuItems.map((item, index) => (
-                      <a
-                        key={index}
-                        href={`#${item.toLowerCase().replace(/\s+/g, "-")}`}
-                        className="block px-4 py-2 text-gray-600 hover:text-orange-600 hover:bg-orange-50 rounded-lg transition-colors"
-                        onClick={() => {
-                          setIsPagesDropdownOpen(false);
-                          setIsMobileMenuOpen(false);
-                        }}
-                      >
-                        {item}
-                      </a>
+                      item.isRoute ? (
+                        <Link
+                          key={index}
+                          to={item.href}
+                          className="block px-4 py-2 text-gray-600 hover:text-orange-600 hover:bg-orange-50 rounded-lg transition-colors"
+                          onClick={() => handlePageItemClick(item)}
+                        >
+                          {item.label}
+                        </Link>
+                      ) : (
+                        <a
+                          key={index}
+                          href={item.href}
+                          className="block px-4 py-2 text-gray-600 hover:text-orange-600 hover:bg-orange-50 rounded-lg transition-colors"
+                          onClick={() => handlePageItemClick(item)}
+                        >
+                          {item.label}
+                        </a>
+                      )
                     ))}
                   </div>
                 )}
               </div>
 
-              <a href="#mentors" className="px-4 py-3 text-gray-700 hover:bg-gray-50 hover:text-gray-900 font-medium rounded-lg transition-colors">
-                Mentors
+              <a href="#team" className="px-4 py-3 text-gray-700 hover:bg-gray-50 hover:text-gray-900 font-medium rounded-lg transition-colors" onClick={() => setIsMobileMenuOpen(false)}>
+                Our Team
               </a>
-              <a href="#resources" className="px-4 py-3 text-gray-700 hover:bg-gray-50 hover:text-gray-900 font-medium rounded-lg transition-colors">
-                Resources
+              <a href="#pricing" className="px-4 py-3 text-gray-700 hover:bg-gray-50 hover:text-gray-900 font-medium rounded-lg transition-colors" onClick={() => setIsMobileMenuOpen(false)}>
+                Pricing
               </a>
 
               {/* Mobile Join Us Button */}

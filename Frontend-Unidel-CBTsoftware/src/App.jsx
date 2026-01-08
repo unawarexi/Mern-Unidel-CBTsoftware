@@ -5,6 +5,13 @@ import { QueryClientProvider } from "@tanstack/react-query";
 import MainLayout from "./layouts/MainLayout";
 import HeroSection from "./pages/landing/Hero-section";
 import Overview from "./pages/landing/Overview";
+import HowItWorks from "./pages/landing/How-it-works";
+import Faculties from "./pages/landing/Faculties";
+import Courses from "./pages/landing/Courses";
+import Gallery from "./pages/landing/Gallery";
+import Team from "./pages/landing/Team";
+import Pricing from "./pages/landing/Pricing";
+import Contact from "./pages/landing/Contact";
 import SignIn from "./pages/auth/Sign-in";
 import AdminSignIn from "./pages/auth/Admin-SignIn";
 import AdminSignUp from "./pages/auth/Admin-SignUp";
@@ -103,6 +110,27 @@ const SectionsApp = () => {
       </section>
       <section id="about">
         <Overview />
+      </section>
+      <section id="how-it-works">
+        <HowItWorks />
+      </section>
+      <section id="faculties">
+        <Faculties />
+      </section>
+      <section id="courses">
+        <Courses />
+      </section>
+      <section id="gallery">
+        <Gallery />
+      </section>
+      <section id="team">
+        <Team />
+      </section>
+      <section id="pricing">
+        <Pricing />
+      </section>
+      <section id="contact">
+        <Contact />
       </section>
     </div>
   );
