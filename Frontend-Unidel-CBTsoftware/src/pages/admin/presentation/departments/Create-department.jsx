@@ -88,16 +88,16 @@ const CreateDepartment = () => {
   };
 
   return (
-    <div className="min-h-screen bg-white p-6">
+    <div className="min-h-screen bg-white p-3 sm:p-6">
       <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="max-w-5xl mx-auto">
         {/* Header */}
-        <div className="mb-8">
-          <h1 className="text-3xl font-bold text-slate-900 mb-2">Departments Management</h1>
-          <p className="text-gray-600">Create and manage academic departments</p>
+        <div className="mb-4 sm:mb-8">
+          <h1 className="text-xl sm:text-3xl font-bold text-slate-900 mb-1 sm:mb-2">Departments Management</h1>
+          <p className="text-xs sm:text-base text-gray-600">Create and manage academic departments</p>
         </div>
 
         {/* Actions Bar */}
-        <div className="bg-slate-50 rounded-xl p-4 mb-6 border border-slate-200 flex items-center justify-between">
+        <div className="bg-slate-50 rounded-xl p-2 sm:p-4 mb-4 sm:mb-6 border border-slate-200 flex items-center justify-between">
           <motion.button
             whileHover={{ scale: 1.02 }}
             whileTap={{ scale: 0.98 }}
@@ -106,10 +106,11 @@ const CreateDepartment = () => {
               setEditing(null);
               setFormData(initialForm);
             }}
-            className="flex items-center gap-2 bg-orange-500 hover:bg-orange-600 text-white px-4 py-2 rounded-lg font-medium transition-colors"
+            className="flex items-center gap-1 sm:gap-2 bg-orange-500 hover:bg-orange-600 text-white px-3 sm:px-4 py-1.5 sm:py-2 rounded-lg text-xs sm:text-base font-medium transition-colors"
           >
-            <Plus size={20} />
-            Add Department
+            <Plus size={16} className="sm:w-5 sm:h-5" />
+            <span className="hidden sm:inline">Add Department</span>
+            <span className="sm:hidden">Add</span>
           </motion.button>
         </div>
 
@@ -119,41 +120,46 @@ const CreateDepartment = () => {
             <table className="w-full">
               <thead>
                 <tr className="border-b border-slate-200 bg-slate-50">
-                  <th className="text-left px-6 py-4 text-slate-700 font-semibold">Name</th>
-                  <th className="text-left px-6 py-4 text-slate-700 font-semibold">Code</th>
-                  <th className="text-left px-6 py-4 text-slate-700 font-semibold">ID</th>
-                  <th className="text-left px-6 py-4 text-slate-700 font-semibold">Faculty</th>
-                  <th className="text-left px-6 py-4 text-slate-700 font-semibold">Levels</th>
-                  <th className="text-left px-6 py-4 text-slate-700 font-semibold">Actions</th>
+                  <th className="text-left px-3 sm:px-6 py-2 sm:py-4 text-slate-700 font-semibold text-xs sm:text-base">Name</th>
+                  <th className="text-left px-3 sm:px-6 py-2 sm:py-4 text-slate-700 font-semibold text-xs sm:text-base hidden sm:table-cell">Code</th>
+                  <th className="text-left px-3 sm:px-6 py-2 sm:py-4 text-slate-700 font-semibold text-xs sm:text-base hidden md:table-cell">ID</th>
+                  <th className="text-left px-3 sm:px-6 py-2 sm:py-4 text-slate-700 font-semibold text-xs sm:text-base hidden lg:table-cell">Faculty</th>
+                  <th className="text-left px-3 sm:px-6 py-2 sm:py-4 text-slate-700 font-semibold text-xs sm:text-base hidden lg:table-cell">Levels</th>
+                  <th className="text-left px-3 sm:px-6 py-2 sm:py-4 text-slate-700 font-semibold text-xs sm:text-base">Actions</th>
                 </tr>
               </thead>
               <tbody>
                 {departments.map((dept) => (
                   <tr key={dept._id} className="border-b border-slate-100 hover:bg-slate-50 transition-colors">
-                    <td className="px-6 py-4 text-slate-900 font-medium">{dept.departmentName}</td>
-                    <td className="px-6 py-4 text-slate-600">{dept.departmentCode}</td>
-                    <td className="px-6 py-4 text-slate-600">{dept.departmentId}</td>
-                    <td className="px-6 py-4 text-slate-600">{dept.faculty}</td>
-                    <td className="px-6 py-4 text-slate-600">
+                    <td className="px-2 sm:px-6 py-2 sm:py-4 text-slate-900 font-medium text-[10px] sm:text-base">
+                      <div className="max-w-[100px] sm:max-w-none truncate">{dept.departmentName}</div>
+                      <div className="sm:hidden text-[9px] text-slate-500 mt-0.5">{dept.departmentCode}</div>
+                    </td>
+                    <td className="px-2 sm:px-6 py-2 sm:py-4 text-slate-600 text-[10px] sm:text-base hidden sm:table-cell">{dept.departmentCode}</td>
+                    <td className="px-2 sm:px-6 py-2 sm:py-4 text-slate-600 text-[10px] sm:text-base hidden md:table-cell">{dept.departmentId}</td>
+                    <td className="px-2 sm:px-6 py-2 sm:py-4 text-slate-600 text-[10px] sm:text-base hidden lg:table-cell">
+                      <div className="max-w-[120px] truncate">{dept.faculty}</div>
+                    </td>
+                    <td className="px-2 sm:px-6 py-2 sm:py-4 text-slate-600 text-[10px] sm:text-base hidden lg:table-cell">
                       {Array.isArray(dept.levels) ? dept.levels.map((l) => l.level).join(", ") : ""}
                     </td>
-                    <td className="px-6 py-4">
-                      <div className="flex gap-2">
+                    <td className="px-2 sm:px-6 py-2 sm:py-4">
+                      <div className="flex gap-1 sm:gap-2">
                         <motion.button
                           whileHover={{ scale: 1.1 }}
                           whileTap={{ scale: 0.9 }}
                           onClick={() => handleEdit(dept)}
-                          className="p-2 hover:bg-blue-100 rounded-lg text-blue-900 transition-colors"
+                          className="p-1 sm:p-2 hover:bg-blue-100 rounded-lg text-blue-900 transition-colors"
                         >
-                          <Edit2 size={18} />
+                          <Edit2 size={14} className="sm:w-[18px] sm:h-[18px]" />
                         </motion.button>
                         <motion.button
                           whileHover={{ scale: 1.1 }}
                           whileTap={{ scale: 0.9 }}
                           onClick={() => handleDelete(dept)}
-                          className="p-2 hover:bg-red-100 rounded-lg text-red-600 transition-colors"
+                          className="p-1 sm:p-2 hover:bg-red-100 rounded-lg text-red-600 transition-colors"
                         >
-                          <Trash2 size={18} />
+                          <Trash2 size={14} className="sm:w-[18px] sm:h-[18px]" />
                         </motion.button>
                       </div>
                     </td>
@@ -171,7 +177,7 @@ const CreateDepartment = () => {
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
-              className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50"
+              className="fixed inset-0 bg-black/50 flex items-center justify-center p-3 sm:p-4 z-50"
               onClick={() => {
                 setShowModal(false);
                 setEditing(null);
@@ -183,10 +189,10 @@ const CreateDepartment = () => {
                 animate={{ scale: 1, opacity: 1 }}
                 exit={{ scale: 0.9, opacity: 0 }}
                 onClick={(e) => e.stopPropagation()}
-                className="bg-white rounded-xl p-6 w-full max-w-md border border-slate-200 shadow-xl"
+                className="bg-white rounded-xl p-4 sm:p-6 w-full max-w-md border border-slate-200 shadow-xl"
               >
-                <div className="flex items-center justify-between mb-6">
-                  <h2 className="text-2xl font-bold text-slate-900">{editing ? "Edit Department" : "Add New Department"}</h2>
+                <div className="flex items-center justify-between mb-4 sm:mb-6">
+                  <h2 className="text-lg sm:text-2xl font-bold text-slate-900">{editing ? "Edit Department" : "Add New Department"}</h2>
                   <button
                     onClick={() => {
                       setShowModal(false);
@@ -195,22 +201,22 @@ const CreateDepartment = () => {
                     }}
                     className="text-gray-400 hover:text-slate-900 transition-colors"
                   >
-                    <X size={24} />
+                    <X size={20} className="sm:w-6 sm:h-6" />
                   </button>
                 </div>
-                <div className="space-y-4">
+                <div className="space-y-3 sm:space-y-4">
                   <div>
-                    <label className="block text-gray-300 mb-2 font-medium">Department Name</label>
+                    <label className="block text-gray-300 mb-1 sm:mb-2 font-medium text-xs sm:text-base">Department Name</label>
                     <input
                       type="text"
                       value={formData.departmentName}
                       onChange={(e) => setFormData({ ...formData, departmentName: e.target.value })}
-                      className="w-full px-4 py-2 bg-white border border-slate-300 rounded-lg text-slate-900 focus:outline-none focus:border-blue-900 focus:ring-2 focus:ring-blue-900/20 transition-colors"
+                      className="w-full px-3 sm:px-4 py-1.5 sm:py-2 text-xs sm:text-base bg-white border border-slate-300 rounded-lg text-slate-900 focus:outline-none focus:border-blue-900 focus:ring-2 focus:ring-blue-900/20 transition-colors"
                       placeholder="Enter department name"
                     />
                   </div>
                   <div>
-                    <label className="block text-gray-300 mb-2 font-medium">
+                    <label className="block text-gray-300 mb-1 sm:mb-2 font-medium text-xs sm:text-base">
                       Department Code
                       <span className="ml-2 text-xs text-gray-400">(auto-generated)</span>
                     </label>
@@ -218,12 +224,12 @@ const CreateDepartment = () => {
                       type="text"
                       value={formData.departmentCode}
                       disabled
-                      className="w-full px-4 py-2 bg-gray-100 border border-slate-300 rounded-lg text-slate-400 cursor-not-allowed"
+                      className="w-full px-3 sm:px-4 py-1.5 sm:py-2 text-xs sm:text-base bg-gray-100 border border-slate-300 rounded-lg text-slate-400 cursor-not-allowed"
                       placeholder="Will be generated"
                     />
                   </div>
                   <div>
-                    <label className="block text-gray-300 mb-2 font-medium">
+                    <label className="block text-gray-300 mb-1 sm:mb-2 font-medium text-xs sm:text-base">
                       Department ID
                       <span className="ml-2 text-xs text-gray-400">(auto-generated)</span>
                     </label>
@@ -231,47 +237,47 @@ const CreateDepartment = () => {
                       type="text"
                       value={formData.departmentId}
                       disabled
-                      className="w-full px-4 py-2 bg-gray-100 border border-slate-300 rounded-lg text-slate-400 cursor-not-allowed"
+                      className="w-full px-3 sm:px-4 py-1.5 sm:py-2 text-xs sm:text-base bg-gray-100 border border-slate-300 rounded-lg text-slate-400 cursor-not-allowed"
                       placeholder="Will be generated"
                     />
                   </div>
                   <div>
-                    <label className="block text-gray-300 mb-2 font-medium">Faculty</label>
+                    <label className="block text-gray-300 mb-1 sm:mb-2 font-medium text-xs sm:text-base">Faculty</label>
                     <input
                       type="text"
                       value={formData.faculty}
                       onChange={(e) => setFormData({ ...formData, faculty: e.target.value })}
-                      className="w-full px-4 py-2 bg-white border border-slate-300 rounded-lg text-slate-900 focus:outline-none focus:border-blue-900 focus:ring-2 focus:ring-blue-900/20 transition-colors"
+                      className="w-full px-3 sm:px-4 py-1.5 sm:py-2 text-xs sm:text-base bg-white border border-slate-300 rounded-lg text-slate-900 focus:outline-none focus:border-blue-900 focus:ring-2 focus:ring-blue-900/20 transition-colors"
                       placeholder="e.g. Science"
                     />
                   </div>
                   <div>
-                    <label className="block text-gray-300 mb-2 font-medium">Levels</label>
+                    <label className="block text-gray-300 mb-1 sm:mb-2 font-medium text-xs sm:text-base">Levels</label>
                     <input
                       type="text"
                       value={formData.levels}
                       onChange={(e) => setFormData({ ...formData, levels: e.target.value })}
-                      className="w-full px-4 py-2 bg-white border border-slate-300 rounded-lg text-slate-900 focus:outline-none focus:border-blue-900 focus:ring-2 focus:ring-blue-900/20 transition-colors"
+                      className="w-full px-3 sm:px-4 py-1.5 sm:py-2 text-xs sm:text-base bg-white border border-slate-300 rounded-lg text-slate-900 focus:outline-none focus:border-blue-900 focus:ring-2 focus:ring-blue-900/20 transition-colors"
                       placeholder="e.g. 100, 200, 300, 400"
                     />
                   </div>
                   <div>
-                    <label className="block text-gray-300 mb-2 font-medium">Description</label>
+                    <label className="block text-gray-300 mb-1 sm:mb-2 font-medium text-xs sm:text-base">Description</label>
                     <textarea
                       value={formData.description}
                       onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-                      className="w-full px-4 py-2 bg-white border border-slate-300 rounded-lg text-slate-900 focus:outline-none focus:border-blue-900 focus:ring-2 focus:ring-blue-900/20 transition-colors"
+                      className="w-full px-3 sm:px-4 py-1.5 sm:py-2 text-xs sm:text-base bg-white border border-slate-300 rounded-lg text-slate-900 focus:outline-none focus:border-blue-900 focus:ring-2 focus:ring-blue-900/20 transition-colors"
                       placeholder="Department description"
                     />
                   </div>
-                  <div className="flex gap-3 pt-4">
+                  <div className="flex gap-2 sm:gap-3 pt-2 sm:pt-4">
                     <motion.button
                       whileHover={{ scale: 1.02 }}
                       whileTap={{ scale: 0.98 }}
                       onClick={handleAddOrEdit}
-                      className="flex-1 bg-orange-500 hover:bg-orange-600 text-white px-4 py-2 rounded-lg font-medium transition-colors"
+                      className="flex-1 bg-orange-500 hover:bg-orange-600 text-white px-3 sm:px-4 py-1.5 sm:py-2 rounded-lg text-xs sm:text-base font-medium transition-colors"
                     >
-                      {editing ? "Update" : "Add"} Department
+                      {editing ? "Update" : "Add"}
                     </motion.button>
                     <motion.button
                       whileHover={{ scale: 1.02 }}
@@ -281,7 +287,7 @@ const CreateDepartment = () => {
                         setEditing(null);
                         setFormData(initialForm);
                       }}
-                      className="flex-1 bg-gray-200 hover:bg-gray-300 text-slate-900 px-4 py-2 rounded-lg font-medium transition-colors"
+                      className="flex-1 bg-gray-200 hover:bg-gray-300 text-slate-900 px-3 sm:px-4 py-1.5 sm:py-2 rounded-lg text-xs sm:text-base font-medium transition-colors"
                     >
                       Cancel
                     </motion.button>

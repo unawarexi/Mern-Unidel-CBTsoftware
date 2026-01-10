@@ -169,39 +169,40 @@ const CourseCreation = () => {
   };
 
   return (
-    <div className="min-h-screen bg-white p-6">
+    <div className="min-h-screen bg-white p-3 sm:p-6">
       <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="max-w-7xl mx-auto">
         {/* Header */}
-        <div className="mb-8">
-          <h1 className="text-3xl font-bold text-slate-900 mb-2">Course Management</h1>
-          <p className="text-gray-600">Create and manage courses, assign lecturers</p>
+        <div className="mb-4 sm:mb-8">
+          <h1 className="text-xl sm:text-3xl font-bold text-slate-900 mb-1 sm:mb-2">Course Management</h1>
+          <p className="text-xs sm:text-base text-gray-600">Create and manage courses, assign lecturers</p>
         </div>
 
         {/* Actions Bar */}
-        <div className="bg-slate-50 rounded-xl p-4 mb-6 border border-slate-200">
-          <div className="flex flex-wrap gap-4 items-center justify-between">
-            <div className="flex gap-3">
-              <motion.button whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }} onClick={() => setShowModal(true)} className="flex items-center gap-2 bg-orange-500 hover:bg-orange-600 text-white px-4 py-2 rounded-lg font-medium transition-colors">
-                <BookOpen size={20} />
-                Add Course
+        <div className="bg-slate-50 rounded-xl p-2 sm:p-4 mb-4 sm:mb-6 border border-slate-200">
+          <div className="flex flex-wrap gap-2 sm:gap-4 items-center justify-between">
+            <div className="flex gap-2 sm:gap-3">
+              <motion.button whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }} onClick={() => setShowModal(true)} className="flex items-center gap-1 sm:gap-2 bg-orange-500 hover:bg-orange-600 text-white px-3 sm:px-4 py-1.5 sm:py-2 rounded-lg text-xs sm:text-base font-medium transition-colors">
+                <BookOpen size={16} className="sm:w-5 sm:h-5" />
+                <span className="hidden sm:inline">Add Course</span>
+                <span className="sm:hidden">Add</span>
               </motion.button>
             </div>
 
             {/* Search */}
             <div className="relative flex-1 max-w-md">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={20} />
+              <Search className="absolute left-2 sm:left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={16} />
               <input
                 type="text"
                 placeholder="Search courses..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                className="w-full pl-10 pr-4 py-2 bg-white border border-slate-300 rounded-lg text-slate-900 placeholder-gray-400 focus:outline-none focus:border-blue-900 focus:ring-2 focus:ring-blue-900/20 transition-colors"
+                className="w-full pl-8 sm:pl-10 pr-3 sm:pr-4 py-1.5 sm:py-2 text-xs sm:text-base bg-white border border-slate-300 rounded-lg text-slate-900 placeholder-gray-400 focus:outline-none focus:border-blue-900 focus:ring-2 focus:ring-blue-900/20 transition-colors"
               />
             </div>
 
             {/* Filters */}
-            <div className="flex gap-3">
-              <select value={filterDepartment} onChange={(e) => setFilterDepartment(e.target.value)} className="px-4 py-2 bg-white border border-slate-300 rounded-lg text-slate-900 focus:outline-none focus:border-blue-900 focus:ring-2 focus:ring-blue-900/20 transition-colors">
+            <div className="flex gap-2 sm:gap-3">
+              <select value={filterDepartment} onChange={(e) => setFilterDepartment(e.target.value)} className="px-2 sm:px-4 py-1.5 sm:py-2 text-xs sm:text-base bg-white border border-slate-300 rounded-lg text-slate-900 focus:outline-none focus:border-blue-900 focus:ring-2 focus:ring-blue-900/20 transition-colors">
                 <option>All</option>
                 {departments.map((dept) => (
                   <option key={dept._id} value={dept.departmentName}>
@@ -219,12 +220,11 @@ const CourseCreation = () => {
             <table className="w-full">
               <thead>
                 <tr className="border-b border-slate-200 bg-slate-50">
-                  <th className="text-left px-6 py-4 text-slate-700 font-semibold">Course Code</th>
-                  <th className="text-left px-6 py-4 text-slate-700 font-semibold">Course Title</th>
-                  <th className="text-left px-6 py-4 text-slate-700 font-semibold">Departments</th>
-                  <th className="text-left px-6 py-4 text-slate-700 font-semibold">Lecturers</th>
-                  <th className="text-left px-6 py-4 text-slate-700 font-semibold">Students</th>
-                  <th className="text-left px-6 py-4 text-slate-700 font-semibold">Actions</th>
+                  <th className="text-left px-3 sm:px-6 py-2 sm:py-4 text-slate-700 font-semibold text-xs sm:text-base">Course</th>
+                  <th className="text-left px-3 sm:px-6 py-2 sm:py-4 text-slate-700 font-semibold text-xs sm:text-base hidden md:table-cell">Departments</th>
+                  <th className="text-left px-3 sm:px-6 py-2 sm:py-4 text-slate-700 font-semibold text-xs sm:text-base hidden lg:table-cell">Lecturers</th>
+                  <th className="text-left px-3 sm:px-6 py-2 sm:py-4 text-slate-700 font-semibold text-xs sm:text-base hidden sm:table-cell">Students</th>
+                  <th className="text-left px-3 sm:px-6 py-2 sm:py-4 text-slate-700 font-semibold text-xs sm:text-base">Actions</th>
                 </tr>
               </thead>
               <tbody>
@@ -238,71 +238,62 @@ const CourseCreation = () => {
                     
                     return (
                       <motion.tr key={course._id} initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: 20 }} transition={{ delay: index * 0.05 }} className="border-b border-slate-100 hover:bg-slate-50 transition-colors">
-                        <td className="px-6 py-4">
-                          <span className="inline-flex items-center gap-2 px-3 py-1 rounded-lg text-sm font-semibold bg-blue-100 text-blue-900 border border-blue-200">
-                            <BookOpen size={16} />
+                        <td className="px-2 sm:px-6 py-2 sm:py-4">
+                          <span className="inline-flex items-center gap-1 sm:gap-2 px-1.5 sm:px-3 py-0.5 sm:py-1 rounded-lg text-[10px] sm:text-sm font-semibold bg-blue-100 text-blue-900 border border-blue-200">
+                            <BookOpen size={10} className="sm:w-4 sm:h-4" />
                             {course.courseCode}
                           </span>
-                        </td>
-                        <td className="px-6 py-4">
-                          <span className="text-slate-900 font-medium">{course.courseTitle}</span>
-                        </td>
-                        <td className="px-6 py-4">
-                          <div className="flex flex-col gap-1">
-                            {deptNames.slice(0, 2).map((deptName, i) => (
-                              <span key={i} className="text-xs text-slate-600">{deptName}</span>
-                            ))}
-                            {deptNames.length > 2 && (
-                              <span className="text-xs text-blue-600 font-medium">+{deptNames.length - 2} more</span>
-                            )}
-                            {deptNames.length === 0 && <span className="text-xs text-gray-400 italic">No departments</span>}
+                          <div className="text-[10px] sm:text-base text-slate-900 font-medium mt-0.5 sm:mt-1 truncate max-w-[120px] sm:max-w-none">{course.courseTitle}</div>
+                          <div className="md:hidden text-[9px] text-slate-500 mt-0.5">
+                            {deptNames.length > 0 ? deptNames[0] : "No dept"}
+                            {deptNames.length > 1 && ` +${deptNames.length - 1}`}
                           </div>
                         </td>
-                        <td className="px-6 py-4">
-                          <div className="flex flex-col gap-1">
-                            {lecturersList.slice(0, 2).map((lecturer) => (
-                              <span key={lecturer._id} className="text-xs text-slate-600">
+                        <td className="px-2 sm:px-6 py-2 sm:py-4 hidden md:table-cell">
+                          <div className="flex flex-col gap-0.5">
+                            {deptNames.slice(0, 2).map((deptName, i) => (
+                              <span key={i} className="text-[10px] sm:text-xs text-slate-600 truncate max-w-[120px]">{deptName}</span>
+                            ))}
+                            {deptNames.length > 2 && (
+                              <span className="text-[10px] sm:text-xs text-blue-600 font-medium">+{deptNames.length - 2} more</span>
+                            )}
+                            {deptNames.length === 0 && <span className="text-[10px] sm:text-xs text-gray-400 italic">No departments</span>}
+                          </div>
+                        </td>
+                        <td className="px-2 sm:px-6 py-2 sm:py-4 hidden lg:table-cell">
+                          <div className="flex flex-col gap-0.5">
+                            {lecturersList.slice(0, 1).map((lecturer) => (
+                              <span key={lecturer._id} className="text-[10px] sm:text-xs text-slate-600 truncate max-w-[100px]">
                                 {lecturer.fullname}
                               </span>
                             ))}
-                            {lecturersList.length > 2 && (
+                            {lecturersList.length > 1 && (
                               <button
-                                className="text-xs text-blue-600 font-medium underline"
+                                className="text-[10px] sm:text-xs text-blue-600 font-medium underline text-left"
                                 onClick={() => handleShowAll("lecturers", course)}
                               >
-                                See all ({lecturersList.length})
+                                +{lecturersList.length - 1} more
                               </button>
                             )}
-                            {(!lecturersList || lecturersList.length === 0) && <span className="text-xs text-gray-400 italic">No lecturers</span>}
+                            {(!lecturersList || lecturersList.length === 0) && <span className="text-[10px] sm:text-xs text-gray-400 italic">No lecturers</span>}
                           </div>
                         </td>
-                        <td className="px-6 py-4">
-                          <span className="inline-flex items-center gap-1 text-slate-600 text-sm">
-                            <GraduationCap size={16} />
+                        <td className="px-2 sm:px-6 py-2 sm:py-4 hidden sm:table-cell">
+                          <span className="inline-flex items-center gap-1 text-slate-600 text-[10px] sm:text-sm">
+                            <GraduationCap size={10} className="sm:w-4 sm:h-4" />
                             {studentsList.length || 0}
-                            {studentsList.length > 2 && (
-                              <button
-                                className="ml-2 text-xs text-blue-600 font-medium underline"
-                                onClick={() => handleShowAll("students", course)}
-                              >
-                                See all
-                              </button>
-                            )}
                           </span>
                         </td>
-                        <td className="px-6 py-4">
-                          <div className="flex gap-2">
-                            <motion.button whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.9 }} onClick={() => handleAssignLecturers(course)} className="p-2 hover:bg-green-100 rounded-lg text-green-600 transition-colors" title="Assign Lecturers">
-                              <UserPlus size={18} />
+                        <td className="px-2 sm:px-6 py-2 sm:py-4">
+                          <div className="flex gap-1 sm:gap-2">
+                            <motion.button whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.9 }} onClick={() => handleAssignLecturers(course)} className="p-1 sm:p-2 hover:bg-green-100 rounded-lg text-green-600 transition-colors" title="Assign">
+                              <UserPlus size={12} className="sm:w-[18px] sm:h-[18px]" />
                             </motion.button>
-                            <motion.button whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.9 }} onClick={() => handleRemoveLecturers(course)} className="p-2 hover:bg-amber-100 rounded-lg text-amber-600 transition-colors" title="Remove Lecturers">
-                              <UserMinus size={18} />
+                            <motion.button whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.9 }} onClick={() => handleEdit(course)} className="p-1 sm:p-2 hover:bg-blue-100 rounded-lg text-blue-900 transition-colors" title="Edit">
+                              <Edit2 size={12} className="sm:w-[18px] sm:h-[18px]" />
                             </motion.button>
-                            <motion.button whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.9 }} onClick={() => handleEdit(course)} className="p-2 hover:bg-blue-100 rounded-lg text-blue-900 transition-colors" title="Edit Course">
-                              <Edit2 size={18} />
-                            </motion.button>
-                            <motion.button whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.9 }} onClick={() => handleDelete(course)} className="p-2 hover:bg-red-100 rounded-lg text-red-600 transition-colors" title="Delete Course">
-                              <Trash2 size={18} />
+                            <motion.button whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.9 }} onClick={() => handleDelete(course)} className="p-1 sm:p-2 hover:bg-red-100 rounded-lg text-red-600 transition-colors" title="Delete">
+                              <Trash2 size={12} className="sm:w-[18px] sm:h-[18px]" />
                             </motion.button>
                           </div>
                         </td>

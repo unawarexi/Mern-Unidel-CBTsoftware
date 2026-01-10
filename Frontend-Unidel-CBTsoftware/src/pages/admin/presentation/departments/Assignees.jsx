@@ -18,11 +18,12 @@ import { useGetAllCoursesAction } from "../../../../store/course-store";
 const TabButton = ({ label, value, icon: Icon, count, activeTab, setActiveTab }) => (
   <button
     onClick={() => setActiveTab(value)}
-    className={`flex items-center gap-2 px-6 py-3 rounded-lg font-semibold transition-all ${activeTab === value ? "bg-gradient-to-r from-orange-500 to-orange-600 text-white shadow-lg" : "bg-white text-slate-600 hover:bg-slate-50 border border-slate-200"}`}
+    className={`flex items-center gap-1 sm:gap-2 px-2 sm:px-6 py-1.5 sm:py-3 rounded-lg text-xs sm:text-base font-semibold transition-all ${activeTab === value ? "bg-gradient-to-r from-orange-500 to-orange-600 text-white shadow-lg" : "bg-white text-slate-600 hover:bg-slate-50 border border-slate-200"}`}
   >
-    <Icon size={20} />
-    {label}
-    <span className={`px-2 py-0.5 rounded-full text-xs ${activeTab === value ? "bg-white/20" : "bg-slate-100"}`}>{count}</span>
+    <Icon size={14} className="sm:w-5 sm:h-5" />
+    <span className="hidden xs:inline">{label}</span>
+    <span className="xs:hidden">{label.slice(0, 3)}</span>
+    <span className={`px-1 sm:px-2 py-0.5 rounded-full text-[10px] sm:text-xs ${activeTab === value ? "bg-white/20" : "bg-slate-100"}`}>{count}</span>
   </button>
 );
 
@@ -130,87 +131,91 @@ const Assignees = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 p-6">
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 p-2 sm:p-6">
       <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="max-w-7xl mx-auto">
         {/* Header */}
-        <div className="bg-gradient-to-r from-blue-900 to-blue-800 rounded-2xl p-8 mb-8 shadow-xl">
-          <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+        <div className="bg-gradient-to-r from-blue-900 to-blue-800 rounded-xl sm:rounded-2xl p-3 sm:p-8 mb-3 sm:mb-8 shadow-xl">
+          <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-2 sm:gap-4">
             <div>
-              <h1 className="text-3xl font-bold text-white mb-2">Department Assignees</h1>
-              <p className="text-blue-200">Manage courses, lecturers, and students</p>
+              <h1 className="text-lg sm:text-3xl font-bold text-white mb-1 sm:mb-2">Department Assignees</h1>
+              <p className="text-xs sm:text-base text-blue-200">Manage courses, lecturers, and students</p>
             </div>
             <div className="relative">
-              <select value={selectedDeptId} onChange={(e) => setSelectedDeptId(e.target.value)} className="appearance-none px-6 py-3 pr-12 bg-white border-2 border-orange-500 rounded-xl text-slate-900 font-semibold shadow-lg cursor-pointer hover:border-orange-600 transition-colors min-w-[250px]">
+              <select value={selectedDeptId} onChange={(e) => setSelectedDeptId(e.target.value)} className="appearance-none px-3 sm:px-6 py-2 sm:py-3 pr-8 sm:pr-12 text-xs sm:text-base bg-white border-2 border-orange-500 rounded-lg sm:rounded-xl text-slate-900 font-semibold shadow-lg cursor-pointer hover:border-orange-600 transition-colors w-full sm:min-w-[250px]">
                 {departments.map((dept) => (
                   <option key={dept._id} value={dept._id}>
                     {dept.departmentName}
                   </option>
                 ))}
               </select>
-              <ChevronDown className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none" size={20} />
+              <ChevronDown className="absolute right-2 sm:right-4 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none" size={16} />
             </div>
           </div>
         </div>
 
         {/* Tab Navigation */}
-        <div className="flex flex-wrap gap-3 mb-6">
+        <div className="flex flex-wrap gap-1.5 sm:gap-3 mb-3 sm:mb-6">
           <TabButton label="Courses" value="courses" icon={BookOpen} count={deptCourses.length} activeTab={activeTab} setActiveTab={setActiveTab} />
           <TabButton label="Lecturers" value="lecturers" icon={UserPlus} count={deptLecturers.length} activeTab={activeTab} setActiveTab={setActiveTab} />
           <TabButton label="Students" value="students" icon={GraduationCap} count={deptStudents.length} activeTab={activeTab} setActiveTab={setActiveTab} />
         </div>
 
         {/* Search and Add Bar */}
-        <div className="bg-white rounded-xl p-4 mb-6 shadow-md border border-slate-200">
-          <div className="flex flex-col sm:flex-row gap-4 items-center justify-between">
+        <div className="bg-white rounded-lg sm:rounded-xl p-2 sm:p-4 mb-3 sm:mb-6 shadow-md border border-slate-200">
+          <div className="flex flex-col sm:flex-row gap-2 sm:gap-4 items-center justify-between">
             <div className="relative flex-1 w-full">
-              <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" size={20} />
+              <Search className="absolute left-2 sm:left-4 top-1/2 -translate-y-1/2 text-slate-400" size={14} />
               <input
                 type="text"
                 placeholder={`Search ${activeTab}...`}
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                className="w-full pl-12 pr-4 py-3 bg-slate-50 border border-slate-200 rounded-lg text-slate-900 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent"
+                className="w-full pl-7 sm:pl-12 pr-2 sm:pr-4 py-1.5 sm:py-3 text-xs sm:text-base bg-slate-50 border border-slate-200 rounded-lg text-slate-900 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent"
               />
             </div>
             <button
               onClick={() => openAddModal(activeTab === "courses" ? "course" : activeTab.slice(0, -1))}
-              className="flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-orange-500 to-orange-600 text-white rounded-lg font-semibold hover:from-orange-600 hover:to-orange-700 transition-all shadow-lg hover:shadow-xl whitespace-nowrap"
+              className="flex items-center gap-1 sm:gap-2 px-3 sm:px-6 py-1.5 sm:py-3 text-xs sm:text-base bg-gradient-to-r from-orange-500 to-orange-600 text-white rounded-lg font-semibold hover:from-orange-600 hover:to-orange-700 transition-all shadow-lg hover:shadow-xl whitespace-nowrap w-full sm:w-auto justify-center"
             >
-              <Plus size={20} />
-              Add {activeTab === "courses" ? "Course" : activeTab.slice(0, -1)}
+              <Plus size={14} className="sm:w-5 sm:h-5" />
+              <span className="hidden xs:inline">Add {activeTab === "courses" ? "Course" : activeTab.slice(0, -1)}</span>
+              <span className="xs:hidden">Add</span>
             </button>
           </div>
         </div>
 
         {/* Content Area */}
-        <div className="bg-white rounded-xl shadow-lg border border-slate-200 overflow-hidden">
+        <div className="bg-white rounded-lg sm:rounded-xl shadow-lg border border-slate-200 overflow-hidden">
           {/* Courses Table */}
           {activeTab === "courses" && (
             <div className="overflow-x-auto">
               <table className="w-full">
                 <thead>
                   <tr className="bg-gradient-to-r from-slate-100 to-slate-50 border-b border-slate-200">
-                    <th className="py-4 px-6 text-left font-bold text-slate-700">Course Code</th>
-                    <th className="py-4 px-6 text-left font-bold text-slate-700">Course Title</th>
-                    <th className="py-4 px-6 text-right font-bold text-slate-700">Actions</th>
+                    <th className="py-2 sm:py-4 px-2 sm:px-6 text-left font-bold text-slate-700 text-xs sm:text-base">Course Code</th>
+                    <th className="py-2 sm:py-4 px-2 sm:px-6 text-left font-bold text-slate-700 text-xs sm:text-base hidden sm:table-cell">Course Title</th>
+                    <th className="py-2 sm:py-4 px-2 sm:px-6 text-right font-bold text-slate-700 text-xs sm:text-base">Actions</th>
                   </tr>
                 </thead>
                 <tbody>
                   {filterBySearch(deptCourses, "course").length === 0 ? (
                     <tr>
-                      <td colSpan="3" className="py-12 text-center text-slate-400">
-                        <BookOpen className="mx-auto mb-3 opacity-50" size={48} />
-                        <p>No courses found</p>
+                      <td colSpan="3" className="py-8 sm:py-12 text-center text-slate-400">
+                        <BookOpen className="mx-auto mb-2 sm:mb-3 opacity-50" size={32} />
+                        <p className="text-xs sm:text-base">No courses found</p>
                       </td>
                     </tr>
                   ) : (
                     filterBySearch(deptCourses, "course").map((course, idx) => (
                       <motion.tr key={course._id || course} initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: idx * 0.05 }} className="border-b border-slate-100 hover:bg-orange-50/30 transition-colors">
-                        <td className="py-4 px-6 font-semibold text-blue-900">{course.courseCode || course}</td>
-                        <td className="py-4 px-6 text-slate-700">{course.courseTitle || ""}</td>
-                        <td className="py-4 px-6 text-right">
-                          <button className="p-2 hover:bg-red-100 rounded-lg text-red-600 transition-colors inline-flex items-center justify-center" onClick={() => handleRemoveAssignee("course", course._id || course)} title="Remove course">
-                            <Trash2 size={18} />
+                        <td className="py-2 sm:py-4 px-2 sm:px-6 font-semibold text-blue-900 text-xs sm:text-base">
+                          <div>{course.courseCode || course}</div>
+                          <div className="sm:hidden text-[10px] text-slate-600 mt-0.5">{course.courseTitle || ""}</div>
+                        </td>
+                        <td className="py-2 sm:py-4 px-2 sm:px-6 text-slate-700 text-xs sm:text-base hidden sm:table-cell">{course.courseTitle || ""}</td>
+                        <td className="py-2 sm:py-4 px-2 sm:px-6 text-right">
+                          <button className="p-1 sm:p-2 hover:bg-red-100 rounded-lg text-red-600 transition-colors inline-flex items-center justify-center" onClick={() => handleRemoveAssignee("course", course._id || course)} title="Remove course">
+                            <Trash2 size={14} className="sm:w-[18px] sm:h-[18px]" />
                           </button>
                         </td>
                       </motion.tr>
@@ -227,35 +232,40 @@ const Assignees = () => {
               <table className="w-full">
                 <thead>
                   <tr className="bg-gradient-to-r from-slate-100 to-slate-50 border-b border-slate-200">
-                    <th className="py-4 px-6 text-left font-bold text-slate-700">Name</th>
-                    <th className="py-4 px-6 text-left font-bold text-slate-700">Email</th>
-                    <th className="py-4 px-6 text-left font-bold text-slate-700">Level</th>
-                    <th className="py-4 px-6 text-right font-bold text-slate-700">Actions</th>
+                    <th className="py-2 sm:py-4 px-2 sm:px-6 text-left font-bold text-slate-700 text-xs sm:text-base">Name</th>
+                    <th className="py-2 sm:py-4 px-2 sm:px-6 text-left font-bold text-slate-700 text-xs sm:text-base hidden md:table-cell">Email</th>
+                    <th className="py-2 sm:py-4 px-2 sm:px-6 text-left font-bold text-slate-700 text-xs sm:text-base hidden sm:table-cell">Level</th>
+                    <th className="py-2 sm:py-4 px-2 sm:px-6 text-right font-bold text-slate-700 text-xs sm:text-base">Actions</th>
                   </tr>
                 </thead>
                 <tbody>
                   {filterBySearch(deptLecturers, "lecturer").length === 0 ? (
                     <tr>
-                      <td colSpan="4" className="py-12 text-center text-slate-400">
-                        <UserPlus className="mx-auto mb-3 opacity-50" size={48} />
-                        <p>No lecturers found</p>
+                      <td colSpan="4" className="py-8 sm:py-12 text-center text-slate-400">
+                        <UserPlus className="mx-auto mb-2 sm:mb-3 opacity-50" size={32} />
+                        <p className="text-xs sm:text-base">No lecturers found</p>
                       </td>
                     </tr>
                   ) : (
                     filterBySearch(deptLecturers, "lecturer").map((lecturer, idx) => (
                       <motion.tr key={lecturer._id || lecturer} initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: idx * 0.05 }} className="border-b border-slate-100 hover:bg-orange-50/30 transition-colors">
-                        <td className="py-4 px-6 font-semibold text-blue-900">{lecturer.fullname || lecturer}</td>
-                        <td className="py-4 px-6 text-slate-600">{lecturer.email || ""}</td>
-                        <td className="py-4 px-6">
-                          <span className="inline-block px-3 py-1 bg-orange-100 text-orange-800 rounded-full text-sm font-semibold">{lecturer.level || "-"}</span>
+                        <td className="py-2 sm:py-4 px-2 sm:px-6 font-semibold text-blue-900 text-xs sm:text-base">
+                          <div className="truncate max-w-[120px] sm:max-w-none">{lecturer.fullname || lecturer}</div>
+                          <div className="md:hidden text-[10px] text-slate-500 mt-0.5 truncate max-w-[120px]">{lecturer.email || ""}</div>
                         </td>
-                        <td className="py-4 px-6 text-right">
-                          <div className="flex gap-2 justify-end">
-                            <button className="p-2 hover:bg-blue-100 rounded-lg text-blue-900 transition-colors" onClick={() => handleEditLevel("lecturer", lecturer)} title="Edit level">
-                              <Edit2 size={18} />
+                        <td className="py-2 sm:py-4 px-2 sm:px-6 text-slate-600 text-xs sm:text-base hidden md:table-cell">
+                          <div className="truncate max-w-[150px]">{lecturer.email || ""}</div>
+                        </td>
+                        <td className="py-2 sm:py-4 px-2 sm:px-6 hidden sm:table-cell">
+                          <span className="inline-block px-2 sm:px-3 py-0.5 sm:py-1 bg-orange-100 text-orange-800 rounded-full text-[10px] sm:text-sm font-semibold">{lecturer.level || "-"}</span>
+                        </td>
+                        <td className="py-2 sm:py-4 px-2 sm:px-6 text-right">
+                          <div className="flex gap-1 sm:gap-2 justify-end">
+                            <button className="p-1 sm:p-2 hover:bg-blue-100 rounded-lg text-blue-900 transition-colors" onClick={() => handleEditLevel("lecturer", lecturer)} title="Edit level">
+                              <Edit2 size={14} className="sm:w-[18px] sm:h-[18px]" />
                             </button>
-                            <button className="p-2 hover:bg-red-100 rounded-lg text-red-600 transition-colors" onClick={() => handleRemoveAssignee("lecturer", lecturer._id || lecturer)} title="Remove lecturer">
-                              <Trash2 size={18} />
+                            <button className="p-1 sm:p-2 hover:bg-red-100 rounded-lg text-red-600 transition-colors" onClick={() => handleRemoveAssignee("lecturer", lecturer._id || lecturer)} title="Remove lecturer">
+                              <Trash2 size={14} className="sm:w-[18px] sm:h-[18px]" />
                             </button>
                           </div>
                         </td>
@@ -273,37 +283,42 @@ const Assignees = () => {
               <table className="w-full">
                 <thead>
                   <tr className="bg-gradient-to-r from-slate-100 to-slate-50 border-b border-slate-200">
-                    <th className="py-4 px-6 text-left font-bold text-slate-700">Name</th>
-                    <th className="py-4 px-6 text-left font-bold text-slate-700">Email</th>
-                    <th className="py-4 px-6 text-left font-bold text-slate-700">Matric Number</th>
-                    <th className="py-4 px-6 text-left font-bold text-slate-700">Level</th>
-                    <th className="py-4 px-6 text-right font-bold text-slate-700">Actions</th>
+                    <th className="py-2 sm:py-4 px-2 sm:px-6 text-left font-bold text-slate-700 text-xs sm:text-base">Name</th>
+                    <th className="py-2 sm:py-4 px-2 sm:px-6 text-left font-bold text-slate-700 text-xs sm:text-base hidden lg:table-cell">Email</th>
+                    <th className="py-2 sm:py-4 px-2 sm:px-6 text-left font-bold text-slate-700 text-xs sm:text-base hidden md:table-cell">Matric Number</th>
+                    <th className="py-2 sm:py-4 px-2 sm:px-6 text-left font-bold text-slate-700 text-xs sm:text-base hidden sm:table-cell">Level</th>
+                    <th className="py-2 sm:py-4 px-2 sm:px-6 text-right font-bold text-slate-700 text-xs sm:text-base">Actions</th>
                   </tr>
                 </thead>
                 <tbody>
                   {filterBySearch(deptStudents, "student").length === 0 ? (
                     <tr>
-                      <td colSpan="5" className="py-12 text-center text-slate-400">
-                        <GraduationCap className="mx-auto mb-3 opacity-50" size={48} />
-                        <p>No students found</p>
+                      <td colSpan="5" className="py-8 sm:py-12 text-center text-slate-400">
+                        <GraduationCap className="mx-auto mb-2 sm:mb-3 opacity-50" size={32} />
+                        <p className="text-xs sm:text-base">No students found</p>
                       </td>
                     </tr>
                   ) : (
                     filterBySearch(deptStudents, "student").map((student, idx) => (
                       <motion.tr key={student._id || student} initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: idx * 0.05 }} className="border-b border-slate-100 hover:bg-orange-50/30 transition-colors">
-                        <td className="py-4 px-6 font-semibold text-blue-900">{student.fullname || student}</td>
-                        <td className="py-4 px-6 text-slate-600">{student.email || ""}</td>
-                        <td className="py-4 px-6 text-slate-700">{student.matricNumber || ""}</td>
-                        <td className="py-4 px-6">
-                          <span className="inline-block px-3 py-1 bg-orange-100 text-orange-800 rounded-full text-sm font-semibold">{student.level || "-"}</span>
+                        <td className="py-2 sm:py-4 px-2 sm:px-6 font-semibold text-blue-900 text-xs sm:text-base">
+                          <div className="truncate max-w-[100px] sm:max-w-none">{student.fullname || student}</div>
+                          <div className="lg:hidden text-[10px] text-slate-500 mt-0.5 truncate max-w-[100px]">{student.email || ""}</div>
                         </td>
-                        <td className="py-4 px-6 text-right">
-                          <div className="flex gap-2 justify-end">
-                            <button className="p-2 hover:bg-blue-100 rounded-lg text-blue-900 transition-colors" onClick={() => handleEditLevel("student", student)} title="Edit level">
-                              <Edit2 size={18} />
+                        <td className="py-2 sm:py-4 px-2 sm:px-6 text-slate-600 text-xs sm:text-base hidden lg:table-cell">
+                          <div className="truncate max-w-[150px]">{student.email || ""}</div>
+                        </td>
+                        <td className="py-2 sm:py-4 px-2 sm:px-6 text-slate-700 text-xs sm:text-base hidden md:table-cell">{student.matricNumber || ""}</td>
+                        <td className="py-2 sm:py-4 px-2 sm:px-6 hidden sm:table-cell">
+                          <span className="inline-block px-2 sm:px-3 py-0.5 sm:py-1 bg-orange-100 text-orange-800 rounded-full text-[10px] sm:text-sm font-semibold">{student.level || "-"}</span>
+                        </td>
+                        <td className="py-2 sm:py-4 px-2 sm:px-6 text-right">
+                          <div className="flex gap-1 sm:gap-2 justify-end">
+                            <button className="p-1 sm:p-2 hover:bg-blue-100 rounded-lg text-blue-900 transition-colors" onClick={() => handleEditLevel("student", student)} title="Edit level">
+                              <Edit2 size={14} className="sm:w-[18px] sm:h-[18px]" />
                             </button>
-                            <button className="p-2 hover:bg-red-100 rounded-lg text-red-600 transition-colors" onClick={() => handleRemoveAssignee("student", student._id || student)} title="Remove student">
-                              <Trash2 size={18} />
+                            <button className="p-1 sm:p-2 hover:bg-red-100 rounded-lg text-red-600 transition-colors" onClick={() => handleRemoveAssignee("student", student._id || student)} title="Remove student">
+                              <Trash2 size={14} className="sm:w-[18px] sm:h-[18px]" />
                             </button>
                           </div>
                         </td>
@@ -323,7 +338,7 @@ const Assignees = () => {
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
-              className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4 z-50"
+              className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center p-3 sm:p-4 z-50"
               onClick={() => {
                 setShowModal(false);
                 setEditData(null);
@@ -331,9 +346,9 @@ const Assignees = () => {
                 setLevelInput("");
               }}
             >
-              <motion.div initial={{ scale: 0.9, opacity: 0, y: 20 }} animate={{ scale: 1, opacity: 1, y: 0 }} exit={{ scale: 0.9, opacity: 0, y: 20 }} onClick={(e) => e.stopPropagation()} className="bg-white rounded-2xl p-8 w-full max-w-md border-2 border-slate-200 shadow-2xl">
-                <div className="flex items-center justify-between mb-6">
-                  <h2 className="text-2xl font-bold bg-gradient-to-r from-orange-600 to-blue-900 bg-clip-text text-transparent">{editData ? `Edit Level` : `Add ${modalType.charAt(0).toUpperCase() + modalType.slice(1)}`}</h2>
+              <motion.div initial={{ scale: 0.9, opacity: 0, y: 20 }} animate={{ scale: 1, opacity: 1, y: 0 }} exit={{ scale: 0.9, opacity: 0, y: 20 }} onClick={(e) => e.stopPropagation()} className="bg-white rounded-xl sm:rounded-2xl p-4 sm:p-8 w-full max-w-md border-2 border-slate-200 shadow-2xl">
+                <div className="flex items-center justify-between mb-4 sm:mb-6">
+                  <h2 className="text-lg sm:text-2xl font-bold bg-gradient-to-r from-orange-600 to-blue-900 bg-clip-text text-transparent">{editData ? `Edit Level` : `Add ${modalType.charAt(0).toUpperCase() + modalType.slice(1)}`}</h2>
                   <button
                     onClick={() => {
                       setShowModal(false);
@@ -343,13 +358,13 @@ const Assignees = () => {
                     }}
                     className="text-slate-400 hover:text-slate-900 transition-colors p-1 hover:bg-slate-100 rounded-lg"
                   >
-                    <X size={24} />
+                    <X size={20} className="sm:w-6 sm:h-6" />
                   </button>
                 </div>
 
                 {editData ? (
                   <div>
-                    <label className="block mb-3 font-semibold text-slate-700">Level</label>
+                    <label className="block mb-2 sm:mb-3 font-semibold text-slate-700 text-sm sm:text-base">Level</label>
                     <input
                       type="number"
                       value={levelInput}
@@ -358,10 +373,10 @@ const Assignees = () => {
                       max={900}
                       step={100}
                       placeholder="Enter level (100-900)"
-                      className="w-full px-4 py-3 bg-slate-50 border-2 border-slate-200 rounded-xl text-slate-900 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent"
+                      className="w-full px-3 sm:px-4 py-2 sm:py-3 text-sm sm:text-base bg-slate-50 border-2 border-slate-200 rounded-lg sm:rounded-xl text-slate-900 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent"
                     />
-                    <div className="flex gap-3 mt-6">
-                      <button onClick={handleSaveLevel} className="flex-1 px-6 py-3 bg-gradient-to-r from-orange-500 to-orange-600 text-white rounded-xl font-semibold hover:from-orange-600 hover:to-orange-700 transition-all shadow-lg">
+                    <div className="flex gap-2 sm:gap-3 mt-4 sm:mt-6">
+                      <button onClick={handleSaveLevel} className="flex-1 px-4 sm:px-6 py-2 sm:py-3 text-sm sm:text-base bg-gradient-to-r from-orange-500 to-orange-600 text-white rounded-lg sm:rounded-xl font-semibold hover:from-orange-600 hover:to-orange-700 transition-all shadow-lg">
                         Save
                       </button>
                       <button
@@ -370,7 +385,7 @@ const Assignees = () => {
                           setEditData(null);
                           setLevelInput("");
                         }}
-                        className="px-6 py-3 bg-slate-100 text-slate-700 rounded-xl font-semibold hover:bg-slate-200 transition-colors"
+                        className="px-4 sm:px-6 py-2 sm:py-3 text-sm sm:text-base bg-slate-100 text-slate-700 rounded-lg sm:rounded-xl font-semibold hover:bg-slate-200 transition-colors"
                       >
                         Cancel
                       </button>
@@ -378,9 +393,9 @@ const Assignees = () => {
                   </div>
                 ) : (
                   <div>
-                    <label className="block mb-3 font-semibold text-slate-700">Select {modalType.charAt(0).toUpperCase() + modalType.slice(1)}</label>
+                    <label className="block mb-2 sm:mb-3 font-semibold text-slate-700 text-sm sm:text-base">Select {modalType.charAt(0).toUpperCase() + modalType.slice(1)}</label>
                     <select
-                      className="w-full px-4 py-3 bg-slate-50 border-2 border-slate-200 rounded-xl text-slate-900 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent cursor-pointer"
+                      className="w-full px-3 sm:px-4 py-2 sm:py-3 text-sm sm:text-base bg-slate-50 border-2 border-slate-200 rounded-lg sm:rounded-xl text-slate-900 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent cursor-pointer"
                       onChange={async (e) => {
                         if (e.target.value) {
                           await handleAddAssignee(modalType, e.target.value);

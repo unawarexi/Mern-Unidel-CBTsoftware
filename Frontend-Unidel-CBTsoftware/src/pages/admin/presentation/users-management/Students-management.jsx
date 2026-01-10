@@ -201,43 +201,45 @@ const StudentsManagement = () => {
   };
 
   return (
-    <div className="min-h-screen bg-white p-6">
+    <div className="min-h-screen bg-white p-3 sm:p-6">
       <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="max-w-7xl mx-auto">
         {/* Header */}
-        <div className="mb-8">
-          <h1 className="text-3xl font-bold text-slate-900 mb-2">Students Management</h1>
-          <p className="text-gray-600">Manage student accounts and enrollments</p>
+        <div className="mb-4 sm:mb-8">
+          <h1 className="text-xl sm:text-3xl font-bold text-slate-900 mb-1 sm:mb-2">Students Management</h1>
+          <p className="text-xs sm:text-base text-gray-600">Manage student accounts and enrollments</p>
         </div>
 
         {/* Actions Bar */}
-        <div className="bg-slate-50 rounded-xl p-4 mb-6 border border-slate-200">
-          <div className="flex flex-wrap gap-4 items-center justify-between">
-            <div className="flex gap-3">
-              <motion.button whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }} onClick={() => setShowModal(true)} className="flex items-center gap-2 bg-orange-500 hover:bg-orange-600 text-white px-4 py-2 rounded-lg font-medium transition-colors">
-                <UserPlus size={20} />
-                Add Student
+        <div className="bg-slate-50 rounded-xl p-2 sm:p-4 mb-4 sm:mb-6 border border-slate-200">
+          <div className="flex flex-wrap gap-2 sm:gap-4 items-center justify-between">
+            <div className="flex gap-2 sm:gap-3 w-full sm:w-auto">
+              <motion.button whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }} onClick={() => setShowModal(true)} className="flex items-center gap-1 sm:gap-2 bg-orange-500 hover:bg-orange-600 text-white px-2 sm:px-4 py-1.5 sm:py-2 rounded-lg text-xs sm:text-base font-medium transition-colors flex-1 sm:flex-none justify-center">
+                <UserPlus size={16} className="sm:w-5 sm:h-5" />
+                <span className="hidden sm:inline">Add Student</span>
+                <span className="sm:hidden">Add</span>
               </motion.button>
-              <motion.button whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }} onClick={() => setShowUploadModal(true)} className="flex items-center gap-2 bg-blue-900 hover:bg-blue-800 text-white px-4 py-2 rounded-lg font-medium transition-colors">
-                <Upload size={20} />
-                Bulk Upload
+              <motion.button whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }} onClick={() => setShowUploadModal(true)} className="flex items-center gap-1 sm:gap-2 bg-blue-900 hover:bg-blue-800 text-white px-2 sm:px-4 py-1.5 sm:py-2 rounded-lg text-xs sm:text-base font-medium transition-colors flex-1 sm:flex-none justify-center">
+                <Upload size={16} className="sm:w-5 sm:h-5" />
+                <span className="hidden sm:inline">Bulk Upload</span>
+                <span className="sm:hidden">Upload</span>
               </motion.button>
             </div>
 
             {/* Search */}
-            <div className="relative flex-1 max-w-md">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={20} />
+            <div className="relative flex-1 w-full sm:max-w-md order-3 sm:order-2">
+              <Search className="absolute left-2 sm:left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={16} />
               <input
                 type="text"
                 placeholder="Search students..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                className="w-full pl-10 pr-4 py-2 bg-white border border-slate-300 rounded-lg text-slate-900 placeholder-gray-400 focus:outline-none focus:border-blue-900 focus:ring-2 focus:ring-blue-900/20 transition-colors"
+                className="w-full pl-8 sm:pl-10 pr-2 sm:pr-4 py-1.5 sm:py-2 text-xs sm:text-base bg-white border border-slate-300 rounded-lg text-slate-900 placeholder-gray-400 focus:outline-none focus:border-blue-900 focus:ring-2 focus:ring-blue-900/20 transition-colors"
               />
             </div>
 
             {/* Filters */}
-            <div className="flex gap-3">
-              <select value={filterDepartment} onChange={(e) => setFilterDepartment(e.target.value)} className="px-4 py-2 bg-white border border-slate-300 rounded-lg text-slate-900 focus:outline-none focus:border-blue-900 focus:ring-2 focus:ring-blue-900/20 transition-colors">
+            <div className="flex gap-1.5 sm:gap-3 w-full sm:w-auto order-2 sm:order-3 overflow-x-auto pb-1 sm:pb-0">
+              <select value={filterDepartment} onChange={(e) => setFilterDepartment(e.target.value)} className="px-2 sm:px-4 py-1.5 sm:py-2 text-xs sm:text-base bg-white border border-slate-300 rounded-lg text-slate-900 focus:outline-none focus:border-blue-900 focus:ring-2 focus:ring-blue-900/20 transition-colors min-w-[80px] sm:flex-1 sm:min-w-0">
                 <option value="All">All</option>
                 {departments.map((dept) => (
                   <option key={dept._id} value={dept._id}>
@@ -245,13 +247,13 @@ const StudentsManagement = () => {
                   </option>
                 ))}
               </select>
-              <select value={filterLevel} onChange={(e) => setFilterLevel(e.target.value)} className="px-4 py-2 bg-white border border-slate-300 rounded-lg text-slate-900">
+              <select value={filterLevel} onChange={(e) => setFilterLevel(e.target.value)} className="px-2 sm:px-4 py-1.5 sm:py-2 text-xs sm:text-base bg-white border border-slate-300 rounded-lg text-slate-900 min-w-[70px] sm:flex-1 sm:min-w-0">
                 <option>All</option>
                 {[100, 200, 300, 400, 500, 600, 700, 800, 900].map((lvl) => (
                   <option key={lvl} value={lvl}>{lvl}</option>
                 ))}
               </select>
-              <select value={filterCourse} onChange={(e) => setFilterCourse(e.target.value)} className="px-4 py-2 bg-white border border-slate-300 rounded-lg text-slate-900">
+              <select value={filterCourse} onChange={(e) => setFilterCourse(e.target.value)} className="px-2 sm:px-4 py-1.5 sm:py-2 text-xs sm:text-base bg-white border border-slate-300 rounded-lg text-slate-900 min-w-[100px] sm:flex-1 sm:min-w-0">
                 <option>All</option>
                 {allCourses.map((course) => (
                   <option key={course._id} value={course.courseCode}>
@@ -269,19 +271,16 @@ const StudentsManagement = () => {
             <table className="w-full">
               <thead>
                 <tr className="border-b border-slate-200 bg-slate-50">
-                  <th className="text-left px-6 py-4 text-slate-700 font-semibold">Full Name</th>
-                  <th className="text-left px-6 py-4 text-slate-700 font-semibold">Email</th>
-                  <th className="text-left px-6 py-4 text-slate-700 font-semibold">Matric Number</th>
-                  <th className="text-left px-6 py-4 text-slate-700 font-semibold">Department</th>
-                  <th className="text-left px-6 py-4 text-slate-700 font-semibold">Level</th>
-                  <th className="text-left px-6 py-4 text-slate-700 font-semibold">Courses</th>
-                  <th className="text-left px-6 py-4 text-slate-700 font-semibold">Actions</th>
+                  <th className="text-left px-3 sm:px-6 py-2 sm:py-4 text-slate-700 font-semibold text-xs sm:text-base">Name</th>
+                  <th className="text-left px-3 sm:px-6 py-2 sm:py-4 text-slate-700 font-semibold text-xs sm:text-base hidden sm:table-cell">Email</th>
+                  <th className="text-left px-3 sm:px-6 py-2 sm:py-4 text-slate-700 font-semibold text-xs sm:text-base hidden md:table-cell">Matric</th>
+                  <th className="text-left px-3 sm:px-6 py-2 sm:py-4 text-slate-700 font-semibold text-xs sm:text-base hidden lg:table-cell">Department</th>
+                  <th className="text-left px-3 sm:px-6 py-2 sm:py-4 text-slate-700 font-semibold text-xs sm:text-base">Actions</th>
                 </tr>
               </thead>
               <tbody>
                 <AnimatePresence>
                   {filteredStudents.map((student, index) => {
-                    // Get course labels for this student
                     const courseLabels = getCourseLabels(
                       Array.isArray(student.courses)
                         ? student.courses.map((c) =>
@@ -289,32 +288,37 @@ const StudentsManagement = () => {
                           )
                         : []
                     );
-                    // Limit display to 2 courses, show ... if more
                     const displayCourses = courseLabels.slice(0, 2).join(", ");
                     const hasMore = courseLabels.length > 2;
                     return (
                       <motion.tr key={student._id} initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: 20 }} transition={{ delay: index * 0.05 }} className="border-b border-slate-100 hover:bg-slate-50 transition-colors">
-                        <td className="px-6 py-4 text-slate-900 font-medium">{student.fullname}</td>
-                        <td className="px-6 py-4 text-slate-600">{student.email}</td>
-                        <td className="px-6 py-4 text-slate-600">{student.matricNumber}</td>
-                        <td className="px-6 py-4 text-slate-600">{getDepartmentName(student.department)}</td>
-                        <td className="px-6 py-4 text-slate-600">{student.level || "-"}</td>
-                        <td className="px-6 py-4 text-slate-600">
-                          {courseLabels.length === 0 && <span className="text-xs text-gray-400 italic">No courses</span>}
+                        <td className="px-2 sm:px-6 py-2 sm:py-4 text-slate-900 font-medium text-[10px] sm:text-base">
+                          <div className="truncate max-w-[100px] sm:max-w-none">{student.fullname}</div>
+                          <div className="sm:hidden text-[9px] text-slate-500 mt-0.5 truncate max-w-[100px]">{student.email}</div>
+                        </td>
+                        <td className="px-2 sm:px-6 py-2 sm:py-4 text-slate-600 text-[10px] sm:text-base hidden sm:table-cell">
+                          <div className="truncate max-w-[150px]">{student.email}</div>
+                        </td>
+                        <td className="px-2 sm:px-6 py-2 sm:py-4 text-slate-600 text-[10px] sm:text-base hidden md:table-cell">{student.matricNumber}</td>
+                        <td className="px-2 sm:px-6 py-2 sm:py-4 text-slate-600 text-[10px] sm:text-base hidden lg:table-cell">
+                          <div className="truncate max-w-[120px]">{getDepartmentName(student.department)}</div>
+                        </td>
+                        <td className="px-2 sm:px-6 py-2 sm:py-4 text-slate-600 text-[10px] sm:text-base">
+                          {courseLabels.length === 0 && <span className="text-[10px] sm:text-xs text-gray-400 italic">No courses</span>}
                           {courseLabels.length > 0 && (
-                            <>
-                              {displayCourses}
-                              {hasMore && <span className="text-xs text-blue-600 font-medium">&nbsp;... </span>}
-                            </>
+                            <div className="truncate max-w-[80px] sm:max-w-[150px]">
+                              <span className="text-[10px] sm:text-base">{displayCourses}</span>
+                              {hasMore && <span className="text-[10px] sm:text-xs text-blue-600 font-medium">&nbsp;...</span>}
+                            </div>
                           )}
                         </td>
-                        <td className="px-6 py-4">
-                          <div className="flex gap-2">
-                            <motion.button whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.9 }} onClick={() => handleEdit(student)} className="p-2 hover:bg-blue-100 rounded-lg text-blue-900 transition-colors">
-                              <Edit2 size={18} />
+                        <td className="px-2 sm:px-6 py-2 sm:py-4">
+                          <div className="flex gap-1 sm:gap-2">
+                            <motion.button whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.9 }} onClick={() => handleEdit(student)} className="p-1 sm:p-2 hover:bg-blue-100 rounded-lg text-blue-900 transition-colors">
+                              <Edit2 size={12} className="sm:w-[18px] sm:h-[18px]" />
                             </motion.button>
-                            <motion.button whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.9 }} onClick={() => handleDelete(student)} className="p-2 hover:bg-red-100 rounded-lg text-red-600 transition-colors">
-                              <Trash2 size={18} />
+                            <motion.button whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.9 }} onClick={() => handleDelete(student)} className="p-1 sm:p-2 hover:bg-red-100 rounded-lg text-red-600 transition-colors">
+                              <Trash2 size={12} className="sm:w-[18px] sm:h-[18px]" />
                             </motion.button>
                           </div>
                         </td>
