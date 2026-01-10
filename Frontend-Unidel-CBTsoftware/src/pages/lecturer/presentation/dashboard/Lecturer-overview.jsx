@@ -405,23 +405,23 @@ const LecturerOverview = () => {
   const violationTypeDistribution = dashboardStats?.security?.violationTypeDistribution || [];
 
   return (
-    <div className="min-h-screen bg-gray-50 p-4 md:p-6">
+    <div className="min-h-screen bg-gray-50 p-2 sm:p-4 md:p-6">
       <div className="max-w-[1600px] mx-auto">
         {/* Header */}
-        <motion.div initial={{ opacity: 0, y: -20 }} animate={{ opacity: 1, y: 0 }} className="mb-6">
-          <div className="flex items-center justify-between flex-wrap gap-4">
+        <motion.div initial={{ opacity: 0, y: -20 }} animate={{ opacity: 1, y: 0 }} className="mb-3 sm:mb-6">
+          <div className="flex items-center justify-between flex-wrap gap-2 sm:gap-4">
             <div>
-              <h1 className="text-3xl font-bold text-gray-900 mb-1">
+              <h1 className="text-xl sm:text-3xl font-bold text-gray-900 mb-0.5 sm:mb-1">
                 Welcome, {user?.fullname?.split(" ")[0] || "Lecturer"}! 
               </h1>
-              <p className="text-gray-600">Manage your courses, exams, and track student performance</p>
+              <p className="text-xs sm:text-base text-gray-600">Manage your courses, exams, and track student performance</p>
             </div>
-            <div className="flex items-center gap-3">
+            <div className="flex items-center gap-2 sm:gap-3">
               {/* Time Filter */}
               <select
                 value={timeFilter}
                 onChange={(e) => setTimeFilter(e.target.value)}
-                className="px-4 py-2 bg-white border border-gray-300 rounded-lg text-gray-700 focus:outline-none focus:ring-2 focus:ring-orange-500"
+                className="px-2 sm:px-4 py-1.5 sm:py-2 text-xs sm:text-base bg-white border border-gray-300 rounded-lg text-gray-700 focus:outline-none focus:ring-2 focus:ring-orange-500"
               >
                 <option value="today">Today</option>
                 <option value="week">This Week</option>
@@ -433,16 +433,16 @@ const LecturerOverview = () => {
               <button
                 onClick={handleRefreshAll}
                 disabled={refreshing}
-                className="flex items-center gap-2 px-4 py-2 bg-orange-500 text-white rounded-lg hover:bg-orange-600 transition-colors disabled:bg-gray-400"
+                className="flex items-center gap-1 sm:gap-2 px-2 sm:px-4 py-1.5 sm:py-2 text-xs sm:text-base bg-orange-500 text-white rounded-lg hover:bg-orange-600 transition-colors disabled:bg-gray-400"
               >
-                <RefreshCw className={`w-4 h-4 ${refreshing ? "animate-spin" : ""}`} />
-                Refresh
+                <RefreshCw className={`w-3 h-3 sm:w-4 sm:h-4 ${refreshing ? "animate-spin" : ""}`} />
+                <span className="hidden sm:inline">Refresh</span>
               </button>
 
               {/* Create Exam Button */}
               <button
                 onClick={() => navigate("/lecturer/exams/create")}
-                className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+                className="hidden sm:flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
               >
                 <Plus className="w-4 h-4" />
                 Create Exam
@@ -452,12 +452,12 @@ const LecturerOverview = () => {
         </motion.div>
 
         {/* Quick Stats Grid */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-2 sm:gap-4 mb-3 sm:mb-6">
           {statsLoading || coursesLoading || examsLoading || banksLoading
             ? Array(4)
                 .fill(0)
                 .map((_, idx) => (
-                  <div key={idx} className="bg-white rounded-xl p-5 shadow-sm border border-gray-100">
+                  <div key={idx} className="bg-white rounded-xl p-3 sm:p-5 shadow-sm border border-gray-100">
                     <Skeleton height={120} />
                   </div>
                 ))
@@ -467,29 +467,29 @@ const LecturerOverview = () => {
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: idx * 0.1 }}
-                  className="bg-white rounded-xl p-5 shadow-sm border border-gray-100 hover:shadow-md transition-shadow cursor-pointer"
+                  className="bg-white rounded-xl p-3 sm:p-5 shadow-sm border border-gray-100 hover:shadow-md transition-shadow cursor-pointer"
                   onClick={() => stat.link && navigate(stat.link)}
                 >
-                  <div className="flex items-start justify-between mb-4">
-                    <div className={`${stat.lightBg} p-3 rounded-lg`}>
-                      <div className={stat.color + " text-white rounded-lg p-2"}>{stat.icon}</div>
+                  <div className="flex items-start justify-between mb-2 sm:mb-4">
+                    <div className={`${stat.lightBg} p-2 sm:p-3 rounded-lg`}>
+                      <div className={stat.color + " text-white rounded-lg p-1 sm:p-2"}>{React.cloneElement(stat.icon, { className: "w-4 h-4 sm:w-6 sm:h-6" })}</div>
                     </div>
-                    {stat.trend && <div className={`flex items-center gap-1 ${stat.textColor} text-sm font-medium`}>{stat.trend}</div>}
+                    {stat.trend && <div className={`flex items-center gap-1 ${stat.textColor} text-xs sm:text-sm font-medium`}>{React.cloneElement(stat.trend, { className: "w-3 h-3 sm:w-4 sm:h-4" })}</div>}
                   </div>
-                  <div className="text-3xl font-bold text-gray-900 mb-1">{stat.value}</div>
-                  <div className="text-sm font-medium text-gray-700">{stat.label}</div>
-                  <div className={`text-xs ${stat.textColor} mt-1`}>{stat.subtitle}</div>
+                  <div className="text-xl sm:text-3xl font-bold text-gray-900 mb-0.5 sm:mb-1">{stat.value}</div>
+                  <div className="text-xs sm:text-sm font-medium text-gray-700">{stat.label}</div>
+                  <div className={`text-xs ${stat.textColor} mt-0.5 sm:mt-1`}>{stat.subtitle}</div>
                 </motion.div>
               ))}
         </div>
 
         {/* Performance Metrics Row */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-2 sm:gap-4 mb-3 sm:mb-6">
           {statsLoading
             ? Array(4)
                 .fill(0)
                 .map((_, idx) => (
-                  <div key={idx} className="bg-white rounded-xl p-4 shadow-sm border border-gray-100">
+                  <div key={idx} className="bg-white rounded-xl p-3 sm:p-5 shadow-sm border border-gray-100">
                     <Skeleton height={60} />
                   </div>
                 ))
@@ -499,7 +499,7 @@ const LecturerOverview = () => {
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: 0.4 + idx * 0.1 }}
-                  className="bg-white rounded-xl p-4 shadow-sm border border-gray-100"
+                  className="bg-white rounded-xl p-3 sm:p-5 shadow-sm border border-gray-100"
                 >
                   <div className="flex items-center justify-between mb-2">
                     <div className={`${metric.lightBg} p-2 rounded-lg ${metric.textColor}`}>{metric.icon}</div>
@@ -519,7 +519,7 @@ const LecturerOverview = () => {
         {/* Row 1: Activity Trend & Exam Performance */}
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 mb-4">
           {/* Activity Trend */}
-          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="lg:col-span-7 bg-white rounded-xl p-5 shadow-sm border border-gray-100">
+          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="lg:col-span-7 bg-white rounded-xl p-3 sm:p-5 shadow-sm border border-gray-100">
             <div className="flex items-center justify-between mb-4">
               <h3 className="text-lg font-bold text-gray-900">Activity Trend</h3>
               <Activity className="w-5 h-5 text-orange-500" />
@@ -545,7 +545,7 @@ const LecturerOverview = () => {
           </motion.div>
 
           {/* Performance Radar */}
-          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="lg:col-span-5 bg-white rounded-xl p-5 shadow-sm border border-gray-100">
+          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="lg:col-span-5 bg-white rounded-xl p-3 sm:p-5 shadow-sm border border-gray-100">
             <div className="flex items-center justify-between mb-4">
               <h3 className="text-lg font-bold text-gray-900">Performance Metrics</h3>
               <Target className="w-5 h-5 text-blue-600" />
@@ -567,7 +567,7 @@ const LecturerOverview = () => {
         </div>
 
         {/* Row 2: Exam Performance by Course */}
-        <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="bg-white rounded-xl p-5 shadow-sm border border-gray-100 mb-4">
+        <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="bg-white rounded-xl p-3 sm:p-5 shadow-sm border border-gray-100 mb-4">
           <div className="flex items-center justify-between mb-4">
             <h3 className="text-lg font-bold text-gray-900">Course Performance Overview</h3>
             <BarChart3 className="w-5 h-5 text-orange-500" />
@@ -594,7 +594,7 @@ const LecturerOverview = () => {
         {/* Row 3: Status Distributions */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 mb-4">
           {/* Question Bank Status */}
-          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="bg-white rounded-xl p-5 shadow-sm border border-gray-100">
+          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="bg-white rounded-xl p-3 sm:p-5 shadow-sm border border-gray-100">
             <div className="flex items-center justify-between mb-4">
               <h3 className="text-lg font-bold text-gray-900">Question Banks</h3>
               <Brain className="w-5 h-5 text-purple-600" />
@@ -635,7 +635,7 @@ const LecturerOverview = () => {
           </motion.div>
 
           {/* Exam Status */}
-          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="bg-white rounded-xl p-5 shadow-sm border border-gray-100">
+          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="bg-white rounded-xl p-3 sm:p-5 shadow-sm border border-gray-100">
             <div className="flex items-center justify-between mb-4">
               <h3 className="text-lg font-bold text-gray-900">Exam Status</h3>
               <FileSpreadsheet className="w-5 h-5 text-green-600" />
@@ -676,7 +676,7 @@ const LecturerOverview = () => {
           </motion.div>
 
           {/* Submission Performance */}
-          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="bg-white rounded-xl p-5 shadow-sm border border-gray-100">
+          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="bg-white rounded-xl p-3 sm:p-5 shadow-sm border border-gray-100">
             <div className="flex items-center justify-between mb-4">
               <h3 className="text-lg font-bold text-gray-900">Submissions</h3>
               <CheckCircle2 className="w-5 h-5 text-blue-600" />
@@ -720,7 +720,7 @@ const LecturerOverview = () => {
         {/* Row 4: Recent Exams & Question Banks */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 mb-4">
           {/* Recent Exams */}
-          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="bg-white rounded-xl p-5 shadow-sm border border-gray-100">
+          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="bg-white rounded-xl p-3 sm:p-5 shadow-sm border border-gray-100">
             <div className="flex items-center justify-between mb-4">
               <h3 className="text-lg font-bold text-gray-900">Recent Exams</h3>
               <button
@@ -788,7 +788,7 @@ const LecturerOverview = () => {
           </motion.div>
 
           {/* Recent Question Banks */}
-          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="bg-white rounded-xl p-5 shadow-sm border border-gray-100">
+          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="bg-white rounded-xl p-3 sm:p-5 shadow-sm border border-gray-100">
             <div className="flex items-center justify-between mb-4">
               <h3 className="text-lg font-bold text-gray-900">Recent Question Banks</h3>
               <button
@@ -858,7 +858,7 @@ const LecturerOverview = () => {
         {/* Row 5: Top Students & Pending Tasks */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 mb-4">
           {/* Top Students Performance */}
-          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="bg-white rounded-xl p-5 shadow-sm border border-gray-100">
+          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="bg-white rounded-xl p-3 sm:p-5 shadow-sm border border-gray-100">
             <div className="flex items-center justify-between mb-4">
               <h3 className="text-lg font-bold text-gray-900">Top Students</h3>
               <GraduationCap className="w-5 h-5 text-blue-600" />
@@ -899,7 +899,7 @@ const LecturerOverview = () => {
           </motion.div>
 
           {/* Pending Tasks */}
-          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="bg-white rounded-xl p-5 shadow-sm border border-gray-100">
+          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="bg-white rounded-xl p-3 sm:p-5 shadow-sm border border-gray-100">
             <div className="flex items-center justify-between mb-4">
               <h3 className="text-lg font-bold text-gray-900">Pending Tasks</h3>
               <AlertCircle className="w-5 h-5 text-orange-500" />
@@ -908,7 +908,7 @@ const LecturerOverview = () => {
               {pendingTasks.map((task, idx) => (
                 <div
                   key={idx}
-                  className="flex items-center justify-between p-4 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors cursor-pointer"
+                  className="flex items-center justify-between p-3 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors cursor-pointer"
                   onClick={() => task.link && navigate(task.link)}
                 >
                   <div className="flex items-center gap-3">
@@ -939,23 +939,23 @@ const LecturerOverview = () => {
         <motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
-          className="mb-4"
+          className="mb-2 sm:mb-4"
         >
-          <div className="bg-gradient-to-r from-red-500 to-orange-500 rounded-xl p-6 shadow-lg mb-4">
+          <div className="bg-gradient-to-r from-red-500 to-orange-500 rounded-xl p-3 sm:p-6 shadow-lg mb-2 sm:mb-4">
             <div className="flex items-center justify-between">
               <div>
-                <h2 className="text-2xl font-bold text-white mb-2">Exam Security Overview</h2>
-                <p className="text-white text-opacity-90">Monitor violations in your courses and exams</p>
+                <h2 className="text-lg sm:text-2xl font-bold text-white mb-1 sm:mb-2">Exam Security Overview</h2>
+                <p className="text-xs sm:text-base text-white text-opacity-90">Monitor violations in your courses and exams</p>
               </div>
-              <div className="bg-white bg-opacity-20 rounded-xl p-4 backdrop-blur">
-                <Shield className="w-12 h-12 text-white" />
+              <div className="bg-white bg-opacity-20 rounded-xl p-2 sm:p-4 backdrop-blur">
+                <Shield className="w-8 h-8 sm:w-12 sm:h-12 text-white" />
               </div>
             </div>
           </div>
 
           {/* Security Metrics */}
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-4">
-            <div className="bg-white rounded-xl p-5 shadow-sm border border-gray-100">
+            <div className="bg-white rounded-xl p-3 sm:p-5 shadow-sm border border-gray-100">
               <div className="flex items-center justify-between mb-3">
                 <div className="bg-red-50 p-3 rounded-lg">
                   <AlertTriangle className="w-6 h-6 text-red-600" />
@@ -968,7 +968,7 @@ const LecturerOverview = () => {
               <div className="text-xs text-red-600">{violationRate}% of submissions</div>
             </div>
 
-            <div className="bg-white rounded-xl p-5 shadow-sm border border-gray-100">
+            <div className="bg-white rounded-xl p-3 sm:p-5 shadow-sm border border-gray-100">
               <div className="flex items-center justify-between mb-3">
                 <div className="bg-orange-50 p-3 rounded-lg">
                   <XCircle className="w-6 h-6 text-orange-600" />
@@ -981,7 +981,7 @@ const LecturerOverview = () => {
               <div className="text-xs text-orange-600">Due to violations</div>
             </div>
 
-            <div className="bg-white rounded-xl p-5 shadow-sm border border-gray-100">
+            <div className="bg-white rounded-xl p-3 sm:p-5 shadow-sm border border-gray-100">
               <div className="flex items-center justify-between mb-3">
                 <div className="bg-blue-50 p-3 rounded-lg">
                   <Users className="w-6 h-6 text-blue-600" />
@@ -998,7 +998,7 @@ const LecturerOverview = () => {
           {/* Detailed Fraud Analytics */}
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
             {/* Exams with Violations */}
-            <div className="bg-white rounded-xl p-5 shadow-sm border border-gray-100">
+            <div className="bg-white rounded-xl p-3 sm:p-5 shadow-sm border border-gray-100">
               <div className="flex items-center justify-between mb-4">
                 <h3 className="text-lg font-bold text-gray-900">Exams by Violations</h3>
                 <FileSpreadsheet className="w-5 h-5 text-orange-600" />
@@ -1030,7 +1030,7 @@ const LecturerOverview = () => {
             </div>
 
             {/* Students with Violations */}
-            <div className="bg-white rounded-xl p-5 shadow-sm border border-gray-100">
+            <div className="bg-white rounded-xl p-3 sm:p-5 shadow-sm border border-gray-100">
               <div className="flex items-center justify-between mb-4">
                 <h3 className="text-lg font-bold text-gray-900">Flagged Students</h3>
                 <ShieldAlert className="w-5 h-5 text-red-600" />
@@ -1065,7 +1065,7 @@ const LecturerOverview = () => {
             </div>
 
             {/* Violation Type Distribution */}
-            <div className="bg-white rounded-xl p-5 shadow-sm border border-gray-100">
+            <div className="bg-white rounded-xl p-3 sm:p-5 shadow-sm border border-gray-100">
               <div className="flex items-center justify-between mb-4">
                 <h3 className="text-lg font-bold text-gray-900">Violation Types</h3>
                 <AlertCircle className="w-5 h-5 text-blue-600" />
@@ -1113,9 +1113,9 @@ const LecturerOverview = () => {
         </motion.div>
 
         {/* Quick Actions */}
-        <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="bg-gradient-to-r from-orange-500 to-orange-600 rounded-xl p-6 shadow-lg">
-          <h3 className="text-xl font-bold text-white mb-4">Quick Actions</h3>
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+        <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="bg-gradient-to-r from-orange-500 to-orange-600 rounded-xl p-3 sm:p-6 shadow-lg">
+          <h3 className="text-base sm:text-xl font-bold text-white mb-2 sm:mb-4">Quick Actions</h3>
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-2 sm:gap-3">
             <button
               onClick={() => navigate("/lecturer/exams/create")}
               className="bg-white bg-opacity-20 hover:bg-opacity-30 text-white p-4 rounded-lg transition-all flex flex-col items-center gap-2"

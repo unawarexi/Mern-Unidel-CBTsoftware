@@ -66,49 +66,49 @@ const LecturerSignIn = () => {
   return (
     <div className="min-h-screen bg-gradient-to-br from-orange-50 via-white to-amber-50 flex">
       {/* Left Side - Sign In Form */}
-      <div className="w-full lg:w-[45%] flex items-center justify-center p-6 sm:p-8 lg:p-12 relative z-10">
+      <div className="w-full lg:w-[45%] flex items-center justify-center p-4 sm:p-8 lg:p-12 relative z-10">
         <div className="w-full max-w-lg">
           {/* Logo and Header */}
-          <div className="mb-10">
-            <div className="flex items-center gap-3 mb-8">
-              <div className="w-12 h-12 bg-gradient-to-br from-orange-600 to-red-600 rounded-xl flex items-center justify-center shadow-lg shadow-orange-500/30">
-                <BookOpen className="w-7 h-7 text-white" />
+          <div className="mb-6 sm:mb-10">
+            <div className="flex items-center gap-2 sm:gap-3 mb-4 sm:mb-8">
+              <div className="w-10 h-10 sm:w-12 sm:h-12 bg-gradient-to-br from-orange-600 to-red-600 rounded-xl flex items-center justify-center shadow-lg shadow-orange-500/30">
+                <BookOpen className="w-6 h-6 sm:w-7 sm:h-7 text-white" />
               </div>
               <div>
-                <h3 className="text-xl font-bold text-gray-900">UNIDEL Lecturer</h3>
-                <p className="text-sm text-gray-500">Faculty Portal</p>
+                <h3 className="text-base sm:text-xl font-bold text-gray-900">UNIDEL Lecturer</h3>
+                <p className="text-xs sm:text-sm text-gray-500">Faculty Portal</p>
               </div>
             </div>
-            <h1 className="text-4xl font-bold text-gray-900 mb-3 bg-gradient-to-r from-orange-600 to-red-600 bg-clip-text text-transparent">
+            <h1 className="text-2xl sm:text-4xl font-bold text-gray-900 mb-2 sm:mb-3 bg-gradient-to-r from-orange-600 to-red-600 bg-clip-text text-transparent">
               Faculty Access
             </h1>
-            <p className="text-gray-600 text-lg">Sign in to manage courses and assessments</p>
+            <p className="text-gray-600 text-sm sm:text-lg">Sign in to manage courses and assessments</p>
           </div>
 
           {/* Sign In Form */}
-          <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
+          <form onSubmit={handleSubmit(onSubmit)} className="space-y-4 sm:space-y-6">
             <div>
-              <label htmlFor="employeeId" className="block text-sm font-semibold text-gray-700 mb-2">
+              <label htmlFor="employeeId" className="block text-xs sm:text-sm font-semibold text-gray-700 mb-1.5 sm:mb-2">
                 Employee ID
               </label>
               <input
                 id="employeeId"
                 {...register("employeeId")}
                 placeholder="EMP12345"
-                className={`w-full px-4 py-3.5 bg-white border-2 rounded-xl text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-4 transition-all ${
+                className={`w-full px-3 sm:px-4 py-2.5 sm:py-3.5 text-sm sm:text-base bg-white border-2 rounded-xl text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-4 transition-all ${
                   errors.employeeId ? "border-red-500 focus:ring-red-100" : "border-gray-200 focus:ring-orange-100 focus:border-orange-500"
                 }`}
               />
               {errors.employeeId && (
-                <div className="flex items-center gap-2 mt-2 text-red-600 text-sm">
-                  <AlertCircle className="w-4 h-4" />
+                <div className="flex items-center gap-2 mt-1.5 sm:mt-2 text-red-600 text-xs sm:text-sm">
+                  <AlertCircle className="w-3 h-3 sm:w-4 sm:h-4" />
                   <span>{errors.employeeId.message}</span>
                 </div>
               )}
             </div>
 
             <div>
-              <label htmlFor="email" className="block text-sm font-semibold text-gray-700 mb-2">
+              <label htmlFor="email" className="block text-xs sm:text-sm font-semibold text-gray-700 mb-1.5 sm:mb-2">
                 Email Address
               </label>
               <input
@@ -116,24 +116,24 @@ const LecturerSignIn = () => {
                 type="email"
                 {...register("email")}
                 placeholder="you@unidel.edu.ng"
-                className={`w-full px-4 py-3.5 bg-white border-2 rounded-xl text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-4 transition-all ${
+                className={`w-full px-3 sm:px-4 py-2.5 sm:py-3.5 text-sm sm:text-base bg-white border-2 rounded-xl text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-4 transition-all ${
                   errors.email ? "border-red-500 focus:ring-red-100" : "border-gray-200 focus:ring-orange-100 focus:border-orange-500"
                 }`}
               />
               {errors.email && (
-                <div className="flex items-center gap-2 mt-2 text-red-600 text-sm">
-                  <AlertCircle className="w-4 h-4" />
+                <div className="flex items-center gap-2 mt-1.5 sm:mt-2 text-red-600 text-xs sm:text-sm">
+                  <AlertCircle className="w-3 h-3 sm:w-4 sm:h-4" />
                   <span>{errors.email.message}</span>
                 </div>
               )}
             </div>
 
             <div>
-              <div className="flex items-center justify-between mb-2">
-                <label htmlFor="password" className="block text-sm font-semibold text-gray-700">
+              <div className="flex items-center justify-between mb-1.5 sm:mb-2">
+                <label htmlFor="password" className="block text-xs sm:text-sm font-semibold text-gray-700">
                   Password
                 </label>
-                <Link to="/forgot-password" className="text-sm text-orange-600 hover:text-orange-700 font-semibold">
+                <Link to="/forgot-password" className="text-xs sm:text-sm text-orange-600 hover:text-orange-700 font-semibold">
                   Forgot?
                 </Link>
               </div>
@@ -143,17 +143,17 @@ const LecturerSignIn = () => {
                   type={showPassword ? "text" : "password"}
                   {...register("password")}
                   placeholder="Enter your password"
-                  className={`w-full px-4 py-3.5 bg-white border-2 rounded-xl text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-4 transition-all pr-12 ${
+                  className={`w-full px-3 sm:px-4 py-2.5 sm:py-3.5 text-sm sm:text-base bg-white border-2 rounded-xl text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-4 transition-all pr-10 sm:pr-12 ${
                     errors.password ? "border-red-500 focus:ring-red-100" : "border-gray-200 focus:ring-orange-100 focus:border-orange-500"
                   }`}
                 />
-                <button type="button" onClick={() => setShowPassword(!showPassword)} className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors">
-                  {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+                <button type="button" onClick={() => setShowPassword(!showPassword)} className="absolute right-3 sm:right-4 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors">
+                  {showPassword ? <EyeOff className="w-4 h-4 sm:w-5 sm:h-5" /> : <Eye className="w-4 h-4 sm:w-5 sm:h-5" />}
                 </button>
               </div>
               {errors.password && (
-                <div className="flex items-center gap-2 mt-2 text-red-600 text-sm">
-                  <AlertCircle className="w-4 h-4" />
+                <div className="flex items-center gap-2 mt-1.5 sm:mt-2 text-red-600 text-xs sm:text-sm">
+                  <AlertCircle className="w-3 h-3 sm:w-4 sm:h-4" />
                   <span>{errors.password.message}</span>
                 </div>
               )}
@@ -162,13 +162,13 @@ const LecturerSignIn = () => {
             <button
               type="submit"
               disabled={isLoading}
-              className={`w-full bg-gradient-to-r from-orange-600 to-red-600 text-white py-4 px-4 rounded-xl font-semibold hover:from-orange-700 hover:to-red-700 focus:outline-none focus:ring-4 focus:ring-orange-200 transition-all shadow-lg shadow-orange-500/30 ${
+              className={`w-full bg-gradient-to-r from-orange-600 to-red-600 text-white py-3 sm:py-4 px-4 text-sm sm:text-base rounded-xl font-semibold hover:from-orange-700 hover:to-red-700 focus:outline-none focus:ring-4 focus:ring-orange-200 transition-all shadow-lg shadow-orange-500/30 ${
                 isLoading ? "opacity-80 pointer-events-none" : ""
               }`}
             >
               {isLoading ? (
                 <span className="flex items-center justify-center gap-2">
-                  <ButtonSpinner size={18} /> Signing in...
+                  <ButtonSpinner size={16} /> Signing in...
                 </span>
               ) : (
                 "Sign In to Portal"
@@ -176,8 +176,8 @@ const LecturerSignIn = () => {
             </button>
           </form>
 
-          <div className="mt-8 text-center">
-            <p className="text-sm text-gray-600">
+          <div className="mt-6 sm:mt-8 text-center">
+            <p className="text-xs sm:text-sm text-gray-600">
               Need assistance?{" "}
               <a href="#support" className="text-orange-600 hover:text-orange-700 font-semibold">
                 Contact IT Support

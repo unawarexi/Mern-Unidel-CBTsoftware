@@ -1,7 +1,10 @@
 import React from "react";
 import { Facebook, Twitter, Instagram, Linkedin, Mail } from "lucide-react";
+import useThemeStore from "../store/theme-store";
 
 const Footer = () => {
+  const { isDarkMode } = useThemeStore();
+
   const footerSections = [
     {
       title: "QUICK LINKS",
@@ -67,17 +70,17 @@ const Footer = () => {
   ];
 
   return (
-    <footer className="bg-white text-gray-600 border-t border-gray-200">
+    <footer className={`${isDarkMode ? 'bg-slate-900 border-slate-800' : 'bg-white border-gray-200'} text-gray-600 border-t transition-colors duration-300`}>
       {/* Main Footer Content */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 md:py-16 lg:py-20">
         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-8 md:gap-10">
           {footerSections.map((section, index) => (
             <div key={index} className="text-left">
-              <h2 className="font-semibold text-gray-900 tracking-wide text-xs md:text-sm mb-3 md:mb-4">{section.title}</h2>
+              <h2 className={`font-semibold ${isDarkMode ? 'text-white' : 'text-gray-900'} tracking-wide text-xs md:text-sm mb-3 md:mb-4`}>{section.title}</h2>
               <nav className="space-y-2 md:space-y-2.5">
                 {section.links.map((link, linkIndex) => (
                   <div key={linkIndex}>
-                    <a href={link.href} className="text-sm text-gray-600 hover:text-orange-600 transition-colors inline-block">
+                    <a href={link.href} className={`text-sm ${isDarkMode ? 'text-gray-400 hover:text-orange-400' : 'text-gray-600 hover:text-orange-600'} transition-colors inline-block`}>
                       {link.name}
                     </a>
                   </div>
@@ -89,19 +92,19 @@ const Footer = () => {
       </div>
 
       {/* Newsletter Section */}
-      <div className="border-t border-gray-200">
+      <div className={`border-t ${isDarkMode ? 'border-slate-800' : 'border-gray-200'}`}>
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 md:py-8">
           <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 md:gap-6">
             {/* Newsletter Form */}
             <div className="flex flex-col sm:flex-row items-start sm:items-end gap-3 sm:gap-4 flex-1">
               <div className="w-full sm:w-64">
-                <label htmlFor="newsletter" className="block text-sm text-gray-600 mb-1.5">
+                <label htmlFor="newsletter" className={`block text-sm ${isDarkMode ? 'text-gray-400' : 'text-gray-600'} mb-1.5`}>
                   Subscribe to Newsletter
                 </label>
-                <input type="email" id="newsletter" name="newsletter" placeholder="Enter your email" className="w-full bg-gray-50 rounded-lg border border-gray-300 focus:ring-2 focus:ring-orange-200 focus:border-orange-500 text-sm outline-none text-gray-700 py-2.5 px-4 transition-all" />
+                <input type="email" id="newsletter" name="newsletter" placeholder="Enter your email" className={`w-full ${isDarkMode ? 'bg-slate-800 border-slate-700 text-white focus:ring-orange-500/20 focus:border-orange-500' : 'bg-gray-50 border-gray-300 text-gray-700 focus:ring-orange-200 focus:border-orange-500'} rounded-lg border focus:ring-2 text-sm outline-none py-2.5 px-4 transition-all`} />
               </div>
               <button className="w-full sm:w-auto px-6 py-2.5 bg-gray-900 text-white text-sm font-medium rounded-lg hover:bg-gray-800 transition-colors shadow-sm hover:shadow-md">Subscribe</button>
-              <p className="text-gray-500 text-xs sm:text-sm md:ml-4">
+              <p className={`${isDarkMode ? 'text-gray-400' : 'text-gray-500'} text-xs sm:text-sm md:ml-4`}>
                 Stay updated with exam schedules
                 <br className="hidden lg:block" />
                 and important announcements
@@ -111,7 +114,7 @@ const Footer = () => {
             {/* Social Links */}
             <div className="flex items-center gap-3 justify-start md:justify-end">
               {socialLinks.map((social, index) => (
-                <a key={index} href={social.href} aria-label={social.label} className="p-2 text-gray-500 hover:text-orange-600 hover:bg-orange-50 rounded-full transition-all">
+                <a key={index} href={social.href} aria-label={social.label} className={`p-2 ${isDarkMode ? 'text-gray-400 hover:text-orange-400 hover:bg-slate-800' : 'text-gray-500 hover:text-orange-600 hover:bg-orange-50'} rounded-full transition-all`}>
                   <social.icon className="w-5 h-5" />
                 </a>
               ))}
@@ -121,27 +124,27 @@ const Footer = () => {
       </div>
 
       {/* Bottom Bar */}
-      <div className="bg-gray-50 border-t border-gray-200">
+      <div className={`${isDarkMode ? 'bg-slate-950 border-slate-800' : 'bg-gray-50 border-gray-200'} border-t`}>
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 md:py-5">
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 text-xs sm:text-sm">
-            <div className="text-gray-500 text-left">
+            <div className={`${isDarkMode ? 'text-gray-400' : 'text-gray-500'} text-left`}>
               <p>
                  {new Date().getFullYear()} University of Delta (UNIDEL) —{" "}
-                <a href="#" className="text-gray-700 hover:text-orange-600 font-medium transition-colors">
+                <a href="#" className={`${isDarkMode ? 'text-gray-300 hover:text-orange-400' : 'text-gray-700 hover:text-orange-600'} font-medium transition-colors`}>
                   Computer Based Test Platform
                 </a>
               </p>
             </div>
-            <div className="flex items-center gap-4 text-gray-500 text-left sm:text-right">
-              <a href="#terms" className="hover:text-orange-600 transition-colors">
+            <div className={`flex items-center gap-4 ${isDarkMode ? 'text-gray-400' : 'text-gray-500'} text-left sm:text-right`}>
+              <a href="#terms" className={`${isDarkMode ? 'hover:text-orange-400' : 'hover:text-orange-600'} transition-colors`}>
                 Terms
               </a>
-              <span className="text-gray-300">•</span>
-              <a href="#privacy" className="hover:text-orange-600 transition-colors">
+              <span className={isDarkMode ? 'text-slate-700' : 'text-gray-300'}>•</span>
+              <a href="#privacy" className={`${isDarkMode ? 'hover:text-orange-400' : 'hover:text-orange-600'} transition-colors`}>
                 Privacy
               </a>
-              <span className="text-gray-300">•</span>
-              <a href="#accessibility" className="hover:text-orange-600 transition-colors">
+              <span className={isDarkMode ? 'text-slate-700' : 'text-gray-300'}>•</span>
+              <a href="#accessibility" className={`${isDarkMode ? 'hover:text-orange-400' : 'hover:text-orange-600'} transition-colors`}>
                 Accessibility
               </a>
             </div>

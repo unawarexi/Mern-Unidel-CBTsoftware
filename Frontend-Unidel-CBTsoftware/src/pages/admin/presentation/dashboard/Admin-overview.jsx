@@ -340,18 +340,18 @@ const AdminDashboard = () => {
   const highRiskDepartments = dashboardStats?.security?.highRisk?.departments || [];
 
   return (
-    <div className="min-h-screen bg-gray-50 p-4 md:p-6">
+    <div className="min-h-screen bg-gray-50 p-2 sm:p-4 md:p-6">
       <div className="max-w-[1600px] mx-auto">
         {/* Header */}
-        <motion.div initial={{ opacity: 0, y: -20 }} animate={{ opacity: 1, y: 0 }} className="mb-6">
-          <div className="flex items-center justify-between flex-wrap gap-4">
+        <motion.div initial={{ opacity: 0, y: -20 }} animate={{ opacity: 1, y: 0 }} className="mb-3 sm:mb-6">
+          <div className="flex items-center justify-between flex-wrap gap-2 sm:gap-4">
             <div>
-              <h1 className="text-3xl font-bold text-gray-900 mb-1">Admin Dashboard</h1>
-              <p className="text-gray-600">System overview and real-time analytics</p>
+              <h1 className="text-xl sm:text-3xl font-bold text-gray-900 mb-0.5 sm:mb-1">Admin Dashboard</h1>
+              <p className="text-xs sm:text-base text-gray-600">System overview and real-time analytics</p>
             </div>
-            <div className="flex items-center gap-3">
+            <div className="flex items-center gap-2 sm:gap-3">
               {/* Time Filter */}
-              <select value={timeFilter} onChange={(e) => setTimeFilter(e.target.value)} className="px-4 py-2 bg-white border border-gray-300 rounded-lg text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500">
+              <select value={timeFilter} onChange={(e) => setTimeFilter(e.target.value)} className="px-2 sm:px-4 py-1.5 sm:py-2 text-xs sm:text-base bg-white border border-gray-300 rounded-lg text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500">
                 <option value="today">Today</option>
                 <option value="week">This Week</option>
                 <option value="month">This Month</option>
@@ -359,13 +359,13 @@ const AdminDashboard = () => {
               </select>
 
               {/* Refresh Button */}
-              <button onClick={handleRefreshAll} disabled={refreshing} className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors disabled:bg-gray-400">
-                <RefreshCw className={`w-4 h-4 ${refreshing ? "animate-spin" : ""}`} />
-                Refresh
+              <button onClick={handleRefreshAll} disabled={refreshing} className="flex items-center gap-1 sm:gap-2 px-2 sm:px-4 py-1.5 sm:py-2 text-xs sm:text-base bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors disabled:bg-gray-400">
+                <RefreshCw className={`w-3 h-3 sm:w-4 sm:h-4 ${refreshing ? "animate-spin" : ""}`} />
+                <span className="hidden sm:inline">Refresh</span>
               </button>
 
               {/* Export Button */}
-              <button className="flex items-center gap-2 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors">
+              <button className="hidden sm:flex items-center gap-2 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors">
                 <Download className="w-4 h-4" />
                 Export
               </button>
@@ -374,12 +374,12 @@ const AdminDashboard = () => {
         </motion.div>
 
         {/* Quick Stats Grid */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-2 sm:gap-4 mb-3 sm:mb-6">
           {statsLoading || studentsLoading || lecturersLoading || coursesLoading
             ? Array(4)
                 .fill(0)
                 .map((_, idx) => (
-                  <div key={idx} className="bg-white rounded-xl p-5 shadow-sm border border-gray-100">
+                  <div key={idx} className="bg-white rounded-xl p-3 sm:p-5 shadow-sm border border-gray-100">
                     <Skeleton height={80} />
                   </div>
                 ))
@@ -389,39 +389,39 @@ const AdminDashboard = () => {
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: idx * 0.1 }}
-                  className="bg-white rounded-xl p-5 shadow-sm border border-gray-100 hover:shadow-md transition-shadow cursor-pointer"
+                  className="bg-white rounded-xl p-3 sm:p-5 shadow-sm border border-gray-100 hover:shadow-md transition-shadow cursor-pointer"
                   onClick={() => stat.link && (window.location.href = stat.link)}
                 >
-                  <div className="flex items-start justify-between mb-4">
-                    <div className={`${stat.lightBg} p-3 rounded-lg`}>
-                      <div className={stat.color + " text-white rounded-lg p-2"}>{stat.icon}</div>
+                  <div className="flex items-start justify-between mb-2 sm:mb-4">
+                    <div className={`${stat.lightBg} p-2 sm:p-3 rounded-lg`}>
+                      <div className={stat.color + " text-white rounded-lg p-1 sm:p-2"}>{React.cloneElement(stat.icon, { className: "w-4 h-4 sm:w-6 sm:h-6" })}</div>
                     </div>
-                    {stat.trend && <div className={`flex items-center gap-1 ${stat.textColor} text-sm font-medium`}>{stat.trend}</div>}
+                    {stat.trend && <div className={`flex items-center gap-1 ${stat.textColor} text-xs sm:text-sm font-medium`}>{React.cloneElement(stat.trend, { className: "w-3 h-3 sm:w-4 sm:h-4" })}</div>}
                   </div>
-                  <div className="text-3xl font-bold text-gray-900 mb-1">{stat.value}</div>
-                  <div className="text-sm font-medium text-gray-700">{stat.label}</div>
-                  <div className={`text-xs ${stat.textColor} mt-1`}>{stat.change}</div>
+                  <div className="text-xl sm:text-3xl font-bold text-gray-900 mb-0.5 sm:mb-1">{stat.value}</div>
+                  <div className="text-xs sm:text-sm font-medium text-gray-700">{stat.label}</div>
+                  <div className={`text-xs ${stat.textColor} mt-0.5 sm:mt-1`}>{stat.change}</div>
                 </motion.div>
               ))}
         </div>
 
         {/* Performance Metrics Row */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-2 sm:gap-4 mb-3 sm:mb-6">
           {statsLoading
             ? Array(4)
                 .fill(0)
                 .map((_, idx) => (
-                  <div key={idx} className="bg-white rounded-xl p-4 shadow-sm border border-gray-100">
+                  <div key={idx} className="bg-white rounded-xl p-3 sm:p-4 shadow-sm border border-gray-100">
                     <Skeleton height={60} />
                   </div>
                 ))
             : performanceMetrics.map((metric, idx) => (
-                <motion.div key={idx} initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.4 + idx * 0.1 }} className="bg-white rounded-xl p-4 shadow-sm border border-gray-100">
-                  <div className="flex items-center justify-between mb-2">
-                    <div className={`${metric.lightBg} p-2 rounded-lg ${metric.textColor}`}>{metric.icon}</div>
-                    <div className="text-2xl font-bold text-gray-900">{metric.value}</div>
+                <motion.div key={idx} initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.4 + idx * 0.1 }} className="bg-white rounded-xl p-3 sm:p-4 shadow-sm border border-gray-100">
+                  <div className="flex items-center justify-between mb-1 sm:mb-2">
+                    <div className={`${metric.lightBg} p-1.5 sm:p-2 rounded-lg ${metric.textColor}`}>{React.cloneElement(metric.icon, { className: "w-4 h-4 sm:w-5 sm:h-5" })}</div>
+                    <div className="text-lg sm:text-2xl font-bold text-gray-900">{metric.value}</div>
                   </div>
-                  <div className="text-sm font-medium text-gray-700 mb-1">{metric.label}</div>
+                  <div className="text-xs sm:text-sm font-medium text-gray-700 mb-0.5 sm:mb-1">{metric.label}</div>
                   {metric.total !== undefined && (
                     <div className="text-xs text-gray-500">
                       {metric.count} / {metric.total} submissions
@@ -432,17 +432,17 @@ const AdminDashboard = () => {
         </div>
 
         {/* Row 1: Weekly Activity & User Distribution & System Health */}
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 mb-4">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-2 sm:gap-4 mb-2 sm:mb-4">
           {/* Weekly Activity Chart */}
-          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="lg:col-span-6 bg-white rounded-xl p-5 shadow-sm border border-gray-100">
-            <div className="flex items-center justify-between mb-4">
-              <h3 className="text-lg font-bold text-gray-900">System Activity</h3>
-              <Activity className="w-5 h-5 text-blue-600" />
+          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="lg:col-span-6 bg-white rounded-xl p-3 sm:p-5 shadow-sm border border-gray-100">
+            <div className="flex items-center justify-between mb-2 sm:mb-4">
+              <h3 className="text-sm sm:text-lg font-bold text-gray-900">System Activity</h3>
+              <Activity className="w-4 h-4 sm:w-5 sm:h-5 text-blue-600" />
             </div>
             {analyticsLoading || statsLoading ? (
               <LoadingSkeleton />
             ) : (
-              <ResponsiveContainer width="100%" height={250}>
+              <ResponsiveContainer width="100%" height={200}>
                 <ComposedChart data={weeklyActivity}>
                   <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
                   <XAxis dataKey="day" stroke="#9ca3af" style={{ fontSize: "12px" }} />
@@ -457,10 +457,10 @@ const AdminDashboard = () => {
           </motion.div>
 
           {/* User Distribution */}
-          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="lg:col-span-3 bg-white rounded-xl p-5 shadow-sm border border-gray-100">
-            <div className="flex items-center justify-between mb-4">
-              <h3 className="text-lg font-bold text-gray-900">User Distribution</h3>
-              <PieChartIcon className="w-5 h-5 text-orange-500" />
+          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="lg:col-span-3 bg-white rounded-xl p-3 sm:p-5 shadow-sm border border-gray-100">
+            <div className="flex items-center justify-between mb-2 sm:mb-4">
+              <h3 className="text-sm sm:text-lg font-bold text-gray-900">User Distribution</h3>
+              <PieChartIcon className="w-4 h-4 sm:w-5 sm:h-5 text-orange-500" />
             </div>
             {studentsLoading || lecturersLoading ? (
               <LoadingSkeleton />
@@ -491,20 +491,20 @@ const AdminDashboard = () => {
           </motion.div>
 
           {/* System Health */}
-          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="lg:col-span-3 bg-white rounded-xl p-5 shadow-sm border border-gray-100">
-            <div className="flex items-center justify-between mb-4">
-              <h3 className="text-lg font-bold text-gray-900">System Health</h3>
-              <Target className="w-5 h-5 text-green-600" />
+          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="lg:col-span-3 bg-white rounded-xl p-3 sm:p-5 shadow-sm border border-gray-100">
+            <div className="flex items-center justify-between mb-2 sm:mb-4">
+              <h3 className="text-sm sm:text-lg font-bold text-gray-900">System Health</h3>
+              <Target className="w-4 h-4 sm:w-5 sm:h-5 text-green-600" />
             </div>
-            <div className="space-y-3">
+            <div className="space-y-2 sm:space-y-3">
               {systemHealth.map((item, idx) => (
-                <div key={idx} className="space-y-1">
+                <div key={idx} className="space-y-0.5 sm:space-y-1">
                   <div className="flex items-center justify-between text-xs">
                     <span className="text-gray-600">{item.metric}</span>
                     <span className={`font-bold ${item.status === "excellent" ? "text-green-600" : item.status === "good" ? "text-blue-600" : "text-orange-600"}`}>{item.value}%</span>
                   </div>
-                  <div className="w-full bg-gray-200 rounded-full h-1.5">
-                    <div className={`h-1.5 rounded-full ${item.status === "excellent" ? "bg-green-600" : item.status === "good" ? "bg-blue-600" : "bg-orange-600"}`} style={{ width: `${item.value}%` }} />
+                  <div className="w-full bg-gray-200 rounded-full h-1 sm:h-1.5">
+                    <div className={`h-1 sm:h-1.5 rounded-full ${item.status === "excellent" ? "bg-green-600" : item.status === "good" ? "bg-blue-600" : "bg-orange-600"}`} style={{ width: `${item.value}%` }} />
                   </div>
                 </div>
               ))}
@@ -513,12 +513,12 @@ const AdminDashboard = () => {
         </div>
 
         {/* Row 2: Department Performance & Exam/Submission Stats */}
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 mb-4">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-2 sm:gap-4 mb-2 sm:mb-4">
           {/* Department Performance */}
-          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="lg:col-span-6 bg-white rounded-xl p-5 shadow-sm border border-gray-100">
-            <div className="flex items-center justify-between mb-4">
-              <h3 className="text-lg font-bold text-gray-900">Department Overview</h3>
-              <BarChart3 className="w-5 h-5 text-blue-600" />
+          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="lg:col-span-6 bg-white rounded-xl p-3 sm:p-5 shadow-sm border border-gray-100">
+            <div className="flex items-center justify-between mb-2 sm:mb-4">
+              <h3 className="text-sm sm:text-lg font-bold text-gray-900">Department Overview</h3>
+              <BarChart3 className="w-4 h-4 sm:w-5 sm:h-5 text-blue-600" />
             </div>
             {deptLoading || statsLoading ? (
               <LoadingSkeleton />
@@ -538,11 +538,11 @@ const AdminDashboard = () => {
           </motion.div>
 
           {/* Exam & Submission Status */}
-          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="lg:col-span-6 grid grid-cols-2 gap-4">
+          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="lg:col-span-6 grid grid-cols-2 gap-2 sm:gap-4">
             {/* Exam Status */}
-            <div className="bg-white rounded-xl p-5 shadow-sm border border-gray-100">
-              <div className="flex items-center justify-between mb-4">
-                <h3 className="text-base font-bold text-gray-900">Exam Status</h3>
+            <div className="bg-white rounded-xl p-3 sm:p-5 shadow-sm border border-gray-100">
+              <div className="flex items-center justify-between mb-2 sm:mb-4">
+                <h3 className="text-base sm:text-lg font-bold text-gray-900">Exam Status</h3>
                 <FileText className="w-5 h-5 text-purple-600" />
               </div>
               {statsLoading ? (
@@ -574,9 +574,9 @@ const AdminDashboard = () => {
             </div>
 
             {/* Submission Performance */}
-            <div className="bg-white rounded-xl p-5 shadow-sm border border-gray-100">
-              <div className="flex items-center justify-between mb-4">
-                <h3 className="text-base font-bold text-gray-900">Submissions</h3>
+            <div className="bg-white rounded-xl p-3 sm:p-5 shadow-sm border border-gray-100">
+              <div className="flex items-center justify-between mb-2 sm:mb-4">
+                <h3 className="text-base sm:text-lg font-bold text-gray-900">Submissions</h3>
                 <CheckCircle className="w-5 h-5 text-green-600" />
               </div>
               {statsLoading ? (
@@ -609,12 +609,12 @@ const AdminDashboard = () => {
         </div>
 
         {/* Row 3: Activity by Role & Top Actions & Peak Hours */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 mb-4">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-2 sm:gap-4 mb-2 sm:mb-4">
           {/* Activity by Role */}
-          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="bg-white rounded-xl p-5 shadow-sm border border-gray-100">
-            <div className="flex items-center justify-between mb-4">
-              <h3 className="text-lg font-bold text-gray-900">Activity by Role</h3>
-              <Users className="w-5 h-5 text-blue-600" />
+          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="bg-white rounded-xl p-3 sm:p-5 shadow-sm border border-gray-100">
+            <div className="flex items-center justify-between mb-2 sm:mb-4">
+              <h3 className="text-sm sm:text-lg font-bold text-gray-900">Activity by Role</h3>
+              <Users className="w-4 h-4 sm:w-5 sm:h-5 text-blue-600" />
             </div>
             {analyticsLoading ? (
               <LoadingSkeleton />
@@ -637,10 +637,10 @@ const AdminDashboard = () => {
           </motion.div>
 
           {/* Top Actions */}
-          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="bg-white rounded-xl p-5 shadow-sm border border-gray-100">
-            <div className="flex items-center justify-between mb-4">
-              <h3 className="text-lg font-bold text-gray-900">Top Actions</h3>
-              <Activity className="w-5 h-5 text-green-600" />
+          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="bg-white rounded-xl p-3 sm:p-5 shadow-sm border border-gray-100">
+            <div className="flex items-center justify-between mb-2 sm:mb-4">
+              <h3 className="text-sm sm:text-lg font-bold text-gray-900">Top Actions</h3>
+              <Activity className="w-4 h-4 sm:w-5 sm:h-5 text-green-600" />
             </div>
             {analyticsLoading ? (
               <LoadingSkeleton />
@@ -658,10 +658,10 @@ const AdminDashboard = () => {
           </motion.div>
 
           {/* Peak Usage Hours */}
-          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="bg-white rounded-xl p-5 shadow-sm border border-gray-100">
-            <div className="flex items-center justify-between mb-4">
-              <h3 className="text-lg font-bold text-gray-900">Peak Hours</h3>
-              <Clock className="w-5 h-5 text-orange-500" />
+          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="bg-white rounded-xl p-3 sm:p-5 shadow-sm border border-gray-100">
+            <div className="flex items-center justify-between mb-2 sm:mb-4">
+              <h3 className="text-sm sm:text-lg font-bold text-gray-900">Peak Hours</h3>
+              <Clock className="w-4 h-4 sm:w-5 sm:h-5 text-orange-500" />
             </div>
             {analyticsLoading ? (
               <LoadingSkeleton />
@@ -682,12 +682,12 @@ const AdminDashboard = () => {
         </div>
 
         {/* Row 4: Recent Activity & Pending Tasks */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 mb-4">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-2 sm:gap-4 mb-2 sm:mb-4">
           {/* Recent Activity */}
-          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="bg-white rounded-xl p-5 shadow-sm border border-gray-100">
-            <div className="flex items-center justify-between mb-4">
-              <h3 className="text-lg font-bold text-gray-900">Recent Activity</h3>
-              <button className="text-sm text-blue-600 font-medium hover:text-blue-700 flex items-center gap-1">
+          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="bg-white rounded-xl p-3 sm:p-5 shadow-sm border border-gray-100">
+            <div className="flex items-center justify-between mb-2 sm:mb-4">
+              <h3 className="text-sm sm:text-lg font-bold text-gray-900">Recent Activity</h3>
+              <button className="text-xs sm:text-sm text-blue-600 font-medium hover:text-blue-700 flex items-center gap-1">
                 View All
                 <ChevronRight className="w-4 h-4" />
               </button>
@@ -721,10 +721,10 @@ const AdminDashboard = () => {
           </motion.div>
 
           {/* Pending Tasks */}
-          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="bg-white rounded-xl p-5 shadow-sm border border-gray-100">
-            <div className="flex items-center justify-between mb-4">
-              <h3 className="text-lg font-bold text-gray-900">Pending Tasks</h3>
-              <AlertCircle className="w-5 h-5 text-orange-500" />
+          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="bg-white rounded-xl p-3 sm:p-5 shadow-sm border border-gray-100">
+            <div className="flex items-center justify-between mb-2 sm:mb-4">
+              <h3 className="text-sm sm:text-lg font-bold text-gray-900">Pending Tasks</h3>
+              <AlertCircle className="w-4 h-4 sm:w-5 sm:h-5 text-orange-500" />
             </div>
             <div className="space-y-3">
               {pendingTasks.map((task, idx) => (
@@ -749,25 +749,25 @@ const AdminDashboard = () => {
         <motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
-          className="mb-4"
+          className="mb-2 sm:mb-4"
         >
-          <div className="bg-gradient-to-r from-red-500 to-orange-500 rounded-xl p-6 shadow-lg mb-4">
+          <div className="bg-gradient-to-r from-red-500 to-orange-500 rounded-xl p-3 sm:p-6 shadow-lg mb-2 sm:mb-4">
             <div className="flex items-center justify-between">
               <div>
-                <h2 className="text-2xl font-bold text-white mb-2">Security & Fraud Detection</h2>
-                <p className="text-white text-opacity-90">Monitor exam integrity violations across the system</p>
+                <h2 className="text-lg sm:text-2xl font-bold text-white mb-1 sm:mb-2">Security & Fraud Detection</h2>
+                <p className="text-xs sm:text-base text-white text-opacity-90">Monitor exam integrity violations across the system</p>
               </div>
-              <div className="bg-white bg-opacity-20 rounded-xl p-4 backdrop-blur">
-                <ShieldAlert className="w-12 h-12 text-white" />
+              <div className="bg-white bg-opacity-20 rounded-xl p-2 sm:p-4 backdrop-blur">
+                <ShieldAlert className="w-8 h-8 sm:w-12 sm:h-12 text-white" />
               </div>
             </div>
           </div>
 
           {/* Security Metrics Grid */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-4">
-            <div className="bg-white rounded-xl p-5 shadow-sm border border-gray-100">
-              <div className="flex items-center justify-between mb-3">
-                <div className="bg-red-50 p-3 rounded-lg">
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-2 sm:gap-4 mb-2 sm:mb-4">
+            <div className="bg-white rounded-xl p-3 sm:p-5 shadow-sm border border-gray-100">
+              <div className="flex items-center justify-between mb-2 sm:mb-3">
+                <div className="bg-red-50 p-2 sm:p-3 rounded-lg">
                   <AlertTriangle className="w-6 h-6 text-red-600" />
                 </div>
                 <div className="text-right">
@@ -778,9 +778,9 @@ const AdminDashboard = () => {
               <div className="text-xs text-red-600">{violationRate}% of submissions</div>
             </div>
 
-            <div className="bg-white rounded-xl p-5 shadow-sm border border-gray-100">
-              <div className="flex items-center justify-between mb-3">
-                <div className="bg-orange-50 p-3 rounded-lg">
+            <div className="bg-white rounded-xl p-3 sm:p-5 shadow-sm border border-gray-100">
+              <div className="flex items-center justify-between mb-2 sm:mb-3">
+                <div className="bg-orange-50 p-2 sm:p-3 rounded-lg">
                   <XCircle className="w-6 h-6 text-orange-600" />
                 </div>
                 <div className="text-right">
@@ -791,9 +791,9 @@ const AdminDashboard = () => {
               <div className="text-xs text-orange-600">Due to violations</div>
             </div>
 
-            <div className="bg-white rounded-xl p-5 shadow-sm border border-gray-100">
-              <div className="flex items-center justify-between mb-3">
-                <div className="bg-blue-50 p-3 rounded-lg">
+            <div className="bg-white rounded-xl p-3 sm:p-5 shadow-sm border border-gray-100">
+              <div className="flex items-center justify-between mb-2 sm:mb-3">
+                <div className="bg-blue-50 p-2 sm:p-3 rounded-lg">
                   <Users className="w-6 h-6 text-blue-600" />
                 </div>
                 <div className="text-right">
@@ -804,9 +804,9 @@ const AdminDashboard = () => {
               <div className="text-xs text-blue-600">3+ violations</div>
             </div>
 
-            <div className="bg-white rounded-xl p-5 shadow-sm border border-gray-100">
-              <div className="flex items-center justify-between mb-3">
-                <div className="bg-purple-50 p-3 rounded-lg">
+            <div className="bg-white rounded-xl p-3 sm:p-5 shadow-sm border border-gray-100">
+              <div className="flex items-center justify-between mb-2 sm:mb-3">
+                <div className="bg-purple-50 p-2 sm:p-3 rounded-lg">
                   <BookOpen className="w-6 h-6 text-purple-600" />
                 </div>
                 <div className="text-right">
@@ -819,11 +819,11 @@ const AdminDashboard = () => {
           </div>
 
           {/* Detailed Fraud Analytics */}
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-2 sm:gap-4">
             {/* Top Violators */}
-            <div className="bg-white rounded-xl p-5 shadow-sm border border-gray-100">
-              <div className="flex items-center justify-between mb-4">
-                <h3 className="text-lg font-bold text-gray-900">Top Violators</h3>
+            <div className="bg-white rounded-xl p-3 sm:p-5 shadow-sm border border-gray-100">
+              <div className="flex items-center justify-between mb-2 sm:mb-4">
+                <h3 className="text-sm sm:text-lg font-bold text-gray-900">Top Violators</h3>
                 <ShieldAlert className="w-5 h-5 text-red-600" />
               </div>
               <div className="space-y-3 max-h-[300px] overflow-y-auto">
@@ -853,9 +853,9 @@ const AdminDashboard = () => {
             </div>
 
             {/* High-Risk Courses */}
-            <div className="bg-white rounded-xl p-5 shadow-sm border border-gray-100">
-              <div className="flex items-center justify-between mb-4">
-                <h3 className="text-lg font-bold text-gray-900">High-Risk Courses</h3>
+            <div className="bg-white rounded-xl p-3 sm:p-5 shadow-sm border border-gray-100">
+              <div className="flex items-center justify-between mb-2 sm:mb-4">
+                <h3 className="text-sm sm:text-lg font-bold text-gray-900">High-Risk Courses</h3>
                 <BookOpen className="w-5 h-5 text-orange-600" />
               </div>
               <div className="space-y-3 max-h-[300px] overflow-y-auto">
@@ -887,9 +887,9 @@ const AdminDashboard = () => {
             {/* Violation Types & Departments */}
             <div className="space-y-4">
               {/* Violation Types */}
-              <div className="bg-white rounded-xl p-5 shadow-sm border border-gray-100">
-                <div className="flex items-center justify-between mb-4">
-                  <h3 className="text-base font-bold text-gray-900">Violation Types</h3>
+              <div className="bg-white rounded-xl p-3 sm:p-5 shadow-sm border border-gray-100">
+                <div className="flex items-center justify-between mb-2 sm:mb-4">
+                  <h3 className="text-base sm:text-lg font-bold text-gray-900">Violation Types</h3>
                   <AlertCircle className="w-5 h-5 text-blue-600" />
                 </div>
                 {statsLoading ? (
@@ -907,9 +907,9 @@ const AdminDashboard = () => {
               </div>
 
               {/* High-Risk Departments */}
-              <div className="bg-white rounded-xl p-5 shadow-sm border border-gray-100">
-                <div className="flex items-center justify-between mb-4">
-                  <h3 className="text-base font-bold text-gray-900">Departments</h3>
+              <div className="bg-white rounded-xl p-3 sm:p-5 shadow-sm border border-gray-100">
+                <div className="flex items-center justify-between mb-2 sm:mb-4">
+                  <h3 className="text-base sm:text-lg font-bold text-gray-900">Departments</h3>
                   <Target className="w-5 h-5 text-purple-600" />
                 </div>
                 {statsLoading ? (
@@ -933,9 +933,9 @@ const AdminDashboard = () => {
         </motion.div>
 
         {/* Quick Actions */}
-        <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="bg-gradient-to-r from-blue-600 to-blue-700 rounded-xl p-6 shadow-lg">
-          <h3 className="text-xl font-bold text-white mb-4">Quick Actions</h3>
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+        <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="bg-gradient-to-r from-blue-600 to-blue-700 rounded-xl p-3 sm:p-6 shadow-lg">
+          <h3 className="text-base sm:text-xl font-bold text-white mb-2 sm:mb-4">Quick Actions</h3>
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-2 sm:gap-3">
             <button onClick={() => (window.location.href = "/admin/users/students")} className="bg-white bg-opacity-20 hover:bg-opacity-30 text-white p-4 rounded-lg transition-all flex flex-col items-center gap-2">
               <Users className="w-6 h-6" />
               <span className="text-sm font-medium">Manage Users</span>

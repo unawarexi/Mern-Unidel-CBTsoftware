@@ -62,7 +62,7 @@ const AdminSignIn = () => {
   };
 
   return (
-    <div className="min-h-screen relative overflow-hidden flex items-center justify-center p-4 bg-gradient-to-br from-slate-900 via-gray-900 to-slate-900">
+    <div className="min-h-screen relative overflow-hidden flex items-center justify-center p-3 sm:p-4 bg-gradient-to-br from-slate-900 via-gray-900 to-slate-900">
       {/* Animated Grid Pattern Overlay */}
       <div className="absolute inset-0 opacity-10" style={{ backgroundImage: 'linear-gradient(rgba(255,255,255,.05) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,.05) 1px, transparent 1px)', backgroundSize: '50px 50px' }} />
       
@@ -124,20 +124,20 @@ const AdminSignIn = () => {
 
         {/* Right Login Card */}
         <div className="lg:col-span-3">
-          <div className="bg-white/98 backdrop-blur-2xl p-8 lg:p-12 rounded-3xl shadow-2xl border border-white/20 max-w-xl mx-auto">
+          <div className="bg-white/98 backdrop-blur-2xl p-6 sm:p-8 lg:p-12 rounded-3xl shadow-2xl border border-white/20 max-w-xl mx-auto">
             {/* Header */}
-            <div className="text-center mb-10">
-              <div className="w-20 h-20 bg-gradient-to-br from-emerald-500 to-cyan-600 rounded-3xl flex items-center justify-center mx-auto mb-6 shadow-lg shadow-emerald-500/30">
-                <Shield className="w-10 h-10 text-white" />
+            <div className="text-center mb-6 sm:mb-10">
+              <div className="w-16 h-16 sm:w-20 sm:h-20 bg-gradient-to-br from-emerald-500 to-cyan-600 rounded-3xl flex items-center justify-center mx-auto mb-4 sm:mb-6 shadow-lg shadow-emerald-500/30">
+                <Shield className="w-8 h-8 sm:w-10 sm:h-10 text-white" />
               </div>
-              <h2 className="text-3xl font-bold text-gray-900 mb-2">Administrator Access</h2>
-              <p className="text-gray-600">Secure authentication required</p>
+              <h2 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-1 sm:mb-2">Administrator Access</h2>
+              <p className="text-sm sm:text-base text-gray-600">Secure authentication required</p>
             </div>
 
             {/* Form */}
-            <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
+            <form onSubmit={handleSubmit(onSubmit)} className="space-y-4 sm:space-y-6">
               <div>
-                <label htmlFor="email" className="block text-sm font-bold text-gray-700 mb-2 uppercase tracking-wide">
+                <label htmlFor="email" className="block text-xs sm:text-sm font-bold text-gray-700 mb-1.5 sm:mb-2 uppercase tracking-wide">
                   Admin Email
                 </label>
                 <div className="relative">
@@ -146,25 +146,25 @@ const AdminSignIn = () => {
                     type="email"
                     {...register("email")}
                     placeholder="admin@unidel.edu.ng"
-                    className={`w-full px-5 py-4 bg-gray-50 border-2 rounded-xl text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-4 transition-all ${
+                    className={`w-full px-3 sm:px-5 py-3 sm:py-4 text-sm sm:text-base bg-gray-50 border-2 rounded-xl text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-4 transition-all ${
                       errors.email ? "border-red-500 focus:ring-red-100" : "border-gray-200 focus:ring-emerald-100 focus:border-emerald-500"
                     }`}
                   />
                 </div>
                 {errors.email && (
-                  <div className="flex items-center gap-2 mt-2 text-red-600 text-sm font-medium">
-                    <AlertCircle className="w-4 h-4" />
+                  <div className="flex items-center gap-2 mt-1.5 sm:mt-2 text-red-600 text-xs sm:text-sm font-medium">
+                    <AlertCircle className="w-3 h-3 sm:w-4 sm:h-4" />
                     <span>{errors.email.message}</span>
                   </div>
                 )}
               </div>
 
               <div>
-                <div className="flex items-center justify-between mb-2">
-                  <label htmlFor="password" className="block text-sm font-bold text-gray-700 uppercase tracking-wide">
+                <div className="flex items-center justify-between mb-1.5 sm:mb-2">
+                  <label htmlFor="password" className="block text-xs sm:text-sm font-bold text-gray-700 uppercase tracking-wide">
                     Password
                   </label>
-                  <Link to="/forgot-password" className="text-sm text-emerald-600 hover:text-emerald-700 font-bold">
+                  <Link to="/forgot-password" className="text-xs sm:text-sm text-emerald-600 hover:text-emerald-700 font-bold">
                     Forgot?
                   </Link>
                 </div>
@@ -174,21 +174,21 @@ const AdminSignIn = () => {
                     type={showPassword ? "text" : "password"}
                     {...register("password")}
                     placeholder="Enter admin password"
-                    className={`w-full px-5 py-4 bg-gray-50 border-2 rounded-xl text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-4 transition-all pr-14 ${
+                    className={`w-full px-3 sm:px-5 py-3 sm:py-4 text-sm sm:text-base bg-gray-50 border-2 rounded-xl text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-4 transition-all pr-11 sm:pr-14 ${
                       errors.password ? "border-red-500 focus:ring-red-100" : "border-gray-200 focus:ring-emerald-100 focus:border-emerald-500"
                     }`}
                   />
                   <button
                     type="button"
                     onClick={() => setShowPassword(!showPassword)}
-                    className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-700 transition-colors"
+                    className="absolute right-3 sm:right-4 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-700 transition-colors"
                   >
-                    {showPassword ? <EyeOff className="w-6 h-6" /> : <Eye className="w-6 h-6" />}
+                    {showPassword ? <EyeOff className="w-5 h-5 sm:w-6 sm:h-6" /> : <Eye className="w-5 h-5 sm:w-6 sm:h-6" />}
                   </button>
                 </div>
                 {errors.password && (
-                  <div className="flex items-center gap-2 mt-2 text-red-600 text-sm font-medium">
-                    <AlertCircle className="w-4 h-4" />
+                  <div className="flex items-center gap-2 mt-1.5 sm:mt-2 text-red-600 text-xs sm:text-sm font-medium">
+                    <AlertCircle className="w-3 h-3 sm:w-4 sm:h-4" />
                     <span>{errors.password.message}</span>
                   </div>
                 )}
@@ -197,17 +197,17 @@ const AdminSignIn = () => {
               <button
                 type="submit"
                 disabled={isLoading}
-                className={`w-full bg-gradient-to-r from-emerald-600 to-cyan-600 text-white py-4 rounded-xl font-bold text-lg hover:from-emerald-700 hover:to-cyan-700 focus:outline-none focus:ring-4 focus:ring-emerald-200 transition-all shadow-lg shadow-emerald-500/30 ${
+                className={`w-full bg-gradient-to-r from-emerald-600 to-cyan-600 text-white py-3 sm:py-4 rounded-xl font-bold text-base sm:text-lg hover:from-emerald-700 hover:to-cyan-700 focus:outline-none focus:ring-4 focus:ring-emerald-200 transition-all shadow-lg shadow-emerald-500/30 ${
                   isLoading ? "opacity-80" : ""
                 }`}
               >
                 {isLoading ? (
                   <span className="flex items-center justify-center gap-2">
-                    <ButtonSpinner size={20} /> Authenticating...
+                    <ButtonSpinner size={18} /> Authenticating...
                   </span>
                 ) : (
                   <span className="flex items-center justify-center gap-2">
-                    <Lock className="w-5 h-5" />
+                    <Lock className="w-4 h-4 sm:w-5 sm:h-5" />
                     Secure Sign In
                   </span>
                 )}
@@ -215,9 +215,9 @@ const AdminSignIn = () => {
             </form>
 
             {/* Footer Links */}
-            <div className="mt-8 space-y-4">
+            <div className="mt-6 sm:mt-8 space-y-3 sm:space-y-4">
               <div className="text-center">
-                <p className="text-sm text-gray-600">
+                <p className="text-xs sm:text-sm text-gray-600">
                   Don't have an account?{" "}
                   <Link to="/admin-signup" className="text-emerald-600 hover:text-emerald-700 font-bold">
                     Create Admin Account
@@ -225,7 +225,7 @@ const AdminSignIn = () => {
                 </p>
               </div>
               
-              <div className="pt-6 border-t border-gray-200 text-center">
+              <div className="pt-4 sm:pt-6 border-t border-gray-200 text-center">
                 <p className="text-xs text-gray-500">
                   This is a restricted area. All access attempts are logged and monitored.
                 </p>
@@ -236,10 +236,10 @@ const AdminSignIn = () => {
       </div>
 
       {/* Mobile Badge - Only visible on small screens */}
-      <div className="lg:hidden absolute top-6 left-1/2 -translate-x-1/2">
-        <div className="inline-flex items-center gap-2 bg-emerald-500/20 backdrop-blur-md px-4 py-2 rounded-full border border-emerald-400/30">
-          <Shield className="w-4 h-4 text-emerald-300" />
-          <span className="text-sm font-semibold text-white">Admin Portal</span>
+      <div className="lg:hidden absolute top-4 sm:top-6 left-1/2 -translate-x-1/2">
+        <div className="inline-flex items-center gap-2 bg-emerald-500/20 backdrop-blur-md px-3 sm:px-4 py-1.5 sm:py-2 rounded-full border border-emerald-400/30">
+          <Shield className="w-3 h-3 sm:w-4 sm:h-4 text-emerald-300" />
+          <span className="text-xs sm:text-sm font-semibold text-white">Admin Portal</span>
         </div>
       </div>
     </div>

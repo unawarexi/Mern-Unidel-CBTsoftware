@@ -316,23 +316,23 @@ const StudentDashboard = () => {
   const securityTips = dashboardStats?.security?.tips || [];
 
   return (
-    <div className="min-h-screen bg-gray-50 p-4 md:p-6">
+    <div className="min-h-screen bg-gray-50 p-2 sm:p-4 md:p-6">
       <div className="max-w-[1600px] mx-auto">
         {/* Header */}
-        <motion.div initial={{ opacity: 0, y: -20 }} animate={{ opacity: 1, y: 0 }} className="mb-6">
-          <div className="flex items-center justify-between flex-wrap gap-4">
+        <motion.div initial={{ opacity: 0, y: -20 }} animate={{ opacity: 1, y: 0 }} className="mb-3 sm:mb-6">
+          <div className="flex items-center justify-between flex-wrap gap-2 sm:gap-4">
             <div>
-              <h1 className="text-3xl font-bold text-gray-900 mb-1">
+              <h1 className="text-xl sm:text-3xl font-bold text-gray-900 mb-0.5 sm:mb-1">
                 Welcome back, {user?.fullname?.split(" ")[0] || "Student"}! 
               </h1>
-              <p className="text-gray-600">Here's your academic overview and upcoming activities</p>
+              <p className="text-xs sm:text-base text-gray-600">Here's your academic overview and upcoming activities</p>
             </div>
-            <div className="flex items-center gap-3">
+            <div className="flex items-center gap-2 sm:gap-3">
               {/* Time Filter */}
               <select
                 value={timeFilter}
                 onChange={(e) => setTimeFilter(e.target.value)}
-                className="px-4 py-2 bg-white border border-gray-300 rounded-lg text-gray-700 focus:outline-none focus:ring-2 focus:ring-orange-500"
+                className="px-2 sm:px-4 py-1.5 sm:py-2 text-xs sm:text-base bg-white border border-gray-300 rounded-lg text-gray-700 focus:outline-none focus:ring-2 focus:ring-orange-500"
               >
                 <option value="today">Today</option>
                 <option value="week">This Week</option>
@@ -344,22 +344,22 @@ const StudentDashboard = () => {
               <button
                 onClick={handleRefreshAll}
                 disabled={refreshing}
-                className="flex items-center gap-2 px-4 py-2 bg-orange-500 text-white rounded-lg hover:bg-orange-600 transition-colors disabled:bg-gray-400"
+                className="flex items-center gap-1 sm:gap-2 px-2 sm:px-4 py-1.5 sm:py-2 text-xs sm:text-base bg-orange-500 text-white rounded-lg hover:bg-orange-600 transition-colors disabled:bg-gray-400"
               >
-                <RefreshCw className={`w-4 h-4 ${refreshing ? "animate-spin" : ""}`} />
-                Refresh
+                <RefreshCw className={`w-3 h-3 sm:w-4 sm:h-4 ${refreshing ? "animate-spin" : ""}`} />
+                <span className="hidden sm:inline">Refresh</span>
               </button>
             </div>
           </div>
         </motion.div>
 
         {/* Top Stats Grid */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-2 sm:gap-4 mb-3 sm:mb-6">
           {statsLoading
             ? Array(4)
                 .fill(0)
                 .map((_, idx) => (
-                  <div key={idx} className="bg-white rounded-xl p-5 shadow-sm border border-gray-100">
+                  <div key={idx} className="bg-white rounded-xl p-3 sm:p-5 shadow-sm border border-gray-100">
                     <Skeleton height={120} />
                   </div>
                 ))
@@ -369,25 +369,25 @@ const StudentDashboard = () => {
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: idx * 0.1 }}
-                  className="bg-white rounded-xl p-5 shadow-sm border border-gray-100 hover:shadow-md transition-shadow cursor-pointer"
+                  className="bg-white rounded-xl p-3 sm:p-5 shadow-sm border border-gray-100 hover:shadow-md transition-shadow cursor-pointer"
                   onClick={() => stat.link && navigate(stat.link)}
                 >
-                  <div className="flex items-start justify-between mb-4">
-                    <div className={`${stat.lightBg} p-3 rounded-lg`}>
-                      <div className={stat.color + " text-white rounded-lg p-2"}>{stat.icon}</div>
+                  <div className="flex items-start justify-between mb-2 sm:mb-4">
+                    <div className={`${stat.lightBg} p-2 sm:p-3 rounded-lg`}>
+                      <div className={stat.color + " text-white rounded-lg p-1 sm:p-2"}>{React.cloneElement(stat.icon, { className: "w-4 h-4 sm:w-6 sm:h-6" })}</div>
                     </div>
-                    {stat.trend && <div className={`flex items-center gap-1 ${stat.textColor} text-sm font-medium`}>{stat.trend}</div>}
+                    {stat.trend && <div className={`flex items-center gap-1 ${stat.textColor} text-xs sm:text-sm font-medium`}>{React.cloneElement(stat.trend, { className: "w-3 h-3 sm:w-4 sm:h-4" })}</div>}
                   </div>
-                  <div className="text-3xl font-bold text-gray-900 mb-1">{stat.value}</div>
-                  {stat.total && <div className="text-sm text-gray-500 mb-2">of {stat.total} total</div>}
-                  <div className="text-sm font-medium text-gray-700">{stat.label}</div>
-                  <div className={`text-xs ${stat.textColor} mt-1`}>{stat.subtitle}</div>
+                  <div className="text-xl sm:text-3xl font-bold text-gray-900 mb-0.5 sm:mb-1">{stat.value}</div>
+                  {stat.total && <div className="text-xs sm:text-sm text-gray-500 mb-1 sm:mb-2">of {stat.total} total</div>}
+                  <div className="text-xs sm:text-sm font-medium text-gray-700">{stat.label}</div>
+                  <div className={`text-xs ${stat.textColor} mt-0.5 sm:mt-1`}>{stat.subtitle}</div>
                 </motion.div>
               ))}
         </div>
 
         {/* Performance Metrics Row */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-2 sm:gap-4 mb-3 sm:mb-6">
           {statsLoading
             ? Array(4)
                 .fill(0)
@@ -682,19 +682,15 @@ const StudentDashboard = () => {
 
         {/* Security/Integrity Section - Add after Row 3 */}
         {myViolations > 0 && (
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            className="mb-4"
-          >
-            <div className="bg-gradient-to-r from-orange-500 to-red-500 rounded-xl p-6 shadow-lg mb-4">
+          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="mb-2 sm:mb-4">
+            <div className="bg-gradient-to-r from-orange-500 to-red-500 rounded-xl p-3 sm:p-6 shadow-lg mb-2 sm:mb-4">
               <div className="flex items-center justify-between">
                 <div>
-                  <h2 className="text-2xl font-bold text-white mb-2">Academic Integrity Notice</h2>
-                  <p className="text-white text-opacity-90">Review your exam behavior to maintain integrity</p>
+                  <h2 className="text-lg sm:text-2xl font-bold text-white mb-1 sm:mb-2">Academic Integrity Notice</h2>
+                  <p className="text-xs sm:text-base text-white text-opacity-90">Review your exam behavior to maintain integrity</p>
                 </div>
-                <div className="bg-white bg-opacity-20 rounded-xl p-4 backdrop-blur">
-                  <ShieldAlert className="w-12 h-12 text-white" />
+                <div className="bg-white bg-opacity-20 rounded-xl p-2 sm:p-4 backdrop-blur">
+                  <ShieldAlert className="w-8 h-8 sm:w-12 sm:h-12 text-white" />
                 </div>
               </div>
             </div>
@@ -845,18 +841,14 @@ const StudentDashboard = () => {
 
         {/* Clean Record Badge - Show if no violations */}
         {myViolations === 0 && (
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            className="bg-gradient-to-r from-green-500 to-emerald-500 rounded-xl p-6 shadow-lg mb-4"
-          >
-            <div className="flex items-center gap-4">
-              <div className="bg-white bg-opacity-20 rounded-xl p-4 backdrop-blur">
-                <ShieldCheck className="w-12 h-12 text-white" />
+          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="bg-gradient-to-r from-green-500 to-emerald-500 rounded-xl p-3 sm:p-6 shadow-lg mb-2 sm:mb-4">
+            <div className="flex items-center gap-2 sm:gap-4">
+              <div className="bg-white bg-opacity-20 rounded-xl p-2 sm:p-4 backdrop-blur">
+                <ShieldCheck className="w-8 h-8 sm:w-12 sm:h-12 text-white" />
               </div>
               <div>
-                <h3 className="text-2xl font-bold text-white mb-1">Clean Record! </h3>
-                <p className="text-white text-opacity-90">
+                <h3 className="text-lg sm:text-2xl font-bold text-white mb-0.5 sm:mb-1">Clean Record! </h3>
+                <p className="text-xs sm:text-base text-white text-opacity-90">
                   No violations detected. You're maintaining excellent academic integrity. Keep it up!
                 </p>
               </div>
@@ -865,7 +857,7 @@ const StudentDashboard = () => {
         )}
 
         {/* Row 4: Quick Actions & Study Resources */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-2 sm:gap-4">
           {/* Study Resources */}
           <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="bg-white rounded-xl p-5 shadow-sm border border-gray-100">
             <div className="flex items-center justify-between mb-4">
