@@ -1,5 +1,5 @@
 import React from "react";
-import { Routes, Route } from "react-router-dom";
+import { Routes, Route, Navigate } from "react-router-dom";
 // Use the shared NotAvailableYet component for every route (until real screens exist).
 import NotAvailableYet from "../../components/Not-available";
 import AdminDashboard from "./presentation/dashboard/Admin-overview";
@@ -17,6 +17,9 @@ import PendingApprovals from "./presentation/question-bank/Pending-approvals";
 export default function AdminRoutes() {
   return (
     <Routes>
+      {/* Root redirect */}
+      <Route path="/" element={<Navigate to="/admin/dashboard" replace />} />
+      
       {/* Dashboard */}
       <Route path="dashboard" element={<AdminDashboard />} />
       <Route path="dashboard/activity" element={<NotAvailableYet />} />
@@ -39,7 +42,7 @@ export default function AdminRoutes() {
       <Route path="courses/assign" element={<NotAvailableYet />} />
 
       {/* Exams */}
-      <Route path="exams" element={<NotAvailableYet />} />
+      <Route path="exams" element={<Navigate to="/admin/exams/scheduled" replace />} />
       <Route path="exams/scheduled" element={<NotAvailableYet />} />
       <Route path="exams/active" element={<NotAvailableYet />} />
       <Route path="exams/ended" element={<NotAvailableYet />} />
@@ -57,19 +60,19 @@ export default function AdminRoutes() {
       <Route path="settings/exam-rules" element={<NotAvailableYet />} />
 
       {/* Audit & Logs */}
-      <Route path="audit" element={<NotAvailableYet />} />
+      <Route path="audit" element={<Navigate to="/admin/audit/logins" replace />} />
       <Route path="audit/logins" element={<NotAvailableYet />} />
       <Route path="audit/submissions" element={<NotAvailableYet />} />
       <Route path="audit/security" element={<NotAvailableYet />} />
 
       {/* Uploads & Documents */}
-      <Route path="uploads" element={<NotAvailableYet />} />
+      <Route path="uploads" element={<Navigate to="/admin/uploads/student-ids" replace />} />
       <Route path="uploads/student-ids" element={<NotAvailableYet />} />
       <Route path="uploads/attachments" element={<NotAvailableYet />} />
       <Route path="uploads/evidence" element={<NotAvailableYet />} />
 
       {/* System Settings */}
-      <Route path="settings" element={<NotAvailableYet />} />
+      <Route path="settings" element={<Navigate to="/admin/settings/general" replace />} />
       <Route path="settings/timezone" element={<NotAvailableYet />} />
       <Route path="settings/general" element={<NotAvailableYet />} />
 

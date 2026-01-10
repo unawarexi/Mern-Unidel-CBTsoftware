@@ -39,9 +39,10 @@ const AnswerQuestions = () => {
 
   // Fraud detection
   const fraudDetectionRef = useRef(null);
-  const { reportViolation } = useReportViolationAction();
+  const { reportViolation, isLoading: reportingViolation } = useReportViolationAction();
   const [showViolationWarning, setShowViolationWarning] = useState(false);
   const [violationMessage, setViolationMessage] = useState("");
+  const violationTimeoutRef = useRef(null);
 
   // Remove excessive console logs or reduce them
   useEffect(() => {
@@ -344,13 +345,19 @@ const AnswerQuestions = () => {
             <div className="max-w-7xl mx-auto flex items-center gap-3">
               <AlertTriangle className="w-5 h-5 flex-shrink-0" />
               <p className="font-medium">{violationMessage}</p>
+              <button
+                onClick={() => setShowViolationWarning(false)}
+                className="ml-auto text-white hover:text-gray-200"
+              >
+                ✕
+              </button>
             </div>
           </motion.div>
         )}
       </AnimatePresence>
 
       {/* Header */}
-      <div className=" border-b border-gray-200 sticky top-0 z-10">
+      <div className="bg-white border-b border-gray-200 sticky top-0 z-10">
         <div className="max-w-7xl mx-auto px-4 py-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-4">

@@ -1,5 +1,5 @@
 import React from "react";
-import { Routes, Route } from "react-router-dom";
+import { Routes, Route, Navigate } from "react-router-dom";
 import NotAvailableYet from "../../components/Not-available";
 import LecturerOverview from "./presentation/dashboard/Lecturer-Overview";
 
@@ -26,15 +26,18 @@ import ManageExams from "./presentation/exam-assessment/Manage-exams";
 export default function LecturerRoutes() {
   return (
     <Routes>
+      {/* Root redirect */}
+      <Route path="/" element={<Navigate to="/lecturer/dashboard" replace />} />
+      
       {/* Dashboard */}
-      <Route path="dashboard" element={<LecturerOverview />} /> {/* Show overview by default */}
+      <Route path="dashboard" element={<LecturerOverview />} />
       <Route path="dashboard/overview" element={<LecturerOverview />} />
       <Route path="dashboard/exams" element={<NotAvailableYet />} />
       <Route path="dashboard/results" element={<NotAvailableYet />} />
       <Route path="dashboard/notices" element={<NotAvailableYet />} />
 
       {/* Courses */}
-      <Route path="courses" element={<AssignedCourses />} /> {/* Show assigned courses by default */}
+      <Route path="courses" element={<AssignedCourses />} />
       <Route path="courses/assigned" element={<AssignedCourses />} />
       <Route path="courses/department" element={<DepartmentLevel />} />
       <Route path="courses/materials" element={<CourseMaterials />} />
@@ -43,7 +46,7 @@ export default function LecturerRoutes() {
       <Route path="courses/lecturers" element={<NotAvailableYet />} />
 
       {/* Question Bank */}
-      <Route path="questions" element={<CreateQuestions />} /> {/* Show create/edit questions by default */}
+      <Route path="questions" element={<CreateQuestions />} />
       <Route path="questions/manage" element={<CreateQuestions />} />
       <Route path="questions/types/:id" element={<QuestionTypes />} />
       <Route path="questions/import-export" element={<ImportExport />} />
@@ -51,7 +54,7 @@ export default function LecturerRoutes() {
       <Route path="questions/approval" element={<Approval />} />
 
       {/* Exams */}
-      <Route path="exams" element={<CreateExam />} /> {/* Show create exam by default */}
+      <Route path="exams" element={<CreateExam />} />
       <Route path="exams/create" element={<CreateExam />} />
       <Route path="exams/schedule" element={<ScheduleExam />} />
       <Route path="exams/manage" element={<ManageExams />} />
@@ -60,33 +63,33 @@ export default function LecturerRoutes() {
       <Route path="exams/attachments" element={<NotAvailableYet />} />
 
       {/* Submissions */}
-      <Route path="submissions" element={<NotAvailableYet />} />
+      <Route path="submissions" element={<Navigate to="/lecturer/submissions/attempts" replace />} />
       <Route path="submissions/attempts" element={<NotAvailableYet />} />
       <Route path="submissions/auto-graded" element={<NotAvailableYet />} />
       <Route path="submissions/manual" element={<NotAvailableYet />} />
       <Route path="submissions/history" element={<NotAvailableYet />} />
 
       {/* Reports */}
-      <Route path="reports" element={<NotAvailableYet />} />
+      <Route path="reports" element={<Navigate to="/lecturer/reports/performance" replace />} />
       <Route path="reports/performance" element={<NotAvailableYet />} />
       <Route path="reports/distribution" element={<NotAvailableYet />} />
       <Route path="reports/statistics" element={<NotAvailableYet />} />
       <Route path="reports/export" element={<NotAvailableYet />} />
 
       {/* Monitoring */}
-      <Route path="monitoring" element={<NotAvailableYet />} />
+      <Route path="monitoring" element={<Navigate to="/lecturer/monitoring/live" replace />} />
       <Route path="monitoring/live" element={<NotAvailableYet />} />
       <Route path="monitoring/integrity" element={<NotAvailableYet />} />
 
       {/* Support */}
-      <Route path="support" element={<NotAvailableYet />} />
+      <Route path="support" element={<Navigate to="/lecturer/support/integrity" replace />} />
       <Route path="support/integrity" element={<NotAvailableYet />} />
       <Route path="support/help" element={<NotAvailableYet />} />
       <Route path="support/announcements" element={<NotAvailableYet />} />
       <Route path="support/system" element={<NotAvailableYet />} />
 
       {/* Profile & Logout */}
-      <Route path="profile" element={<NotAvailableYet />} />
+      <Route path="profile" element={<Navigate to="/lecturer/profile/settings" replace />} />
       <Route path="profile/settings" element={<NotAvailableYet />} />
       <Route path="profile/password" element={<NotAvailableYet />} />
 

@@ -25,8 +25,21 @@ const SEVERITY_MAP = {
  */
 export const reportViolation = async (req, res) => {
   try {
+    console.log("🔒 [SECURITY] Report violation request received");
+    console.log("📦 [SECURITY] Request body:", req.body);
+    console.log("👤 [SECURITY] User:", req.user._id, req.user.email);
+
     const { examId, submissionId, violationType, questionIndex, additionalInfo } = req.body;
     const studentId = req.user._id;
+
+    // Validate required fields
+    if (!examId || !submissionId || !violationType) {
+      console.error("❌ [SECURITY] Missing required fields");
+      return res.status(400).json({
+        success: false,
+        message: "Missing required fields: examId, submissionId, violationType",
+      });
+    }
 
     // Validate submission exists and belongs to student
     const submission = await ExamSubmission.findOne({
@@ -37,11 +50,14 @@ export const reportViolation = async (req, res) => {
     }).populate("examId", "courseId");
 
     if (!submission) {
+      console.error("❌ [SECURITY] Submission not found or not active");
       return res.status(404).json({
         success: false,
         message: "Active submission not found",
       });
     }
+
+    console.log("✅ [SECURITY] Submission found:", submission._id);
 
     // Create violation record
     const violation = await SecurityViolation.create({
@@ -58,8 +74,12 @@ export const reportViolation = async (req, res) => {
       },
     });
 
+    console.log("✅ [SECURITY] Violation created:", violation._id, violationType);
+
     // Check if threshold exceeded
     const totalViolations = await SecurityViolation.countViolations(submissionId);
+    console.log(`📊 [SECURITY] Total violations: ${totalViolations}/${VIOLATION_THRESHOLD}`);
+    
     const shouldAutoSubmit = totalViolations >= VIOLATION_THRESHOLD;
 
     // Send warning email to student if violations are accumulating
@@ -88,6 +108,8 @@ export const reportViolation = async (req, res) => {
 
     // If threshold exceeded, auto-submit exam
     if (shouldAutoSubmit && submission.status === "started") {
+      console.log("🚨 [SECURITY] AUTO-SUBMIT TRIGGERED!");
+      
       // Update violation to mark auto-submit triggered
       violation.autoSubmitTriggered = true;
       await violation.save();
@@ -116,6 +138,8 @@ export const reportViolation = async (req, res) => {
       });
     }
 
+    console.log(`⚠️ [SECURITY] Violation logged. Remaining attempts: ${VIOLATION_THRESHOLD - totalViolations}`);
+
     res.status(201).json({
       success: true,
       message: "Violation logged",
@@ -125,7 +149,7 @@ export const reportViolation = async (req, res) => {
       remainingAttempts: VIOLATION_THRESHOLD - totalViolations,
     });
   } catch (error) {
-    console.error("Report violation error:", error);
+    console.error("❌ [SECURITY] Report violation error:", error);
     res.status(500).json({
       success: false,
       message: "Failed to report violation",

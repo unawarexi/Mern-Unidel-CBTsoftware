@@ -40,26 +40,23 @@ const useSecurityStore = create((set) => ({
 // ========== SECURITY HOOKS ==========
 
 export const useReportViolationAction = () => {
-  const { setLoading, setError, showToast, showLoader, hideLoader } = useSecurityStore();
+  const { setLoading, setError } = useSecurityStore();
   const reportViolationMutation = useReportViolation();
 
   const reportViolation = async (violationData) => {
-    console.log("[STORE] useReportViolationAction called", violationData);
+    console.log("[STORE] useReportViolationAction called with:", violationData);
     setLoading(true);
     setError(null);
 
     try {
       const response = await reportViolationMutation.mutateAsync(violationData);
       
-      // Don't show toast for violations during exam (too disruptive)
-      // Just log it
-      console.log("️ Violation reported:", response);
+      console.log("✅ [STORE] Violation reported successfully:", response);
       
       return response;
     } catch (error) {
-      console.error("[STORE] useReportViolationAction error:", error);
+      console.error("❌ [STORE] useReportViolationAction error:", error);
       setError(error.message);
-      // Don't show error toast during exam to avoid disruption
       throw error;
     } finally {
       setLoading(false);

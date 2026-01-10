@@ -39,6 +39,9 @@ const CreateQuestions = () => {
   const navigate = useNavigate();
   const location = useLocation();
 
+  // Add separate state for manual question validation errors
+  const [questionErrors, setQuestionErrors] = useState({});
+
   const [currentQuestion, setCurrentQuestion] = useState({
     question: "",
     options: ["", "", "", ""],
@@ -93,7 +96,7 @@ const CreateQuestions = () => {
     // eslint-disable-next-line
   }, [formData.title, formData.description, formData.courseId]);
 
-  // Validation for manual question
+  // Validation for manual question - FIXED
   const validateQuestion = () => {
     const newErrors = {};
 
@@ -112,7 +115,7 @@ const CreateQuestions = () => {
       newErrors.correctAnswer = "Correct answer must be one of the options";
     }
 
-    errors(newErrors);
+    setQuestionErrors(newErrors); // Fixed: Use setQuestionErrors instead of errors()
     return Object.keys(newErrors).length === 0;
   };
 
@@ -132,6 +135,9 @@ const CreateQuestions = () => {
         difficulty: "medium",
         topic: "",
       });
+
+      // Clear question errors
+      setQuestionErrors({});
 
       setSuccessMessage("Question added successfully!");
       showToast("Question added successfully!", "success");
@@ -365,10 +371,10 @@ const CreateQuestions = () => {
                     className="w-full px-4 py-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent transition-all"
                     placeholder="Enter your question here..."
                   />
-                  {errors.question && (
+                  {questionErrors.question && (
                     <p className="text-red-500 text-sm mt-1 flex items-center gap-1">
                       <AlertCircle className="w-4 h-4" />
-                      {errors.question}
+                      {questionErrors.question}
                     </p>
                   )}
                 </div>
@@ -390,10 +396,10 @@ const CreateQuestions = () => {
                       </div>
                     ))}
                   </div>
-                  {errors.options && (
+                  {questionErrors.options && (
                     <p className="text-red-500 text-sm mt-1 flex items-center gap-1">
                       <AlertCircle className="w-4 h-4" />
-                      {errors.options}
+                      {questionErrors.options}
                     </p>
                   )}
                 </div>
@@ -401,7 +407,11 @@ const CreateQuestions = () => {
                 {/* Correct Answer */}
                 <div>
                   <label className="block text-sm font-semibold text-slate-700 mb-2">Correct Answer *</label>
-                  <select value={currentQuestion.correctAnswer} onChange={(e) => setCurrentQuestion((prev) => ({ ...prev, correctAnswer: e.target.value }))} className="w-full px-4 py-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent transition-all">
+                  <select 
+                    value={currentQuestion.correctAnswer} 
+                    onChange={(e) => setCurrentQuestion((prev) => ({ ...prev, correctAnswer: e.target.value }))} 
+                    className="w-full px-4 py-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent transition-all"
+                  >
                     <option value="">Select correct answer</option>
                     {currentQuestion.options.map(
                       (option, index) =>
@@ -412,10 +422,10 @@ const CreateQuestions = () => {
                         )
                     )}
                   </select>
-                  {errors.correctAnswer && (
+                  {questionErrors.correctAnswer && (
                     <p className="text-red-500 text-sm mt-1 flex items-center gap-1">
                       <AlertCircle className="w-4 h-4" />
-                      {errors.correctAnswer}
+                      {questionErrors.correctAnswer}
                     </p>
                   )}
                 </div>
@@ -455,7 +465,13 @@ const CreateQuestions = () => {
                 </div>
 
                 {/* Add Question Button */}
-                <motion.button whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }} onClick={handleAddQuestion} className="w-full bg-orange-500 text-white py-3 rounded-lg font-semibold hover:bg-orange-600 transition-all flex items-center justify-center gap-2">
+                <motion.button 
+                  whileHover={{ scale: 1.02 }} 
+                  whileTap={{ scale: 0.98 }} 
+                  onClick={handleAddQuestion} 
+                  type="button"
+                  className="w-full bg-orange-500 text-white py-3 rounded-lg font-semibold hover:bg-orange-600 transition-all flex items-center justify-center gap-2"
+                >
                   <Plus className="w-5 h-5" />
                   Add Question to Bank
                 </motion.button>
