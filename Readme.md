@@ -1,14 +1,14 @@
-# 🎓 UNIDEL Computer-Based Test (CBT) System
+# UNIDEL Computer-Based Test (CBT) System
 
 A comprehensive, enterprise-grade examination management platform built with the MERN stack, designed for universities and educational institutions to conduct secure, fraud-resistant online assessments.
 
 ---
 
-## 🌟 Overview
+## Overview
 
 The UNIDEL CBT System is a full-stack application that revolutionizes the way educational institutions conduct examinations. With advanced security measures, real-time monitoring, and intelligent analytics, it ensures academic integrity while providing a seamless experience for students, lecturers, and administrators.
 
-### 🏗️ Architecture
+### Architecture
 
 ```
 UNIDEL CBT System
@@ -16,7 +16,7 @@ UNIDEL CBT System
 │   ├── RESTful API
 │   ├── JWT Authentication
 │   ├── Real-time Exam Scheduler
-│   └── Fraud Detection Engine
+│   └── Fraud Detection Flow
 │
 └── Frontend (React + Vite + TailwindCSS)
     ├── Role-Based Dashboards
@@ -25,11 +25,37 @@ UNIDEL CBT System
     └── Client-Side Security Monitoring
 ```
 
+### UI Images
+
+#### Sign-in Pages (3 images)
+
+| Admin Sign-in                     | Lecturer Sign-in                     | Student Sign-in                     |
+|-----------------------------------|--------------------------------------|-------------------------------------|
+| ![Admin Sign-in Screenshot](./pictures/admin-signin.png)     | ![Lecturer Sign-in Screenshot](./pictures/lecturer-signin.png)     | ![Student Sign-in Screenshot](./pictures/student-signin.png)     |
+
+#### Hero & Charts (2 images)
+
+| Landing Hero                          | Analytics Charts                          |
+|---------------------------------------|-------------------------------------------|
+| ![Landing Hero Section Screenshot](./pictures/desk1.png)  | ![Analytics Charts Screenshot](./pictures/charts.png)          |
+
+#### Mobile Views (3 images)
+
+| Mobile Screen 1                        | Mobile Screen 2                        | Mobile Screen 3                        |
+|----------------------------------------|----------------------------------------|----------------------------------------|
+| ![Mobile Screen 1 Screenshot](./pictures/mobile1.png)        | ![Mobile Screen 2 Screenshot](./pictures/mobile2.png)        | ![Mobile Screen 3 Screenshot](./pictures/mobile3.png)        |
+
+#### Tablet Views (3 images)
+
+| Tablet Screen 1                        | Tablet Screen 2                        | Tablet Screen 3                        |
+|----------------------------------------|----------------------------------------|----------------------------------------|
+| ![Tablet Screen 1 Screenshot](./pictures/tab1.png)        | ![Tablet Screen 2 Screenshot](./pictures/tab2.png)        | ![Tablet Screen 3 Screenshot](./pictures/tab3.png)        |
+
 ---
 
-## ✨ Key Features
+## Key Features
 
-### 🔐 **Advanced Authentication & Authorization**
+### **Advanced Authentication & Authorization**
 
 - **Multi-Role System**: Admin, Lecturer, Student with granular permissions
 - **JWT Token-Based Auth**: Secure, stateless authentication with HTTP-only cookies
@@ -56,7 +82,7 @@ UNIDEL CBT System
 - Profile updates and password changes
 - Role-specific dashboard access
 
-### 📚 **Question Bank System**
+### **Question Bank System**
 
 **Lecturer Features:**
 - **Manual Entry**: Create questions with multiple-choice options
@@ -75,7 +101,7 @@ Draft → Submit for Approval → Admin Review → Approved/Rejected → Exam Re
 - Provide feedback/comments to lecturers
 - Track approval history
 
-### 📝 **Exam Management**
+### **Exam Management**
 
 **Exam Creation:**
 - Create exams from approved question banks
@@ -95,7 +121,7 @@ Draft → Submit for Approval → Admin Review → Approved/Rejected → Exam Re
 - Sends reminder emails 24 hours before exam
 - Sends warning emails 5 minutes before exam ends
 
-### 🎯 **Real-Time Exam Taking**
+### **Real-Time Exam Taking**
 
 **Student Experience:**
 - **Fullscreen Mode**: Enforced during exam
@@ -106,15 +132,8 @@ Draft → Submit for Approval → Admin Review → Approved/Rejected → Exam Re
 - **Countdown Warnings**: Visual alerts when time is running low
 - **Automatic Submission**: Triggers on time expiry or violations
 
-**Technical Implementation:**
-```javascript
-// Debounced auto-save (prevents excessive API calls)
-const debouncedSave = debounce(async (questionId, answer) => {
-  await saveAnswer(submissionId, questionId, answer);
-}, 2000);
-```
 
-### 🤖 **Automated Grading System**
+### **Automated Grading System**
 
 **Instant Grading:**
 - Automatic scoring on submission
@@ -139,7 +158,7 @@ const debouncedSave = debounce(async (questionId, answer) => {
 - Lecturer feedback integration
 - Performance analytics
 
-### 🛡️ **Advanced Fraud Detection System**
+### **Advanced Fraud Detection System**
 
 **Client-Side Monitoring:**
 ```javascript
@@ -182,7 +201,7 @@ const VIOLATION_THRESHOLD = 3;
 - Timestamp precision
 - Aggregate violation statistics
 
-### 📊 **Comprehensive Analytics Dashboards**
+### **Comprehensive Analytics Dashboards**
 
 **Admin Dashboard:**
 - **System Overview**: Total users, courses, exams, departments
@@ -231,7 +250,7 @@ const VIOLATION_THRESHOLD = 3;
 - Radar charts (multi-dimensional performance)
 - Composed charts (overlays for complex data)
 
-### 📧 **Automated Email System**
+### **Automated Email System**
 
 **Email Templates (Mailgen):**
 1. **Account Creation**: Welcome email with credentials
@@ -250,7 +269,7 @@ const VIOLATION_THRESHOLD = 3;
 - HTML-formatted emails with branding
 - Fallback text version for email clients
 
-### 📁 **File Management System**
+### **File Management System**
 
 **Cloudinary Integration:**
 - **Document Uploads**: PDF, DOC, DOCX, PPT, XLSX, TXT
@@ -268,7 +287,7 @@ const VIOLATION_THRESHOLD = 3;
 - Question images/illustrations
 - Bulk question file uploads
 
-### 🏢 **Department & Course Management**
+### **Department & Course Management**
 
 **Department Features:**
 - Auto-generated codes: `DPT001`, `DPT002`
@@ -286,7 +305,7 @@ const VIOLATION_THRESHOLD = 3;
 - Course materials upload (lecturer-only)
 - Material categories: lecture notes, assignments, references
 
-### 📈 **Statistics & Reporting**
+### **Statistics & Reporting**
 
 **Activity Logging:**
 - All user actions tracked (login, exam start, submission, etc.)
@@ -311,7 +330,7 @@ const VIOLATION_THRESHOLD = 3;
 - System error tracking
 - User engagement metrics
 
-### 🔒 **Security Features**
+### **Security Features**
 
 **Backend Security:**
 - **JWT Authentication**: Secure, stateless tokens
@@ -336,7 +355,7 @@ const VIOLATION_THRESHOLD = 3;
 - Admin/lecturer review dashboard
 - Student self-awareness metrics
 
-### 🎨 **Frontend Technology Stack**
+### **Frontend Technology Stack**
 
 **Core Libraries:**
 - **React 18**: Latest React with concurrent features
@@ -380,7 +399,7 @@ const throttledResize = throttle(handleResize, 300);
 **HTTP Client:**
 - **React-Query**: Promise-based HTTP requests with interceptors
 
-### 🛠️ **Backend Technology Stack**
+### **Backend Technology Stack**
 
 **Core Framework:**
 - **Node.js 18+**: JavaScript runtime
@@ -414,7 +433,7 @@ const throttledResize = throttle(handleResize, 300);
 
 ---
 
-## 🚀 Quick Start
+## Quick Start
 
 ### Prerequisites
 
@@ -427,7 +446,7 @@ const throttledResize = throttle(handleResize, 300);
 
 ```bash
 # Clone repository
-git clone https://github.com/yourusername/Mern-Unidel-CBTsoftware.git
+git clone https://github.com/unawarexi/Mern-Unidel-CBTsoftware.git
 cd Mern-Unidel-CBTsoftware
 
 # Install backend dependencies

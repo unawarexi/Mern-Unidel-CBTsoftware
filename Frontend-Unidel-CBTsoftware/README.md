@@ -15,7 +15,7 @@ Modern React application for conducting secure online examinations with real-tim
 
 ```bash
 # Clone repository
-git clone https://github.com/yourusername/Mern-Unidel-CBTsoftware.git
+git clone https://github.com/unawarexi/Mern-Unidel-CBTsoftware.git
 cd Mern-Unidel-CBTsoftware/Frontend-Unidel-CBTsoftware
 
 # Install dependencies
@@ -53,6 +53,7 @@ src/
 │   └── utils/          # Helper functions
 ├── pages/
 │   ├── auth/           # Login, password reset
+│   ├── landing/        # hero, price and stats
 │   ├── admin/          # Admin dashboard & management
 │   ├── lecturer/       # Lecturer dashboard & tools
 │   └── student/        # Student exam interface

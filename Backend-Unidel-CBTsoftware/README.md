@@ -17,7 +17,7 @@ Node.js/Express backend for secure online examinations with fraud detection, aut
 
 ```bash
 # Clone repository
-git clone https://github.com/yourusername/Mern-Unidel-CBTsoftware.git
+git clone https://github.com/unawarexi/Mern-Unidel-CBTsoftware.git
 cd Mern-Unidel-CBTsoftware/Backend-Unidel-CBTsoftware
 
 # Install dependencies
@@ -44,7 +44,7 @@ MONGO_URI=mongodb://localhost:27017/unidel-cbt
 
 # JWT
 JWT_SECRET=your_secret_min_32_chars
-JWT_EXPIRE=7d
+JWT_EXPIRE=1h
 
 # Cloudinary
 CLOUDINARY_CLOUD_NAME=your_cloud_name
@@ -67,7 +67,7 @@ EMAIL_FROM=UNIDEL CBT <noreply@unidel.edu.ng>
 
 ---
 
-## 📁 Project Structure
+## Project Structure
 
 ```
 Backend-Unidel-CBTsoftware/
@@ -81,7 +81,6 @@ Backend-Unidel-CBTsoftware/
 │   ├── mail/          # Email templates
 │   ├── security/      # Rate limiting
 │   └── utils/         # Exam scheduler, PDF parser
-├── uploads/           # Temporary files
 ├── index.js           # Entry point
 └── package.json
 ```
@@ -287,7 +286,7 @@ Response:
 
 ---
 
-## 📡 API Endpoints
+## API Endpoints
 
 ### Authentication
 ```javascript
@@ -353,7 +352,7 @@ GET    /api/security/exams/:examId/violations
 
 ---
 
-## 🗄️ Database Schema
+## Database Schema
 
 **Key Models:**
 - `Student`: Matric number, courses, department
@@ -369,7 +368,7 @@ GET    /api/security/exams/:examId/violations
 
 ---
 
-## 🔒 Security
+## Security
 
 - **JWT Authentication**: HttpOnly cookies
 - **Password Hashing**: Bcrypt (10 rounds)
@@ -393,7 +392,7 @@ GET    /api/security/exams/:examId/violations
 
 ---
 
-## 🐛 Troubleshooting
+## Troubleshooting
 
 **MongoDB Connection Failed**
 ```bash
@@ -427,7 +426,7 @@ netstat -ano | findstr :3000   # Windows
 
 ---
 
-## 📄 License
+## License
 
 Proprietary - University of Delta (UNIDEL)
 
