@@ -573,13 +573,13 @@ We welcome contributions! Please follow these steps:
 
 ---
 
-## 📄 License
+## License
 
 Proprietary - University of Delta (UNIDEL). All rights reserved.
 
 ---
 
-## 👨‍💻 Development Team
+## Development Team
 
 **Project Type**: Full-Stack MERN Application  
 **Institution**: University of Delta (UNIDEL)  
@@ -587,7 +587,7 @@ Proprietary - University of Delta (UNIDEL). All rights reserved.
 
 ---
 
-## 📧 Support
+## Support
 
 For technical support or inquiries:
 - **Email**: support@unidel.edu.ng
@@ -596,7 +596,7 @@ For technical support or inquiries:
 
 ---
 
-## 🌟 Acknowledgments
+## Acknowledgments
 
 - **HuggingFace**: AI-powered question generation
 - **Cloudinary**: Cloud file storage and optimization
