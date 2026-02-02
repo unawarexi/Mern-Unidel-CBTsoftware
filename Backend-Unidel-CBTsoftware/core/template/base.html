@@ -1,0 +1,755 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <title>{{EMAIL_TITLE}}</title>
+    <!--[if mso]>
+      <noscript>
+        <xml>
+          <o:OfficeDocumentSettings>
+            <o:PixelsPerInch>96</o:PixelsPerInch>
+          </o:OfficeDocumentSettings>
+        </xml>
+      </noscript>
+    <![endif]-->
+    <style>
+      /* Reset styles */
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+      body,
+      table,
+      td,
+      p,
+      a,
+      li,
+      blockquote {
+        -webkit-text-size-adjust: 100%;
+        -ms-text-size-adjust: 100%;
+      }
+      table,
+      td {
+        mso-table-lspace: 0pt;
+        mso-table-rspace: 0pt;
+      }
+      img {
+        -ms-interpolation-mode: bicubic;
+        border: 0;
+        outline: none;
+        text-decoration: none;
+      }
+
+      /* Base styles */
+      body {
+        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+        line-height: 1.6;
+        color: #374151;
+        background-color: #f9fafb;
+        margin: 0;
+        padding: 0;
+      }
+
+      /* Container */
+      .email-container {
+        max-width: 600px;
+        margin: 0 auto;
+        background-color: #ffffff;
+        border-radius: 8px;
+        overflow: hidden;
+        box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
+      }
+
+      /* Header */
+      .email-header {
+        background: linear-gradient(135deg, #ffffff 0%, #f9fafb 100%);
+        padding: 32px 24px;
+        text-align: center;
+        border-bottom: 3px solid #ea580c;
+        position: relative;
+      }
+
+      .logo-section {
+        position: relative;
+        z-index: 2;
+      }
+
+      .logo-container {
+        display: inline-block;
+        margin-bottom: 16px;
+      }
+
+      .university-logo {
+        width: 80px;
+        height: 80px;
+        margin: 0 auto 12px;
+      }
+
+      .university-name {
+        color: #111827;
+        font-size: 24px;
+        font-weight: 700;
+        letter-spacing: -0.5px;
+        margin-bottom: 4px;
+      }
+
+      .brand-tagline {
+        color: #6b7280;
+        font-size: 14px;
+        font-weight: 500;
+        margin-bottom: 12px;
+      }
+
+      .platform-badge {
+        display: inline-flex;
+        align-items: center;
+        background: #fff7ed;
+        border: 1px solid #fed7aa;
+        border-radius: 20px;
+        padding: 6px 14px;
+        color: #ea580c;
+        font-size: 12px;
+        font-weight: 600;
+      }
+
+      .status-dot {
+        width: 6px;
+        height: 6px;
+        background-color: #ea580c;
+        border-radius: 50%;
+        margin-right: 6px;
+        animation: pulse 2s ease-in-out infinite;
+      }
+
+      @keyframes pulse {
+        0%, 100% { opacity: 1; }
+        50% { opacity: 0.5; }
+      }
+
+      /* Body */
+      .email-body {
+        padding: 32px 24px;
+        background-color: #ffffff;
+      }
+
+      .greeting {
+        font-size: 20px;
+        font-weight: 600;
+        color: #111827;
+        margin-bottom: 16px;
+      }
+
+      .main-content {
+        font-size: 16px;
+        line-height: 1.7;
+        color: #4b5563;
+        margin-bottom: 24px;
+      }
+
+      .content-section {
+        margin-bottom: 24px;
+      }
+
+      .section-title {
+        font-size: 18px;
+        font-weight: 600;
+        color: #111827;
+        margin-bottom: 12px;
+        padding-bottom: 8px;
+        border-bottom: 2px solid #f3f4f6;
+      }
+
+      /* Info Box */
+      .info-box {
+        background: #f0fdfa;
+        border-left: 4px solid #14b8a6;
+        border-radius: 6px;
+        padding: 16px;
+        margin: 20px 0;
+      }
+
+      .info-box.warning {
+        background: #fffbeb;
+        border-left-color: #f59e0b;
+      }
+
+      .info-box.alert {
+        background: #fef2f2;
+        border-left-color: #ef4444;
+      }
+
+      .info-box-title {
+        font-weight: 600;
+        color: #111827;
+        margin-bottom: 4px;
+        font-size: 14px;
+      }
+
+      .info-box-content {
+        color: #4b5563;
+        font-size: 14px;
+        line-height: 1.5;
+      }
+
+      /* Buttons */
+      .button-container {
+        text-align: center;
+        margin: 32px 0;
+      }
+
+      .primary-button {
+        display: inline-block;
+        background: linear-gradient(135deg, #ea580c 0%, #c2410c 100%);
+        color: #ffffff !important;
+        text-decoration: none;
+        padding: 14px 32px;
+        border-radius: 8px;
+        font-weight: 600;
+        font-size: 16px;
+        box-shadow: 0 4px 6px -1px rgba(234, 88, 12, 0.3);
+        transition: all 0.3s ease;
+      }
+
+      .secondary-button {
+        display: inline-block;
+        background: #ffffff;
+        color: #374151 !important;
+        text-decoration: none;
+        padding: 12px 28px;
+        border: 2px solid #d1d5db;
+        border-radius: 8px;
+        font-weight: 600;
+        font-size: 14px;
+        margin-left: 12px;
+        transition: all 0.3s ease;
+      }
+
+      /* Exam Details Card */
+      .exam-details-card {
+        background: #f9fafb;
+        border: 1px solid #e5e7eb;
+        border-radius: 8px;
+        padding: 20px;
+        margin: 24px 0;
+      }
+
+      .exam-detail-row {
+        display: flex;
+        padding: 12px 0;
+        border-bottom: 1px solid #e5e7eb;
+      }
+
+      .exam-detail-row:last-child {
+        border-bottom: none;
+      }
+
+      .exam-detail-label {
+        font-weight: 600;
+        color: #6b7280;
+        font-size: 14px;
+        min-width: 140px;
+      }
+
+      .exam-detail-value {
+        color: #111827;
+        font-size: 14px;
+        font-weight: 500;
+      }
+
+      /* Feature cards */
+      .feature-cards {
+        display: flex;
+        gap: 12px;
+        margin: 24px 0;
+        flex-wrap: wrap;
+      }
+
+      .feature-card {
+        flex: 1;
+        min-width: 150px;
+        background: #ffffff;
+        border: 1px solid #e5e7eb;
+        border-radius: 8px;
+        padding: 16px;
+        text-align: center;
+      }
+
+      .feature-icon {
+        width: 40px;
+        height: 40px;
+        background: #fff7ed;
+        border-radius: 8px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        margin-bottom: 8px;
+        color: #ea580c;
+        font-size: 20px;
+      }
+
+      .feature-title {
+        font-size: 14px;
+        font-weight: 600;
+        color: #111827;
+        margin-bottom: 4px;
+      }
+
+      .feature-description {
+        font-size: 12px;
+        color: #6b7280;
+      }
+
+      /* Attachments */
+      .attachments-section {
+        background: #f9fafb;
+        border: 1px solid #e5e7eb;
+        border-radius: 8px;
+        padding: 20px;
+        margin: 24px 0;
+      }
+
+      .attachment-item {
+        display: flex;
+        align-items: center;
+        padding: 12px 0;
+        border-bottom: 1px solid #e5e7eb;
+      }
+
+      .attachment-item:last-child {
+        border-bottom: none;
+      }
+
+      .attachment-icon {
+        width: 40px;
+        height: 40px;
+        background: #fff7ed;
+        border-radius: 8px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin-right: 12px;
+        color: #ea580c;
+        font-size: 20px;
+      }
+
+      .attachment-info {
+        flex: 1;
+      }
+
+      .attachment-name {
+        font-weight: 600;
+        color: #111827;
+        font-size: 14px;
+      }
+
+      .attachment-size {
+        color: #6b7280;
+        font-size: 12px;
+      }
+
+      /* Footer */
+      .email-footer {
+        background: #f9fafb;
+        padding: 24px;
+        border-top: 1px solid #e5e7eb;
+      }
+
+      .footer-logo {
+        text-align: center;
+        margin-bottom: 16px;
+      }
+
+      .footer-logo-text {
+        color: #111827;
+        font-size: 18px;
+        font-weight: 700;
+      }
+
+      .footer-description {
+        color: #6b7280;
+        font-size: 14px;
+        text-align: center;
+        margin-bottom: 20px;
+        line-height: 1.5;
+      }
+
+      .footer-links {
+        display: flex;
+        justify-content: center;
+        gap: 20px;
+        margin-bottom: 16px;
+        flex-wrap: wrap;
+      }
+
+      .footer-link {
+        color: #6b7280;
+        text-decoration: none;
+        font-size: 13px;
+        font-weight: 500;
+        transition: color 0.3s ease;
+      }
+
+      .footer-link:hover {
+        color: #ea580c;
+      }
+
+      .footer-contact {
+        color: #6b7280;
+        font-size: 13px;
+        text-align: center;
+        margin: 16px 0;
+        line-height: 1.6;
+      }
+
+      /* Orange bottom bar */
+      .footer-bottom {
+        background: linear-gradient(135deg, #ea580c 0%, #c2410c 100%);
+        padding: 16px 24px;
+        text-align: center;
+      }
+
+      .footer-copy {
+        color: #ffffff;
+        font-size: 12px;
+        margin-bottom: 8px;
+      }
+
+      .unsubscribe-link {
+        color: #fed7aa;
+        font-size: 12px;
+        text-decoration: underline;
+        display: inline-block;
+        transition: color 0.3s ease;
+      }
+
+      .unsubscribe-link:hover {
+        color: #ffffff;
+      }
+
+      /* Dark contact bar */
+      .contact-bar {
+        background: #111827;
+        padding: 12px 24px;
+        text-align: center;
+      }
+
+      .contact-bar-content {
+        color: #9ca3af;
+        font-size: 12px;
+      }
+
+      .contact-bar-email {
+        color: #ffffff;
+        text-decoration: none;
+        font-weight: 500;
+      }
+
+      .contact-bar-email:hover {
+        color: #fed7aa;
+      }
+
+      /* Responsive */
+      @media only screen and (max-width: 600px) {
+        .email-container {
+          margin: 0;
+          border-radius: 0;
+        }
+        .email-header,
+        .email-body,
+        .email-footer {
+          padding: 20px 16px;
+        }
+        .greeting {
+          font-size: 18px;
+        }
+        .main-content {
+          font-size: 15px;
+        }
+        .feature-cards {
+          flex-direction: column;
+        }
+        .feature-card {
+          min-width: auto;
+        }
+        .secondary-button {
+          margin-left: 0;
+          margin-top: 12px;
+          display: block;
+        }
+        .footer-links {
+          flex-direction: column;
+          gap: 12px;
+        }
+        .exam-detail-row {
+          flex-direction: column;
+          gap: 4px;
+        }
+        .exam-detail-label {
+          min-width: auto;
+        }
+      }
+
+      @media only screen and (max-width: 480px) {
+        .email-header,
+        .email-body,
+        .email-footer {
+          padding: 16px 12px;
+        }
+        .primary-button {
+          padding: 12px 24px;
+          font-size: 14px;
+        }
+        .secondary-button {
+          padding: 10px 20px;
+          font-size: 13px;
+        }
+        .university-name {
+          font-size: 20px;
+        }
+      }
+
+      /* Dark mode support */
+      @media (prefers-color-scheme: dark) {
+        body {
+          background-color: #111827;
+        }
+        .email-container {
+          background-color: #1f2937;
+        }
+        .email-header {
+          background: linear-gradient(135deg, #1f2937 0%, #111827 100%);
+        }
+        .email-body {
+          background-color: #1f2937;
+        }
+        .greeting,
+        .section-title,
+        .university-name {
+          color: #f9fafb;
+        }
+        .main-content,
+        .brand-tagline {
+          color: #d1d5db;
+        }
+        .feature-card,
+        .exam-details-card {
+          background: #374151;
+          border-color: #4b5563;
+        }
+        .feature-title,
+        .exam-detail-value {
+          color: #f9fafb;
+        }
+        .feature-description,
+        .exam-detail-label {
+          color: #9ca3af;
+        }
+        .attachments-section {
+          background: #374151;
+          border-color: #4b5563;
+        }
+        .attachment-name {
+          color: #f9fafb;
+        }
+        .email-footer {
+          background: #1f2937;
+          border-top-color: #374151;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div style="background-color: #f9fafb; padding: 20px 0; min-height: 100vh">
+      <div class="email-container">
+        <!-- HEADER SECTION -->
+        <div class="email-header">
+          <div class="logo-section">
+            <div class="logo-container">
+              <div class="university-logo">
+                <!-- Replace with actual UNIDEL logo -->
+                <img 
+                  src="https://res.cloudinary.com/dkt3rfpgz/image/upload/v1767626977/unidel2_hrn11f.png" 
+                  alt="University of Delta Logo" 
+                  width="80" 
+                  height="80" 
+                  style="display:block;border-radius:8px;object-fit:contain;" 
+                />
+              </div>
+              <div class="university-name">UNIVERSITY OF DELTA</div>
+            </div>
+            <div class="brand-tagline">Computer Based Test Platform</div>
+            <div class="platform-badge">
+              <div class="status-dot"></div>
+              CBT System
+            </div>
+          </div>
+        </div>
+
+        <!-- BODY SECTION -->
+        <div class="email-body">
+          <!-- Greeting -->
+          <div class="greeting">{{GREETING}}</div>
+
+          <!-- Main Content -->
+          <div class="main-content">{{MAIN_CONTENT}}</div>
+
+          <!-- Dynamic Content Sections -->
+          {{#if CONTENT_SECTIONS}} 
+          {{#each CONTENT_SECTIONS}}
+          <div class="content-section">
+            {{#if title}}
+            <div class="section-title">{{title}}</div>
+            {{/if}}
+            <div>{{content}}</div>
+          </div>
+          {{/each}} 
+          {{/if}}
+
+          <!-- Exam Details Card (Optional) -->
+          {{#if EXAM_DETAILS}}
+          <div class="exam-details-card">
+            <div class="section-title" style="border-bottom: none; padding-bottom: 0; margin-bottom: 16px;">Exam Details</div>
+            {{#each EXAM_DETAILS}}
+            <div class="exam-detail-row">
+              <div class="exam-detail-label">{{label}}</div>
+              <div class="exam-detail-value">{{value}}</div>
+            </div>
+            {{/each}}
+          </div>
+          {{/if}}
+
+          <!-- Info Box (Optional) -->
+          {{#if INFO_BOX}}
+          <div class="info-box {{INFO_BOX.type}}">
+            {{#if INFO_BOX.title}}
+            <div class="info-box-title">{{INFO_BOX.title}}</div>
+            {{/if}}
+            <div class="info-box-content">{{INFO_BOX.content}}</div>
+          </div>
+          {{/if}}
+
+          <!-- Feature Cards (Optional) -->
+          {{#if FEATURE_CARDS}}
+          <div class="feature-cards">
+            {{#each FEATURE_CARDS}}
+            <div class="feature-card">
+              <div class="feature-icon">{{icon}}</div>
+              <div class="feature-title">{{title}}</div>
+              <div class="feature-description">{{description}}</div>
+            </div>
+            {{/each}}
+          </div>
+          {{/if}}
+          
+    
+          <!-- Action Buttons -->
+          {{#if BUTTONS}}
+          <div class="button-container">
+            {{#each BUTTONS}}
+            <a href="{{url}}" class="{{#if primary}}primary-button{{else}}secondary-button{{/if}}"> {{text}} </a>
+            {{/each}}
+          </div>
+          {{/if}}
+
+          <!-- Additional Content -->
+          <!-- {{#if ADDITIONAL_CONTENT}}
+          <div style="margin-top: 24px">{{ADDITIONAL_CONTENT}}</div>
+          {{/if}}
+        </div> -->
+
+
+          {{#if FEATURE_CARDS}}
+           <div class="feature-cards">
+            <div class="feature-card">
+              <div class="feature-icon">
+                <i class="fas fa-shield-alt"></i>
+              </div>
+              <div class="feature-title">Secure Testing</div>
+              <div class="feature-description">Advanced proctoring and anti-cheating measures ensure exam integrity</div>
+            </div>
+            <div class="feature-card">
+              <div class="feature-icon">
+                <i class="fas fa-bolt"></i>
+              </div>
+              <div class="feature-title">Real-time Results</div>
+              <div class="feature-description">Instant grading and immediate feedback on exam performance</div>
+            </div>
+            <div class="feature-card">
+              <div class="feature-icon">
+                <i class="fas fa-chart-line"></i>
+              </div>
+              <div class="feature-title">Analytics Dashboard</div>
+              <div class="feature-description">Comprehensive insights and performance tracking for students</div>
+            </div>
+          </div>
+          {{/if}}
+
+          <!-- Attachments Section -->
+          {{#if ATTACHMENTS}}
+          <div class="attachments-section">
+            <div class="section-title" style="border-bottom: none; padding-bottom: 0; margin-bottom: 16px;">Attachments</div>
+            {{#each ATTACHMENTS}}
+            <div class="attachment-item">
+              <div class="attachment-icon">📎</div>
+              <div class="attachment-info">
+                <div class="attachment-name">{{name}}</div>
+                <div class="attachment-size">{{size}}</div>
+              </div>
+            </div>
+            {{/each}}
+          </div>
+          {{/if}}
+
+
+          
+
+        <!-- FOOTER SECTION -->
+        <div class="email-footer">
+          <div class="footer-logo">
+            <div class="footer-logo-text">UNIDEL CBT Platform</div>
+          </div>
+
+          <div class="footer-description">
+            University of Delta's secure and reliable Computer Based Testing platform for all academic assessments.
+          </div>
+
+          <!-- Footer Links -->
+          <div class="footer-links">
+            <a href="https://unidel.edu.ng/cbt" class="footer-link">CBT Portal</a>
+            <a href="https://unidel.edu.ng/help" class="footer-link">Help Center</a>
+            <a href="https://unidel.edu.ng/guidelines" class="footer-link">Exam Guidelines</a>
+            <a href="https://unidel.edu.ng/support" class="footer-link">Technical Support</a>
+            <a href="https://unidel.edu.ng/privacy" class="footer-link">Privacy Policy</a>
+          </div>
+
+          <!-- Contact Info -->
+          <div class="footer-contact">
+            University of Delta | Agbor, Delta State, Nigeria<br />
+            📞 +234-XXX-XXX-XXXX | ✉️ cbt@unidel.edu.ng
+          </div>
+        </div>
+
+        <!-- Orange Bottom Bar -->
+        <div class="footer-bottom">
+          <div class="footer-copy">
+            © 2025 University of Delta (UNIDEL). All rights reserved.
+          </div>
+          <a href="{{UNSUBSCRIBE_LINK}}" class="unsubscribe-link">
+            Unsubscribe from these emails
+          </a>
+        </div>
+
+        <!-- Dark Contact Bar -->
+        <div class="contact-bar">
+          <div class="contact-bar-content">
+            Need help? Contact our support team: 
+            <a href="mailto:support@unidel.edu.ng" class="contact-bar-email">support@unidel.edu.ng</a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </body>
+</html>

@@ -1,0 +1,10 @@
+{
+  "compilerOptions": {
+    "checkJs": false,
+    "module": "esnext",
+    "target": "es2020",
+    "noEmit": true,
+    "strict": false
+  },
+  "exclude": ["node_modules"]
+}
