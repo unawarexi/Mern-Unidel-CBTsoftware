@@ -1,0 +1,580 @@
+import { create } from "zustand";
+import {
+  useCreateLecturer,
+  useGetAllLecturers,
+  useGetLecturerById,
+  useUpdateLecturer,
+  useDeleteLecturer,
+  useCreateStudent,
+  useGetAllStudents,
+  useGetStudentById,
+  useUpdateStudent,
+  useDeleteStudent,
+  useCreateAdmin,
+  useGetAllAdmins,
+  useGetAdminById,
+  useUpdateAdmin,
+  useDeleteAdmin,
+  useGetCurrentUserStats,
+  useGetLecturerCourses,
+  useGetLecturerStudents,
+} from "../hooks/useUser";
+import { useEffect } from "react";
+
+const useUserStore = create((set) => ({
+  // Client-side state
+  selectedUser: null,
+  userType: null,
+  isLoading: false,
+  error: null,
+
+  // UI helpers
+  toast: { visible: false, message: "", type: "success", duration: 3000 },
+  showToast: (message, type = "success", duration = 3000) =>
+    set({ toast: { visible: true, message, type, duration } }),
+  hideToast: () =>
+    set({
+      toast: { visible: false, message: "", type: "success", duration: 3000 },
+    }),
+
+  globalLoader: false,
+  showLoader: () => set({ globalLoader: true }),
+  hideLoader: () => set({ globalLoader: false }),
+
+  // Actions
+  setSelectedUser: (user, userType) => set({ selectedUser: user, userType }),
+
+  clearSelectedUser: () => set({ selectedUser: null, userType: null }),
+
+  setLoading: (isLoading) => set({ isLoading }),
+
+  setError: (error) => set({ error }),
+
+  clearError: () => set({ error: null }),
+}));
+
+// ========== LECTURER HOOKS ==========
+
+export const useCreateLecturerAction = () => {
+  const { setLoading, setError, showToast, showLoader, hideLoader } =
+    useUserStore();
+  const createLecturerMutation = useCreateLecturer();
+
+  const createLecturer = async (lecturerData) => {
+    console.log("[STORE] useCreateLecturerAction called", lecturerData);
+    setLoading(true);
+    setError(null);
+    showLoader();
+
+    try {
+      const data = await createLecturerMutation.mutateAsync(lecturerData);
+      showToast("Lecturer created successfully", "success");
+      return data;
+    } catch (error) {
+      console.error("[STORE] useCreateLecturerAction error:", error);
+      setError(error.message);
+      showToast(error.message || "Failed to create lecturer", "error");
+      throw error;
+    } finally {
+      setLoading(false);
+      hideLoader();
+    }
+  };
+
+  return {
+    createLecturer,
+    isLoading: createLecturerMutation.isLoading,
+    error: createLecturerMutation.error,
+  };
+};
+
+export const useGetAllLecturersAction = () => {
+  const { setError, showToast } = useUserStore();
+  const { data, isLoading, error, refetch } = useGetAllLecturers();
+
+  useEffect(() => {
+    if (error) {
+      setError(error.message);
+      showToast(error.message || "Failed to fetch lecturers", "error");
+    }
+  }, [error, setError, showToast]);
+
+  return {
+    lecturers: data?.data || [],
+    isLoading,
+    error,
+    refetch,
+  };
+};
+
+export const useGetLecturerByIdAction = (id) => {
+  const { setSelectedUser, setError } = useUserStore();
+  const { data, isLoading, error, refetch } = useGetLecturerById(id);
+
+  useEffect(() => {
+    if (data?.data) {
+      setSelectedUser(data.data, "lecturer");
+      console.log("✅ Lecturer fetched successfully", data.data);
+    }
+  }, [data, setSelectedUser]);
+
+  useEffect(() => {
+    if (error) {
+      setError(error.message);
+      console.log("❌ Failed to fetch lecturer:", error.message);
+    }
+  }, [error, setError]);
+
+  return {
+    lecturer: data?.data,
+    isLoading,
+    error,
+    refetch,
+  };
+};
+
+export const useUpdateLecturerAction = () => {
+  const { setLoading, setError, showToast, showLoader, hideLoader } =
+    useUserStore();
+  const updateLecturerMutation = useUpdateLecturer();
+
+  const updateLecturer = async (id, lecturerData) => {
+    console.log("[STORE] useUpdateLecturerAction called", { id, lecturerData });
+    setLoading(true);
+    setError(null);
+    showLoader();
+
+    try {
+      const data = await updateLecturerMutation.mutateAsync({
+        id,
+        data: lecturerData,
+      });
+      showToast("Lecturer updated successfully", "success");
+      return data;
+    } catch (error) {
+      console.error("[STORE] useUpdateLecturerAction error:", error);
+      setError(error.message);
+      showToast(error.message || "Failed to update lecturer", "error");
+      throw error;
+    } finally {
+      setLoading(false);
+      hideLoader();
+    }
+  };
+
+  return {
+    updateLecturer,
+    isLoading: updateLecturerMutation.isLoading,
+    error: updateLecturerMutation.error,
+  };
+};
+
+export const useDeleteLecturerAction = () => {
+  const { setLoading, setError, showToast, showLoader, hideLoader } =
+    useUserStore();
+  const deleteLecturerMutation = useDeleteLecturer();
+
+  const deleteLecturer = async (id) => {
+    console.log("[STORE] useDeleteLecturerAction called", id);
+    setLoading(true);
+    setError(null);
+    showLoader();
+
+    try {
+      const data = await deleteLecturerMutation.mutateAsync(id);
+      showToast("Lecturer deleted successfully", "success");
+      return data;
+    } catch (error) {
+      console.error("[STORE] useDeleteLecturerAction error:", error);
+      setError(error.message);
+      showToast(error.message || "Failed to delete lecturer", "error");
+      throw error;
+    } finally {
+      setLoading(false);
+      hideLoader();
+    }
+  };
+
+  return {
+    deleteLecturer,
+    isLoading: deleteLecturerMutation.isLoading,
+    error: deleteLecturerMutation.error,
+  };
+};
+
+export const useGetLecturerCoursesAction = () => {
+  const { setError } = useUserStore();
+  const { data, isLoading, error, refetch } = useGetLecturerCourses();
+
+  useEffect(() => {
+    if (error) {
+      setError(error.message);
+      console.log("❌ Failed to fetch lecturer courses:", error.message);
+    }
+  }, [error, setError]);
+
+  return {
+    courses: data?.data || [],
+    isLoading,
+    error,
+    refetch,
+  };
+};
+
+// ========== STUDENT HOOKS ==========
+
+export const useCreateStudentAction = () => {
+  const { setLoading, setError, showToast, showLoader, hideLoader } =
+    useUserStore();
+  const createStudentMutation = useCreateStudent();
+
+  const createStudent = async (studentData) => {
+    console.log("[STORE] useCreateStudentAction called", studentData);
+    setLoading(true);
+    setError(null);
+    showLoader();
+
+    try {
+      const data = await createStudentMutation.mutateAsync(studentData);
+      showToast("Student created successfully", "success");
+      return data;
+    } catch (error) {
+      console.error("[STORE] useCreateStudentAction error:", error);
+      setError(error.message);
+      showToast(error.message || "Failed to create student", "error");
+      throw error;
+    } finally {
+      setLoading(false);
+      hideLoader();
+    }
+  };
+
+  return {
+    createStudent,
+    isLoading: createStudentMutation.isLoading,
+    error: createStudentMutation.error,
+  };
+};
+
+export const useGetAllStudentsAction = () => {
+  const { setError } = useUserStore();
+  const { data, isLoading, error, refetch } = useGetAllStudents();
+
+  useEffect(() => {
+    if (error) {
+      setError(error.message);
+      console.log("❌ Failed to fetch students:", error.message);
+    }
+  }, [error, setError]);
+
+  useEffect(() => {
+    if (data) {
+      console.log("✅ Students fetched successfully");
+    }
+  }, [data]);
+
+  return {
+    students: data?.data || [],
+    isLoading,
+    error,
+    refetch,
+  };
+};
+
+export const useGetStudentByIdAction = (id) => {
+  const { setSelectedUser, setError } = useUserStore();
+  const { data, isLoading, error, refetch } = useGetStudentById(id);
+
+  useEffect(() => {
+    if (data?.data) {
+      setSelectedUser(data.data, "student");
+      console.log("✅ Student fetched successfully", data.data);
+    }
+  }, [data, setSelectedUser]);
+
+  useEffect(() => {
+    if (error) {
+      setError(error.message);
+      console.log("❌ Failed to fetch student:", error.message);
+    }
+  }, [error, setError]);
+
+  return {
+    student: data?.data,
+    isLoading,
+    error,
+    refetch,
+  };
+};
+
+export const useUpdateStudentAction = () => {
+  const { setLoading, setError, showToast, showLoader, hideLoader } =
+    useUserStore();
+  const updateStudentMutation = useUpdateStudent();
+
+  const updateStudent = async (id, studentData) => {
+    console.log("[STORE] useUpdateStudentAction called", { id, studentData });
+    setLoading(true);
+    setError(null);
+    showLoader();
+
+    try {
+      const data = await updateStudentMutation.mutateAsync({
+        id,
+        data: studentData,
+      });
+      showToast("Student updated successfully", "success");
+      return data;
+    } catch (error) {
+      console.error("[STORE] useUpdateStudentAction error:", error);
+      setError(error.message);
+      showToast(error.message || "Failed to update student", "error");
+      throw error;
+    } finally {
+      setLoading(false);
+      hideLoader();
+    }
+  };
+
+  return {
+    updateStudent,
+    isLoading: updateStudentMutation.isLoading,
+    error: updateStudentMutation.error,
+  };
+};
+
+export const useDeleteStudentAction = () => {
+  const { setLoading, setError, showToast, showLoader, hideLoader } =
+    useUserStore();
+  const deleteStudentMutation = useDeleteStudent();
+
+  const deleteStudent = async (id) => {
+    console.log("[STORE] useDeleteStudentAction called", id);
+    setLoading(true);
+    setError(null);
+    showLoader();
+
+    try {
+      const data = await deleteStudentMutation.mutateAsync(id);
+      showToast("Student deleted successfully", "success");
+      return data;
+    } catch (error) {
+      console.error("[STORE] useDeleteStudentAction error:", error);
+      setError(error.message);
+      showToast(error.message || "Failed to delete student", "error");
+      throw error;
+    } finally {
+      setLoading(false);
+      hideLoader();
+    }
+  };
+
+  return {
+    deleteStudent,
+    isLoading: deleteStudentMutation.isLoading,
+    error: deleteStudentMutation.error,
+  };
+};
+
+// ========== ADMIN HOOKS ==========
+
+export const useCreateAdminAction = () => {
+  const { setLoading, setError, showToast, showLoader, hideLoader } =
+    useUserStore();
+  const createAdminMutation = useCreateAdmin();
+
+  const createAdmin = async (adminData) => {
+    console.log("[STORE] useCreateAdminAction called", adminData);
+    setLoading(true);
+    setError(null);
+    showLoader();
+
+    try {
+      const data = await createAdminMutation.mutateAsync(adminData);
+      showToast("Admin created successfully", "success");
+      return data;
+    } catch (error) {
+      console.error("[STORE] useCreateAdminAction error:", error);
+      setError(error.message);
+      showToast(error.message || "Failed to create admin", "error");
+      throw error;
+    } finally {
+      setLoading(false);
+      hideLoader();
+    }
+  };
+
+  return {
+    createAdmin,
+    isLoading: createAdminMutation.isLoading,
+    error: createAdminMutation.error,
+  };
+};
+
+export const useGetAllAdminsAction = () => {
+  const { setError } = useUserStore();
+  const { data, isLoading, error, refetch } = useGetAllAdmins();
+
+  useEffect(() => {
+    if (error) {
+      setError(error.message);
+      console.log("❌ Failed to fetch admins:", error.message);
+    }
+  }, [error, setError]);
+
+  useEffect(() => {
+    if (data) {
+      console.log("✅ Admins fetched successfully");
+    }
+  }, [data]);
+
+  return {
+    admins: data?.data || [],
+    isLoading,
+    error,
+    refetch,
+  };
+};
+
+export const useGetAdminByIdAction = (id) => {
+  const { setSelectedUser, setError } = useUserStore();
+  const { data, isLoading, error, refetch } = useGetAdminById(id);
+
+  useEffect(() => {
+    if (data?.data) {
+      setSelectedUser(data.data, "admin");
+      console.log("✅ Admin fetched successfully", data.data);
+    }
+  }, [data, setSelectedUser]);
+
+  useEffect(() => {
+    if (error) {
+      setError(error.message);
+      console.log("❌ Failed to fetch admin:", error.message);
+    }
+  }, [error, setError]);
+
+  return {
+    admin: data?.data,
+    isLoading,
+    error,
+    refetch,
+  };
+};
+
+export const useUpdateAdminAction = () => {
+  const { setLoading, setError, showToast, showLoader, hideLoader } =
+    useUserStore();
+  const updateAdminMutation = useUpdateAdmin();
+
+  const updateAdmin = async (id, adminData) => {
+    console.log("[STORE] useUpdateAdminAction called", { id, adminData });
+    setLoading(true);
+    setError(null);
+    showLoader();
+
+    try {
+      const data = await updateAdminMutation.mutateAsync({
+        id,
+        data: adminData,
+      });
+      showToast("Admin updated successfully", "success");
+      return data;
+    } catch (error) {
+      console.error("[STORE] useUpdateAdminAction error:", error);
+      setError(error.message);
+      showToast(error.message || "Failed to update admin", "error");
+      throw error;
+    } finally {
+      setLoading(false);
+      hideLoader();
+    }
+  };
+
+  return {
+    updateAdmin,
+    isLoading: updateAdminMutation.isLoading,
+    error: updateAdminMutation.error,
+  };
+};
+
+export const useDeleteAdminAction = () => {
+  const { setLoading, setError, showToast, showLoader, hideLoader } =
+    useUserStore();
+  const deleteAdminMutation = useDeleteAdmin();
+
+  const deleteAdmin = async (id) => {
+    console.log("[STORE] useDeleteAdminAction called", id);
+    setLoading(true);
+    setError(null);
+    showLoader();
+
+    try {
+      const data = await deleteAdminMutation.mutateAsync(id);
+      showToast("Admin deleted successfully", "success");
+      return data;
+    } catch (error) {
+      console.error("[STORE] useDeleteAdminAction error:", error);
+      setError(error.message);
+      showToast(error.message || "Failed to delete admin", "error");
+      throw error;
+    } finally {
+      setLoading(false);
+      hideLoader();
+    }
+  };
+
+  return {
+    deleteAdmin,
+    isLoading: deleteAdminMutation.isLoading, // <- use isLoading
+    error: deleteAdminMutation.error,
+  };
+};
+
+// ========== UTILITY HOOKS ==========
+
+// Fixed version - no more infinite refetching
+export const useGetUserStatsAction = () => {
+  const { setError } = useUserStore();
+  const { data, isLoading, error, refetch } = useGetCurrentUserStats();
+
+  // Move the if statements inside useEffect to prevent infinite loops
+  useEffect(() => {
+    if (error) {
+      setError(error.message);
+      console.log(" Failed to fetch user stats:", error.message);
+    }
+  }, [error, setError]);
+
+  useEffect(() => {
+    if (data) {
+      console.log(" User stats fetched successfully", data);
+    }
+  }, [data]);
+
+  return {
+    stats: data?.data || {},
+    isLoading,
+    error,
+    refetch,
+  };
+};
+
+export const useGetLecturerStudentsAction = () => {
+  const { setError } = useUserStore();
+  const { data, isLoading, error, refetch } = useGetLecturerStudents();
+
+  // Handle error side effect
+  useEffect(() => {
+    if (error) setError(error.message);
+  }, [error, setError]);
+
+  return {
+    students: data?.data || [],
+    isLoading,
+    error,
+    refetch,
+  };
+};
+
+export default useUserStore;

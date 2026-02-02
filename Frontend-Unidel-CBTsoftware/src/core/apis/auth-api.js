@@ -1,0 +1,162 @@
+const BASE_URL = import.meta.env.VITE_API_BASE_URL || "http://localhost:3000/api/auth";
+
+// ========== API FUNCTIONS ==========
+
+// Login
+export const loginUser = async (credentials) => {
+  const response = await fetch(`${BASE_URL}/login`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    credentials: "include",
+    body: JSON.stringify(credentials),
+  });
+  if (!response.ok) {
+    const error = await response.json();
+    throw new Error(error.message || "Login failed");
+  }
+  return response.json();
+};
+
+// Change password on first login
+export const changePasswordFirstLogin = async (data) => {
+  const response = await fetch(`${BASE_URL}/change-password-first-login`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    credentials: "include",
+    body: JSON.stringify(data),
+  });
+  if (!response.ok) {
+    const error = await response.json();
+    throw new Error(error.message || "Password change failed");
+  }
+  return response.json();
+};
+
+// Forgot password
+export const forgotPassword = async (payload) => {
+  // payload: { email, role?, identifier?, ... }
+  const response = await fetch(`${BASE_URL}/forgot-password`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(payload),
+  });
+  if (!response.ok) {
+    const error = await response.json();
+    throw new Error(error.message || "Request failed");
+  }
+  return response.json();
+};
+
+// Reset password
+export const resetPassword = async (data) => {
+  const response = await fetch(`${BASE_URL}/reset-password`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(data),
+  });
+  if (!response.ok) {
+    const error = await response.json();
+    throw new Error(error.message || "Password reset failed");
+  }
+  return response.json();
+};
+
+// Admin signup
+export const adminSignup = async (data) => {
+  const response = await fetch(`${BASE_URL}/admin/signup`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    credentials: "include",
+    body: JSON.stringify(data),
+  });
+  if (!response.ok) {
+    const error = await response.json();
+    console.log(error.message);
+    throw new Error(error.message || "Signup failed");
+    
+  }
+  return response.json();
+};
+
+// Get current user with session expiry detection
+export const getCurrentUser = async () => {
+  const response = await fetch(`${BASE_URL}/me`, {
+    method: "GET",
+    credentials: "include",
+  });
+
+  // If not authenticated or session expired, dispatch event and return null
+  if (response.status === 401 || response.status === 403) {
+    window.dispatchEvent(new CustomEvent("session-expired", {
+      detail: {
+        status: response.status,
+        message: "Session expired"
+      }
+    }));
+    return { user: null };
+  }
+
+  if (!response.ok) {
+    const error = await response.json();
+    throw new Error(error.message || "Failed to fetch user");
+  }
+
+  const data = await response.json();
+  return { user: data.user || data.data || null };
+};
+
+// Update profile
+export const updateProfile = async (data) => {
+  const response = await fetch(`${BASE_URL}/me`, {
+    method: "PUT",
+    headers: { "Content-Type": "application/json" },
+    credentials: "include",
+    body: JSON.stringify(data),
+  });
+  if (!response.ok) {
+    const error = await response.json();
+    throw new Error(error.message || "Profile update failed");
+  }
+  return response.json();
+};
+
+// Change password
+export const changePassword = async (data) => {
+  const response = await fetch(`${BASE_URL}/change-password`, {
+    method: "PUT",
+    headers: { "Content-Type": "application/json" },
+    credentials: "include",
+    body: JSON.stringify(data),
+  });
+  if (!response.ok) {
+    const error = await response.json();
+    throw new Error(error.message || "Password change failed");
+  }
+  return response.json();
+};
+
+// Logout
+export const logout = async () => {
+  const response = await fetch(`${BASE_URL}/logout`, {
+    method: "POST",
+    credentials: "include",
+  });
+  if (!response.ok) {
+    const error = await response.json();
+    throw new Error(error.message || "Logout failed");
+  }
+  return response.json();
+};
+
+// Refresh token
+export const refreshToken = async () => {
+  const response = await fetch(`${BASE_URL}/refresh-token`, {
+    method: "POST",
+    credentials: "include",
+  });
+  if (!response.ok) {
+    const error = await response.json();
+    throw new Error(error.message || "Token refresh failed");
+  }
+  return response.json();
+};
