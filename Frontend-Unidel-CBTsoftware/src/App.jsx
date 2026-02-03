@@ -14,7 +14,8 @@ import { queryClient } from "./core/lib/query-client";
 // Pages
 import SignIn from "./pages/auth/Sign-in";
 import AdminSignIn from "./pages/auth/Admin-SignIn";
-import AdminSignUp from "./pages/auth/Admin-SignUp";
+import AgentSignIn from "./pages/auth/Agent-SignIn";
+import AgentSignUp from "./pages/auth/Agent-SignUp";
 import LecturerSignIn from "./pages/auth/Lecturer-SignIn";
 import ForgotPassword from "./pages/auth/Forgot-password";
 import ResetPassword from "./pages/auth/Reset-password";
@@ -22,12 +23,17 @@ import AuthSelection from "./pages/auth/AuthSelection";
 import StudentDashboard from "./pages/student/layout/Student-dashboard-layout";
 import LecturerDashboard from "./pages/lecturer/layout/Lecturer-dashboard-layout";
 import AdminDashboard from "./pages/admin/layout/Admin-dashboard-layout";
+import StudentApplication from "./pages/public/applications/StudentApplication";
+import PublicJobs from "./pages/public/careers/PublicJobs";
+import SupportPage from "./pages/shared/SupportPage";
 
 // Layouts & Routes
 import MainLayout from "./layouts/MainLayout";
 import AdminRoutes from "./pages/admin/Admin.routes";
 import LecturerRoutes from "./pages/lecturer/Lecturer.routes";
 import StudentRoutes from "./pages/student/Student.routes";
+import AgentRoutes from "./pages/agent/Agent.routes";
+import AgentDashboard from "./pages/agent/layout/Agent-dashboard-layout";
 
 // Refactored Modular Components
 import {
@@ -74,10 +80,18 @@ const App = () => {
                 }
               />
               <Route
-                path="/admin-signup"
+                path="/signin-agent"
                 element={
                   <GuestOnly>
-                    <AdminSignUp />
+                    <AgentSignIn />
+                  </GuestOnly>
+                }
+              />
+              <Route
+                path="/agent-signup"
+                element={
+                  <GuestOnly>
+                    <AgentSignUp />
                   </GuestOnly>
                 }
               />
@@ -141,9 +155,23 @@ const App = () => {
                 <Route path="*" element={<StudentRoutes />} />
               </Route>
 
+              <Route
+                path="/agent/*"
+                element={
+                  <ProtectedRoute allowedRoles={["agent"]}>
+                    <AgentDashboard />
+                  </ProtectedRoute>
+                }
+              >
+                <Route path="*" element={<AgentRoutes />} />
+              </Route>
+
               {/* Main layout (header/footer) */}
               <Route element={<MainLayout />}>
                 <Route path="/" element={<SectionsApp />} />
+                <Route path="/apply" element={<StudentApplication />} />
+                <Route path="/careers" element={<PublicJobs />} />
+                <Route path="/support" element={<SupportPage />} />
               </Route>
 
               {/* Policy pages */}

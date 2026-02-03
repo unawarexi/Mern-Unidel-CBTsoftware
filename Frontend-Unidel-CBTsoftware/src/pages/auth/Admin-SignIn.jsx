@@ -254,15 +254,14 @@ const AdminSignIn = () => {
 
               <Button
                 type="submit"
-                isLoading={isLoading}
+                isLoading={false}
+                disableOnLoading={false}
                 variant="admin"
                 fullWidth
                 size="lg"
-                leftIcon={
-                  !isLoading && <Lock className="w-4 h-4 sm:w-5 sm:h-5" />
-                }
+                leftIcon={<Lock className="w-4 h-4 sm:w-5 sm:h-5" />}
               >
-                {isLoading ? "Authenticating..." : "Secure Sign In"}
+                Secure Sign In
               </Button>
             </form>
 
@@ -275,13 +274,7 @@ const AdminSignIn = () => {
                     isDarkMode ? "text-gray-400" : "text-gray-600",
                   )}
                 >
-                  Don't have an account?{" "}
-                  <Link
-                    to="/admin-signup"
-                    className="text-emerald-600 hover:text-emerald-700 font-bold"
-                  >
-                    Create Admin Account
-                  </Link>
+                  Contact Super Admin for account creation or access issues.
                 </p>
               </div>
 

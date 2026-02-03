@@ -1,7 +1,10 @@
 import Course from "../models/course.model.js";
 import Student from "../models/student.model.js";
 import Lecturer from "../models/lecturer.model.js";
-import { uploadToCloudinary, deleteFromCloudinary } from "../services/cloudinary.service.js";
+import {
+  uploadToCloudinary,
+  deleteFromCloudinary,
+} from "../services/cloudinary.service.js";
 import * as Mailer from "../services/mailer.service.js";
 import EmailContentGenerator from "../core/mail/mail-content.js";
 
@@ -18,12 +21,16 @@ export const createCourse = async (req, res) => {
     }
 
     // Ensure department is an array
-    const departmentArray = Array.isArray(department) ? department : [department];
+    const departmentArray = Array.isArray(department)
+      ? department
+      : [department];
 
     // Validate all department IDs exist
     const Department = (await import("../models/department.model.js")).default;
-    const validDepartments = await Department.find({ _id: { $in: departmentArray } });
-    
+    const validDepartments = await Department.find({
+      _id: { $in: departmentArray },
+    });
+
     if (validDepartments.length !== departmentArray.length) {
       return res.status(400).json({
         success: false,
@@ -61,7 +68,7 @@ export const createCourse = async (req, res) => {
     if (lecturers && lecturers.length > 0) {
       await Lecturer.updateMany(
         { _id: { $in: lecturers } },
-        { $addToSet: { courses: course._id } }
+        { $addToSet: { courses: course._id } },
       );
     }
 
@@ -169,10 +176,15 @@ export const updateCourse = async (req, res) => {
 
     // Validate department if provided
     if (department) {
-      const departmentArray = Array.isArray(department) ? department : [department];
-      const Department = (await import("../models/department.model.js")).default;
-      const validDepartments = await Department.find({ _id: { $in: departmentArray } });
-      
+      const departmentArray = Array.isArray(department)
+        ? department
+        : [department];
+      const Department = (await import("../models/department.model.js"))
+        .default;
+      const validDepartments = await Department.find({
+        _id: { $in: departmentArray },
+      });
+
       if (validDepartments.length !== departmentArray.length) {
         return res.status(400).json({
           success: false,
@@ -210,7 +222,6 @@ export const updateCourse = async (req, res) => {
 export const deleteCourse = async (req, res) => {
   try {
     const course = await Course.findById(req.params.id);
-
     if (!course) {
       return res.status(404).json({
         success: false,
@@ -218,11 +229,11 @@ export const deleteCourse = async (req, res) => {
       });
     }
 
-    await course.deleteOne();
+    await course.softDelete();
 
     res.status(200).json({
       success: true,
-      message: "Course deleted successfully",
+      message: "Course soft-deleted successfully",
     });
   } catch (error) {
     console.error("Delete course error:", error);
@@ -284,7 +295,7 @@ export const assignLecturers = async (req, res) => {
     if (newLecturers.length > 0) {
       await Lecturer.updateMany(
         { _id: { $in: newLecturers } },
-        { $addToSet: { courses: course._id } }
+        { $addToSet: { courses: course._id } },
       );
     }
 
@@ -329,14 +340,16 @@ export const removeLecturers = async (req, res) => {
     }
 
     // Remove lecturers
-    course.lecturers = course.lecturers.filter((lecturerId) => !lecturers.includes(lecturerId.toString()));
+    course.lecturers = course.lecturers.filter(
+      (lecturerId) => !lecturers.includes(lecturerId.toString()),
+    );
 
     await course.save();
 
     // Remove course from lecturers' courses array (bidirectional relationship)
     await Lecturer.updateMany(
       { _id: { $in: lecturers } },
-      { $pull: { courses: course._id } }
+      { $pull: { courses: course._id } },
     );
 
     await course.populate("lecturers", "fullname email lecturerId");
@@ -367,27 +380,49 @@ export const uploadCourseMaterial = async (req, res) => {
     const course = await Course.findById(courseId);
 
     if (!course) {
-      return res.status(404).json({ success: false, message: "Course not found" });
+      return res
+        .status(404)
+        .json({ success: false, message: "Course not found" });
     }
 
     // Only allow lecturers assigned to this course
     // Compare as strings for ObjectId
     if (!course.lecturers.some((l) => l.toString() === lecturerId)) {
-      return res.status(403).json({ success: false, message: "You are not assigned to this course" });
+      return res.status(403).json({
+        success: false,
+        message: "You are not assigned to this course",
+      });
     }
 
     // Only allow document files
     if (!req.file) {
-      return res.status(400).json({ success: false, message: "No file uploaded" });
+      return res
+        .status(400)
+        .json({ success: false, message: "No file uploaded" });
     }
-    const allowedDocs = [".pdf", ".doc", ".docx", ".ppt", ".pptx", ".xls", ".xlsx", ".txt"];
+    const allowedDocs = [
+      ".pdf",
+      ".doc",
+      ".docx",
+      ".ppt",
+      ".pptx",
+      ".xls",
+      ".xlsx",
+      ".txt",
+    ];
     const ext = req.file.originalname.split(".").pop().toLowerCase();
     if (!allowedDocs.includes(`.${ext}`)) {
-      return res.status(400).json({ success: false, message: "Only document files are allowed" });
+      return res
+        .status(400)
+        .json({ success: false, message: "Only document files are allowed" });
     }
 
     // Upload to Cloudinary
-    const uploadResult = await uploadToCloudinary(req.file.buffer, req.file.originalname, `/courses/${course.courseCode}/materials`);
+    const uploadResult = await uploadToCloudinary(
+      req.file.buffer,
+      req.file.originalname,
+      `/courses/${course.courseCode}/materials`,
+    );
 
     // Add to courseMaterials array
     course.courseMaterials.push({
@@ -422,22 +457,32 @@ export const deleteCourseMaterial = async (req, res) => {
     const course = await Course.findById(courseId);
 
     if (!course) {
-      return res.status(404).json({ success: false, message: "Course not found" });
+      return res
+        .status(404)
+        .json({ success: false, message: "Course not found" });
     }
 
     // Only allow lecturers assigned to this course
     if (!course.lecturers.some((l) => l.toString() === lecturerId)) {
-      return res.status(403).json({ success: false, message: "You are not assigned to this course" });
+      return res.status(403).json({
+        success: false,
+        message: "You are not assigned to this course",
+      });
     }
 
     const material = course.courseMaterials.id(materialId);
     if (!material) {
-      return res.status(404).json({ success: false, message: "Material not found" });
+      return res
+        .status(404)
+        .json({ success: false, message: "Material not found" });
     }
 
     // Only allow uploader or course lecturer to delete
     if (material.uploadedBy.toString() !== lecturerId) {
-      return res.status(403).json({ success: false, message: "You can only delete your own uploads" });
+      return res.status(403).json({
+        success: false,
+        message: "You can only delete your own uploads",
+      });
     }
 
     // Delete from Cloudinary
@@ -465,35 +510,45 @@ export const assignToCourse = async (req, res) => {
     const course = await Course.findById(id)
       .populate("department", "departmentName")
       .populate("lecturers", "fullname");
-    
+
     if (!course) return res.status(404).json({ message: "Course not found" });
 
     // Add lecturers
     if (lecturers.length) {
-      course.lecturers = Array.from(new Set([...course.lecturers.map(String), ...lecturers]));
+      course.lecturers = Array.from(
+        new Set([...course.lecturers.map(String), ...lecturers]),
+      );
       // Update each lecturer's courses
       await Lecturer.updateMany(
         { _id: { $in: lecturers } },
-        { $addToSet: { courses: course._id } }
+        { $addToSet: { courses: course._id } },
       );
     }
 
     // Add students
     if (students.length) {
-      const newStudents = students.filter(sid => !course.students.map(String).includes(sid));
-      course.students = Array.from(new Set([...course.students.map(String), ...students]));
-      
+      const newStudents = students.filter(
+        (sid) => !course.students.map(String).includes(sid),
+      );
+      course.students = Array.from(
+        new Set([...course.students.map(String), ...students]),
+      );
+
       // Update each student's courses
       await Student.updateMany(
         { _id: { $in: students } },
-        { $addToSet: { courses: course._id } }
+        { $addToSet: { courses: course._id } },
       );
 
       // Send enrollment email to newly added students
       if (newStudents.length > 0) {
-        const enrolledStudents = await Student.find({ _id: { $in: newStudents } }).select("fullname email");
-        const lecturerNames = course.lecturers.map(l => l.fullname || "").join(", ");
-        
+        const enrolledStudents = await Student.find({
+          _id: { $in: newStudents },
+        }).select("fullname email");
+        const lecturerNames = course.lecturers
+          .map((l) => l.fullname || "")
+          .join(", ");
+
         for (const student of enrolledStudents) {
           try {
             const mailGen = new EmailContentGenerator();
@@ -508,7 +563,10 @@ export const assignToCourse = async (req, res) => {
             });
             await Mailer.sendTemplatedMail(student.email, emailContent);
           } catch (emailError) {
-            console.error(`Error sending enrollment email to ${student.email}:`, emailError);
+            console.error(
+              `Error sending enrollment email to ${student.email}:`,
+              emailError,
+            );
           }
         }
       }
@@ -535,30 +593,61 @@ export const removeFromCourse = async (req, res) => {
     // Remove lecturers
     if (lecturers.length) {
       course.lecturers = course.lecturers.filter(
-        (lid) => !lecturers.includes(lid.toString())
+        (lid) => !lecturers.includes(lid.toString()),
       );
       // Remove course from each lecturer's courses
       await Lecturer.updateMany(
         { _id: { $in: lecturers } },
-        { $pull: { courses: course._id } }
+        { $pull: { courses: course._id } },
       );
     }
 
     // Remove students
     if (students.length) {
       course.students = course.students.filter(
-        (sid) => !students.includes(sid.toString())
+        (sid) => !students.includes(sid.toString()),
       );
       // Remove course from each student's courses
       await Student.updateMany(
         { _id: { $in: students } },
-        { $pull: { courses: course._id } }
+        { $pull: { courses: course._id } },
       );
     }
 
     await course.save();
     res.status(200).json({ message: "Removed successfully", course });
+  } catch (error) {}
+};
+
+// @desc    Restore course
+// @route   POST /api/courses/:id/restore
+// @access  Admin only
+export const restoreCourse = async (req, res) => {
+  try {
+    const course = await Course.findWithDeleted().findOne({
+      _id: req.params.id,
+    });
+
+    if (!course) {
+      return res.status(404).json({
+        success: false,
+        message: "Course not found",
+      });
+    }
+
+    await course.restore();
+
+    res.status(200).json({
+      success: true,
+      message: "Course restored successfully",
+      data: course,
+    });
   } catch (error) {
-    res.status(500).json({ message: "Failed to remove", error: error.message });
+    console.error("Restore course error:", error);
+    res.status(500).json({
+      success: false,
+      message: "Error restoring course",
+      error: error.message,
+    });
   }
 };

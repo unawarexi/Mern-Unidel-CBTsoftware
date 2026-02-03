@@ -1,16 +1,35 @@
 import express from "express";
-import { login, changePasswordFirstLogin, changePassword, forgotPassword, resetPassword, getCurrentUser, updateProfile, logout, refreshToken, adminSignup } from "../controllers/auth.controller.js";
+import {
+  login,
+  changePasswordFirstLogin,
+  changePassword,
+  forgotPassword,
+  resetPassword,
+  getCurrentUser,
+  updateProfile,
+  logout,
+  refreshToken,
+  agentSignup,
+} from "../controllers/auth.controller.js";
 import { protect } from "../middlewares/auth.middleware.js";
-import { loginLimiter, authLimiter, passwordResetLimiter } from "../middlewares/rate-limiter.middleware.js";
+import {
+  loginLimiter,
+  authLimiter,
+  passwordResetLimiter,
+} from "../middlewares/rate-limiter.middleware.js";
 
 const router = express.Router();
 
 // ========== PUBLIC ROUTES (with rate limiting) ==========
-router.post("/login", loginLimiter, login);
-router.post("/change-password-first-login", authLimiter, changePasswordFirstLogin);
+router.post("/login", login);
+router.post("/agent/signup", authLimiter, agentSignup);
+router.post(
+  "/change-password-first-login",
+
+  changePasswordFirstLogin,
+);
 router.post("/forgot-password", passwordResetLimiter, forgotPassword);
 router.post("/reset-password", passwordResetLimiter, resetPassword);
-router.post("/admin/signup", authLimiter, adminSignup);
 
 // ========== PROTECTED ROUTES ==========
 router.get("/me", protect, getCurrentUser);
@@ -20,4 +39,3 @@ router.post("/logout", protect, logout);
 router.post("/refresh-token", protect, refreshToken);
 
 export default router;
-

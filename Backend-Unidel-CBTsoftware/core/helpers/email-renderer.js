@@ -21,7 +21,7 @@ function renderContentSections(sections = []) {
         ${s.title ? `<div class="section-title">${s.title}</div>` : ""}
         <div>${s.content || ""}</div>
       </div>
-    `
+    `,
     )
     .join("");
 }
@@ -35,7 +35,7 @@ function renderExamDetails(details = []) {
         <div class="exam-detail-label">${d.label}</div>
         <div class="exam-detail-value">${d.value}</div>
       </div>
-    `
+    `,
     )
     .join("");
   return `
@@ -53,7 +53,7 @@ function renderButtons(buttons = []) {
       ${buttons
         .map(
           (b) =>
-            `<a href="${b.url || "#"}" class="${b.primary ? "primary-button" : "secondary-button"}" style="margin-right:8px">${b.text}</a>`
+            `<a href="${b.url || "#"}" class="${b.primary ? "primary-button" : "secondary-button"}" style="margin-right:8px">${b.text}</a>`,
         )
         .join("")}
     </div>
@@ -73,7 +73,7 @@ function renderAttachments(attachments = []) {
           <div class="attachment-size">${a.size || "Unknown size"}</div>
         </div>
       </div>
-    `
+    `,
     )
     .join("");
 
@@ -127,24 +127,44 @@ export function render(templateData = {}) {
   let html = getTemplate();
 
   // Inject logo URL from environment variable
-  const logoUrl = process.env.UNIDEL_LOGO_URL || "https://via.placeholder.com/80";
-  html = html.replace(/src="unidel-logo\.png"/g, `src="${logoUrl}"`);
+  const logoUrl =
+    process.env.UNIDEL_LOGO_URL ||
+    "https://res.cloudinary.com/dkt3rfpgz/image/upload/v1767626977/unidel2_hrn11f.png";
+  html = html.replace(/{{LOGO_URL}}/g, logoUrl);
 
   // Basic replacements
   html = html.replace(/{{EMAIL_TITLE}}/g, templateData.EMAIL_TITLE || "");
   html = html.replace(/{{GREETING}}/g, templateData.GREETING || "");
   html = html.replace(/{{MAIN_CONTENT}}/g, templateData.MAIN_CONTENT || "");
-  html = html.replace(/{{ADDITIONAL_CONTENT}}/g, templateData.ADDITIONAL_CONTENT || "");
-  html = html.replace(/{{UNSUBSCRIBE_LINK}}/g, templateData.UNSUBSCRIBE_LINK || "");
+  html = html.replace(
+    /{{ADDITIONAL_CONTENT}}/g,
+    templateData.ADDITIONAL_CONTENT || "",
+  );
+  html = html.replace(
+    /{{UNSUBSCRIBE_LINK}}/g,
+    templateData.UNSUBSCRIBE_LINK || "",
+  );
 
   // CONTENT_SECTIONS block
-  html = safeReplace(html, /{{#if CONTENT_SECTIONS}}[\s\S]*?{{\/if}}/g, renderContentSections(templateData.CONTENT_SECTIONS));
+  html = safeReplace(
+    html,
+    /{{#if CONTENT_SECTIONS}}[\s\S]*?{{\/if}}/g,
+    renderContentSections(templateData.CONTENT_SECTIONS),
+  );
 
   // EXAM_DETAILS block
-  html = safeReplace(html, /{{#if EXAM_DETAILS}}[\s\S]*?{{\/if}}/g, renderExamDetails(templateData.EXAM_DETAILS));
+  html = safeReplace(
+    html,
+    /{{#if EXAM_DETAILS}}[\s\S]*?{{\/if}}/g,
+    renderExamDetails(templateData.EXAM_DETAILS),
+  );
 
   // BUTTONS block
-  html = safeReplace(html, /{{#if BUTTONS}}[\s\S]*?{{\/if}}/g, renderButtons(templateData.BUTTONS));
+  html = safeReplace(
+    html,
+    /{{#if BUTTONS}}[\s\S]*?{{\/if}}/g,
+    renderButtons(templateData.BUTTONS),
+  );
 
   // INFO_BOX block (simple injection)
   if (templateData.INFO_BOX) {
@@ -160,45 +180,53 @@ export function render(templateData = {}) {
   }
 
   // ATTACHMENTS block (conditional)
-  html = safeReplace(html, /{{#if ATTACHMENTS}}[\s\S]*?{{\/if}}/g, renderAttachments(templateData.ATTACHMENTS));
+  html = safeReplace(
+    html,
+    /{{#if ATTACHMENTS}}[\s\S]*?{{\/if}}/g,
+    renderAttachments(templateData.ATTACHMENTS),
+  );
 
   // FEATURE_CARDS block (conditional)
-  html = safeReplace(html, /{{#if FEATURE_CARDS}}[\s\S]*?{{\/if}}/g, renderFeatureCards(templateData.FEATURE_CARDS));
+  html = safeReplace(
+    html,
+    /{{#if FEATURE_CARDS}}[\s\S]*?{{\/if}}/g,
+    renderFeatureCards(templateData.FEATURE_CARDS),
+  );
 
   // Enhanced cleanup of remaining handlebars-like syntax
   // This handles multiple edge cases:
-  
+
   // 1. Remove nested conditionals that weren't rendered (e.g., {{#if NESTED}}...{{/if}})
   html = html.replace(/{{#if\s+[^}]*}}[\s\S]*?{{\/if}}/gi, "");
-  
+
   // 2. Remove each loops that weren't rendered (e.g., {{#each ITEMS}}...{{/each}})
   html = html.replace(/{{#each\s+[^}]*}}[\s\S]*?{{\/each}}/gi, "");
-  
+
   // 3. Remove unless conditionals (e.g., {{#unless VAR}}...{{/unless}})
   html = html.replace(/{{#unless\s+[^}]*}}[\s\S]*?{{\/unless}}/gi, "");
-  
+
   // 4. Remove with blocks (e.g., {{#with OBJ}}...{{/with}})
   html = html.replace(/{{#with\s+[^}]*}}[\s\S]*?{{\/with}}/gi, "");
-  
+
   // 5. Remove any standalone closing tags that might be left (e.g., {{/if}}, {{/each}})
   html = html.replace(/{{\/[^}]+}}/gi, "");
-  
+
   // 6. Remove any opening block helpers that might be left (e.g., {{#if}}, {{#each}})
   html = html.replace(/{{#[^}]+}}/gi, "");
-  
+
   // 7. Remove simple variable placeholders (e.g., {{VAR_NAME}})
   html = html.replace(/{{[^#\/][^}]*}}/g, "");
-  
+
   // 8. Remove triple-brace unescaped variables (e.g., {{{VAR}}})
   html = html.replace(/{{{[^}]*}}}/g, "");
-  
+
   // 9. Final catch-all for any malformed handlebars syntax
   html = html.replace(/{{[^}]*}}/g, "");
-  
+
   // 10. Clean up excessive whitespace left by removed blocks
   html = html.replace(/\n\s*\n\s*\n/g, "\n\n"); // Replace 3+ newlines with 2
   html = html.replace(/>\s+</g, "><"); // Remove whitespace between tags (optional, be careful)
-  
+
   // 11. Remove HTML comments that might contain handlebars (edge case)
   html = html.replace(/<!--[\s\S]*?-->/g, "");
 

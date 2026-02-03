@@ -44,6 +44,14 @@ import {
   updateSiteSetting,
   bulkUpdateSettings,
   deleteSiteSetting,
+  // Restore
+  restoreFaculty,
+  restoreScholarship,
+  restoreCareer,
+  restoreNews,
+  restoreEvent,
+  restoreGalleryImage,
+  restoreFee,
 } from "../core/apis/admin-content-api";
 
 const STANDARD_QUERY_OPTIONS = {
@@ -398,6 +406,76 @@ export const useDeleteSiteSetting = () => {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["admin", "settings"] });
       queryClient.invalidateQueries({ queryKey: ["public"] });
+    },
+  });
+};
+
+export const useRestoreFaculty = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: restoreFaculty,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["admin", "faculties"] });
+    },
+  });
+};
+
+export const useRestoreScholarship = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: restoreScholarship,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["admin", "scholarships"] });
+    },
+  });
+};
+
+export const useRestoreCareer = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: restoreCareer,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["admin", "careers"] });
+    },
+  });
+};
+
+export const useRestoreNews = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: restoreNews,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["admin", "news"] });
+    },
+  });
+};
+
+export const useRestoreEvent = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: restoreEvent,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["admin", "events"] });
+    },
+  });
+};
+
+export const useRestoreGalleryImage = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: restoreGalleryImage,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["admin", "gallery"] });
+    },
+  });
+};
+
+export const useRestoreFee = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: restoreFee,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["admin", "fees"] });
     },
   });
 };

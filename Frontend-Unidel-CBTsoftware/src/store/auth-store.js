@@ -1,5 +1,5 @@
-/* eslint-disable no-unused-vars */
-import React, { useEffect } from "react";
+import React, { useEffect, useCallback, useMemo } from "react";
+import { throttle } from "../core/services/debounce-throttle";
 import { create } from "zustand";
 import {
   useLogin,
@@ -13,16 +13,10 @@ import {
   useGetCurrentUser,
 } from "../hooks/useAuth";
 
-const persistedUser = (() => {
-  try {
-    const raw = localStorage.getItem("authUser");
-    return raw ? JSON.parse(raw) : null;
-  } catch {
-    return null;
-  }
-})();
+// Initial state is null, we will fetch from /me
+const persistedUser = null;
 
-const useAuthStore = create((set) => ({
+export const useAuthStore = create((set) => ({
   // State
   user: persistedUser,
   isAuthenticated: !!persistedUser,
@@ -47,12 +41,7 @@ const useAuthStore = create((set) => ({
   // Actions
   setUser: (user) => {
     console.log("[STORE] setUser called", user);
-    try {
-      if (user) localStorage.setItem("authUser", JSON.stringify(user));
-      else localStorage.removeItem("authUser");
-    } catch (e) {
-      // ignore
-    }
+    // Cookie-based auth: no localStorage
     set({ user, isAuthenticated: !!user, isSessionExpired: false }); // Reset session expired flag on login
   },
 
@@ -66,11 +55,7 @@ const useAuthStore = create((set) => ({
 
   clearAuth: () => {
     console.log("[STORE] clearAuth called");
-    try {
-      localStorage.removeItem("authUser");
-    } catch (e) {
-      // ignore
-    }
+    // Cookie-based auth: no localStorage
     set({
       user: null,
       isAuthenticated: false,
@@ -98,14 +83,12 @@ const useAuthStore = create((set) => ({
       redirectRoute = "/admin-signin";
     } else if (role === "lecturer") {
       redirectRoute = "/lecturer-signin";
+    } else if (role === "agent") {
+      redirectRoute = "/signin-agent";
     }
 
     // Clear auth state and set session expired flag
-    try {
-      localStorage.removeItem("authUser");
-    } catch (e) {
-      // ignore
-    }
+    // Cookie-based auth: no localStorage
 
     set({
       user: null,
@@ -131,352 +114,216 @@ const useAuthStore = create((set) => ({
 }));
 
 // ========== WRAPPER HOOKS FOR COMPONENTS ==========
-// These hooks integrate TanStack Query with Zustand store
 
 export const useAuthLogin = () => {
-  const {
-    setUser,
-    setLoading,
-    setError,
-    setFirstLogin,
-    showToast,
-    showLoader,
-    hideLoader,
-  } = useAuthStore();
-  const loginMutation = useLogin();
+  const { setUser, setFirstLogin, showToast, setLoading } = useAuthStore();
+  const { mutateAsync, isLoading } = useLogin();
 
-  const login = async (credentials) => {
-    console.log("[STORE] useAuthLogin called", credentials);
-    setLoading(true);
-    setError(null);
-    showLoader();
+  const login = useMemo(
+    () =>
+      throttle(
+        async (credentials) => {
+          setLoading(true);
+          try {
+            const data = await mutateAsync(credentials);
+            if (data?.requirePasswordChange || data.user?.isFirstLogin) {
+              setFirstLogin(true);
+              showToast(
+                "First login detected. Please change your password.",
+                "info",
+              );
+            } else if (data.user) {
+              setUser(data.user);
+              showToast("Login successful", "success");
+            }
+            return data;
+          } catch (error) {
+            showToast(error.message || "Login failed", "error");
+            throw error;
+          } finally {
+            setLoading(false);
+          }
+        },
+        2000,
+        { trailing: false },
+      ),
+    [mutateAsync, setUser, setFirstLogin, showToast, setLoading],
+  );
 
-    try {
-      const data = await loginMutation.mutateAsync(credentials);
-
-      // Handle backend "requirePasswordChange" response or user.isFirstLogin
-      if (data?.requirePasswordChange || data.user?.isFirstLogin) {
-        setFirstLogin(true);
-        showToast("First login detected. Please change your password.", "info");
-      } else if (data.user) {
-        setUser(data.user);
-        showToast("Login successful", "success");
-      }
-
-      return data;
-    } catch (error) {
-      console.error("[STORE] useAuthLogin error:", error);
-      setError(error.message);
-      showToast(error.message || "Login failed", "error");
-      throw error;
-    } finally {
-      setLoading(false);
-      hideLoader();
-    }
-  };
-
-  return {
-    login,
-    isLoading: loginMutation.isLoading,
-    error: loginMutation.error,
-  };
+  return { login, isLoading };
 };
 
 export const useAuthLogout = () => {
-  const { clearAuth, setLoading, setError, showToast, showLoader, hideLoader } =
-    useAuthStore();
-  const logoutMutation = useLogout();
+  const { clearAuth, showToast } = useAuthStore();
+  const { mutateAsync, isLoading } = useLogout();
 
   const logout = async () => {
-    console.log("[STORE] useAuthLogout called");
-    setLoading(true);
-    setError(null);
-    showLoader();
-
     try {
-      await logoutMutation.mutateAsync();
-      clearAuth();
+      await mutateAsync();
       showToast("Logged out successfully", "success");
     } catch (error) {
-      console.error("[STORE] useAuthLogout error:", error);
-      setError(error.message);
       showToast(error.message || "Logout failed", "error");
-      // Clear auth anyway even if logout API fails
-      clearAuth();
-      throw error;
     } finally {
-      setLoading(false);
-      hideLoader();
+      clearAuth();
     }
   };
 
-  return {
-    logout,
-    isLoading: logoutMutation.isLoading,
-    error: logoutMutation.error,
-  };
+  return { logout, isLoading };
 };
 
 export const useAuthChangePasswordFirstLogin = () => {
-  const {
-    setUser,
-    setFirstLogin,
-    setLoading,
-    setError,
-    showToast,
-    showLoader,
-    hideLoader,
-  } = useAuthStore();
-  const changePasswordMutation = useChangePasswordFirstLogin();
+  const { setUser, setFirstLogin, showToast, setLoading } = useAuthStore();
+  const { mutateAsync, isLoading } = useChangePasswordFirstLogin();
 
-  const changePassword = async (passwordData) => {
-    console.log("[STORE] useAuthChangePasswordFirstLogin called", passwordData);
+  const changePassword = async (data) => {
     setLoading(true);
-    setError(null);
-    showLoader();
-
     try {
-      const data = await changePasswordMutation.mutateAsync(passwordData);
-      setUser(data.user);
+      const result = await mutateAsync(data);
+      setUser(result.user);
       setFirstLogin(false);
       showToast("Password changed successfully", "success");
-      return data;
+      return result;
     } catch (error) {
-      console.error("[STORE] useAuthChangePasswordFirstLogin error:", error);
-      setError(error.message);
-      showToast(error.message || "Password change failed", "error");
+      showToast(error.message || "Change failed", "error");
       throw error;
     } finally {
       setLoading(false);
-      hideLoader();
     }
   };
 
-  return {
-    changePassword,
-    isLoading: changePasswordMutation.isLoading,
-    error: changePasswordMutation.error,
-  };
+  return { changePassword, isLoading };
 };
 
 export const useAuthForgotPassword = () => {
-  const { setLoading, setError, showToast, showLoader, hideLoader } =
-    useAuthStore();
-  const forgotPasswordMutation = useForgotPassword();
+  const { showToast, setLoading } = useAuthStore();
+  const { mutateAsync, isLoading } = useForgotPassword();
 
   const forgotPassword = async (payload) => {
-    // payload: { email, role?, identifier? }
-    console.log("[STORE] useAuthForgotPassword called", payload);
     setLoading(true);
-    setError(null);
-    showLoader();
-
     try {
-      const data = await forgotPasswordMutation.mutateAsync(payload);
-      showToast("Password reset email sent successfully", "success");
-      return data;
+      const res = await mutateAsync(payload);
+      showToast("Reset email sent", "success");
+      return res;
     } catch (error) {
-      console.error("[STORE] useAuthForgotPassword error:", error);
-      setError(error.message);
       showToast(error.message || "Request failed", "error");
       throw error;
     } finally {
       setLoading(false);
-      hideLoader();
     }
   };
 
-  return {
-    forgotPassword,
-    isLoading: forgotPasswordMutation.isLoading,
-    error: forgotPasswordMutation.error,
-  };
+  return { forgotPassword, isLoading };
 };
 
 export const useAuthResetPassword = () => {
-  const { setLoading, setError, showToast, showLoader, hideLoader } =
-    useAuthStore();
-  const resetPasswordMutation = useResetPassword();
+  const { showToast, setLoading } = useAuthStore();
+  const { mutateAsync, isLoading } = useResetPassword();
 
-  const resetPassword = async (resetData) => {
-    console.log("[STORE] useAuthResetPassword called", resetData);
+  const resetPassword = async (data) => {
     setLoading(true);
-    setError(null);
-    showLoader();
-
     try {
-      const data = await resetPasswordMutation.mutateAsync(resetData);
+      const res = await mutateAsync(data);
       showToast("Password reset successful", "success");
-      return data;
+      return res;
     } catch (error) {
-      console.error("[STORE] useAuthResetPassword error:", error);
-      setError(error.message);
-      showToast(error.message || "Password reset failed", "error");
+      showToast(error.message || "Reset failed", "error");
       throw error;
     } finally {
       setLoading(false);
-      hideLoader();
     }
   };
 
-  return {
-    resetPassword,
-    isLoading: resetPasswordMutation.isLoading,
-    error: resetPasswordMutation.error,
-  };
+  return { resetPassword, isLoading };
 };
 
 export const useAuthAdminSignup = () => {
-  const { setUser, setLoading, setError, showToast, showLoader, hideLoader } =
-    useAuthStore();
-  const signupMutation = useAdminSignup();
+  const { setUser, showToast, setLoading } = useAuthStore();
+  const { mutateAsync, isLoading } = useAdminSignup();
 
-  const signup = async (signupData) => {
-    console.log("[STORE] useAuthAdminSignup called", signupData);
+  const signup = async (data) => {
     setLoading(true);
-    setError(null);
-    showLoader();
-
     try {
-      const data = await signupMutation.mutateAsync(signupData);
-      setUser(data.user);
+      const res = await mutateAsync(data);
+      setUser(res.user);
       showToast("Admin account created", "success");
-      return data;
+      return res;
     } catch (error) {
-      console.error("[STORE] useAuthAdminSignup error:", error);
-      setError(error.message);
       showToast(error.message || "Signup failed", "error");
       throw error;
     } finally {
       setLoading(false);
-      hideLoader();
     }
   };
 
-  return {
-    signup,
-    isLoading: signupMutation.isLoading,
-    error: signupMutation.error,
-  };
+  return { signup, isLoading };
 };
 
 export const useAuthUpdateProfile = () => {
-  const { setUser, setLoading, setError, showToast } = useAuthStore();
-  const updateProfileMutation = useUpdateProfile();
+  const { setUser, showToast, setLoading } = useAuthStore();
+  const { mutateAsync, isLoading } = useUpdateProfile();
 
-  const updateProfile = async (profileData) => {
-    console.log("[STORE] useAuthUpdateProfile called", profileData);
+  const updateProfile = async (data) => {
     setLoading(true);
-    setError(null);
-
     try {
-      const data = await updateProfileMutation.mutateAsync(profileData);
-      setUser(data.user);
-      showToast("Profile updated successfully", "success");
-      return data;
+      const res = await mutateAsync(data);
+      setUser(res.user);
+      showToast("Profile updated", "success");
+      return res;
     } catch (error) {
-      console.error("[STORE] useAuthUpdateProfile error:", error);
-      setError(error.message);
-      showToast(error.message || "Profile update failed", "error");
+      showToast(error.message || "Update failed", "error");
       throw error;
     } finally {
       setLoading(false);
     }
   };
 
-  return {
-    updateProfile,
-    isLoading: updateProfileMutation.isLoading,
-    error: updateProfileMutation.error,
-  };
+  return { updateProfile, isLoading };
 };
 
 export const useAuthChangePassword = () => {
-  const { setLoading, setError, showToast } = useAuthStore();
-  const changePasswordMutation = useChangePassword();
+  const { showToast, setLoading } = useAuthStore();
+  const { mutateAsync, isLoading } = useChangePassword();
 
-  const changePassword = async (passwordData) => {
-    console.log("[STORE] useAuthChangePassword called", passwordData);
+  const changePassword = async (data) => {
     setLoading(true);
-    setError(null);
-
     try {
-      const data = await changePasswordMutation.mutateAsync(passwordData);
-      showToast("Password changed successfully", "success");
-      return data;
+      const res = await mutateAsync(data);
+      showToast("Password changed", "success");
+      return res;
     } catch (error) {
-      console.error("[STORE] useAuthChangePassword error:", error);
-      setError(error.message);
-      showToast(error.message || "Password change failed", "error");
+      showToast(error.message || "Change failed", "error");
       throw error;
     } finally {
       setLoading(false);
     }
   };
 
-  return {
-    changePassword,
-    isLoading: changePasswordMutation.isLoading,
-    error: changePasswordMutation.error,
-  };
+  return { changePassword, isLoading };
 };
 
 export const useAuthCurrentUser = () => {
-  const { setUser, setError, clearAuth } = useAuthStore();
-  // Use a dynamic check against localStorage so auth fetch is enabled after login
-  const shouldFetch = !!localStorage.getItem("authUser");
+  const { setUser, clearAuth } = useAuthStore();
   const { data, isLoading, error, refetch } = useGetCurrentUser({
-    enabled: shouldFetch,
+    // Always try to fetch unless we know we are explicitly logged out (optional optimization, but simple is better)
+    enabled: true,
+    retry: false,
   });
 
-  // Sync TanStack Query data with Zustand store inside effects to avoid render-time state updates
   useEffect(() => {
     if (data) {
-      // Accept both { user } and { data } shapes from backend
       const userObj = data.user || data.data;
-      if (userObj) {
-        setUser(userObj);
-        console.log(" User synced from API:", userObj);
-      } else {
-        // server returned unauthenticated (e.g., token expired) - clear stored user
-        console.log("️ No user data returned, clearing auth");
-        clearAuth();
-      }
+      if (userObj) setUser(userObj);
+      else clearAuth();
     }
-  }, [data, setUser, clearAuth]);
-
-  useEffect(() => {
     if (error) {
-      console.error(" Auth error:", error.message);
-      setError(error.message);
-
-      // If it's an authentication error (token expired, invalid, etc), clear auth
-      const authErrors = [
-        "unauthorized",
-        "token",
-        "expired",
-        "invalid",
-        "forbidden",
-        "401",
-        "403",
-      ];
-      const isAuthError = authErrors.some((keyword) =>
-        error.message?.toLowerCase().includes(keyword),
+      const isAuthErr = ["401", "403", "unauthorized", "expired"].some((k) =>
+        error.message?.toLowerCase().includes(k),
       );
-
-      if (isAuthError) {
-        console.log(" Token expired or invalid, clearing auth");
-        clearAuth();
-      }
+      if (isAuthErr) clearAuth();
     }
-  }, [error, setError, clearAuth]);
+  }, [data, error, setUser, clearAuth]);
 
-  return {
-    user: data?.user,
-    isLoading,
-    error,
-    refetch,
-  };
+  return { user: data?.user || data?.data, isLoading, error, refetch };
 };
 
 export default useAuthStore;

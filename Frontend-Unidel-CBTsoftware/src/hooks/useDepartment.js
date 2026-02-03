@@ -7,6 +7,7 @@ import {
   updateDepartment,
   deleteDepartment,
   promoteStudents,
+  restoreDepartment,
 } from "../core/apis/department-api";
 
 const STANDARD_QUERY_OPTIONS = {
@@ -77,5 +78,16 @@ export const useDeleteDepartment = () => {
 export const usePromoteStudents = () => {
   return useMutation({
     mutationFn: promoteStudents,
+  });
+};
+
+export const useRestoreDepartment = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: restoreDepartment,
+    onSuccess: (data, id) => {
+      queryClient.invalidateQueries({ queryKey: ["departments"] });
+      queryClient.invalidateQueries({ queryKey: ["department", id] });
+    },
   });
 };

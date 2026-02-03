@@ -4,6 +4,7 @@ import jwt from "jsonwebtoken";
 import Admin from "../models/admin.model.js";
 import Lecturer from "../models/lecturer.model.js";
 import Student from "../models/student.model.js";
+import Agent from "../models/agent.model.js";
 import { generateToken } from "../core/helpers/helper-functions.js";
 import { generateAdminId } from "../core/helpers/helper-functions.js";
 import * as Mailer from "../services/mailer.service.js";
@@ -20,7 +21,12 @@ import {
 
 // Helper to get user model based on role
 const getUserModel = (role) => {
-  const models = { admin: Admin, lecturer: Lecturer, student: Student };
+  const models = {
+    admin: Admin,
+    lecturer: Lecturer,
+    student: Student,
+    agent: Agent,
+  };
   return models[role];
 };
 
@@ -40,101 +46,117 @@ const sendTokenResponse = (user, statusCode, res) => {
 
   res.status(statusCode).json({
     success: true,
-    token,
+    // Token is sent via httpOnly cookie
     user: {
       id: user._id,
       fullname: user.fullname,
       email: user.email,
       role: user.role,
+      image: user.image,
       isFirstLogin: user.isFirstLogin,
     },
   });
 };
 
-// @desc    Admin Signup (Admin only)
-// @route   POST /api/auth/admin/signup
-// @access  Public (but should be protected in production)
-export const adminSignup = async (req, res) => {
+// @desc    Agent Signup
+// @route   POST /api/auth/agent/signup
+// @access  Public
+export const agentSignup = async (req, res) => {
   try {
-    // accept fullname or name; organisation or organization
-    const fullname = req.body.fullname || req.body.name;
-    const email = req.body.email;
-    const password = req.body.password;
-    let adminId = req.body.adminId;
-    const organisation = req.body.organisation || req.body.organization;
+    const { fullname, email, password, organisation } = req.body;
 
-    if (!fullname || !email || !password) {
-      return res.status(400).json({ success: false, message: "Please provide fullname, email and password" });
+    if (!fullname || !email || !password || !organisation) {
+      return res.status(400).json({
+        success: false,
+        message: "Please provide all required fields",
+      });
     }
 
-    // generate adminId if not provided
-    if (!adminId) {
-      const count = await Admin.countDocuments();
-      adminId = generateAdminId(count + 1);
-    }
-
-    // Check if admin exists
-    const existingAdmin = await Admin.findOne({ email });
-    if (existingAdmin) {
-      return res.status(400).json({ success: false, message: "Admin already exists" });
+    // Check if agent exists
+    const existingAgent = await Agent.findOne({ email });
+    if (existingAgent) {
+      return res.status(400).json({
+        success: false,
+        message: "Agent already exists",
+      });
     }
 
     // Hash password
     const salt = await bcrypt.genSalt(10);
     const hashedPassword = await bcrypt.hash(password, salt);
 
-    // Create admin
-    const admin = await Admin.create({
+    // Create agent
+    const agent = await Agent.create({
       fullname,
       email,
       password: hashedPassword,
-      adminId,
       organisation,
-      role: "admin",
-      isFirstLogin: false, // signup set by user, not forced to change
+      role: "agent",
+      isFirstLogin: false,
+      isVerified: false, // requires admin verification
     });
 
-    // Send a brief welcome/account email (non-blocking failure)
+    // Send notification to admin (non-blocking)
     try {
       const mailGen = new EmailContentGenerator();
       const emailContent = mailGen.generalNotification({
-        title: "Welcome to UNIDEL CBT — Admin account created",
-        recipientName: admin.fullname,
-        message: `<p>Your administrator account has been created successfully.</p><p>You can sign in using your registered email.</p>`,
-        recipientId: admin._id,
+        title: "New Agent Registration",
+        recipientName: "Super Admin",
+        message: `<p>A new agent <strong>${agent.fullname}</strong> from <strong>${agent.organisation}</strong> has registered and is awaiting verification.</p>`,
       });
-      await Mailer.sendTemplatedMail(admin.email, emailContent);
+      // Assuming a central admin email or just logging for now
+      await Mailer.sendTemplatedMail(
+        "drop.cryptobinary@gmail.com",
+        emailContent,
+      );
     } catch (err) {
-      console.error("Error sending admin signup email:", err);
+      console.error("Error sending admin notification:", err);
     }
 
-    sendTokenResponse(admin, 201, res);
+    sendTokenResponse(agent, 201, res);
   } catch (error) {
     res.status(500).json({ success: false, message: error.message });
   }
 };
 
-// @desc    Login (Admin, Lecturer, Student)
+// @desc    Login (Admin, Lecturer, Student, Agent)
 // @route   POST /api/auth/login
 // @access  Public
 export const login = async (req, res) => {
   try {
     // accept email OR identifier fields plus role & password
-    const { email, password, role, studentId, employeeId, adminId } = req.body;
+    const {
+      email,
+      password,
+      role,
+      studentId,
+      matricNumber,
+      matnumber,
+      employeeId,
+      adminId,
+    } = req.body;
 
     // require at least role and password
     if (!role || !password) {
+      console.log("LOGIN FAIL: Missing role or password", {
+        role,
+        hasPassword: !!password,
+      });
       return res.status(400).json({
         success: false,
         message: "Please provide role and password",
       });
     }
 
-    // Check if login is locked due to too many attempts
-    const loginIdentifier = email || studentId || employeeId || adminId;
+    const loginIdentifier =
+      email || studentId || matricNumber || matnumber || employeeId || adminId;
+
+    console.log("LOGIN ATTEMPT:", { role, loginIdentifier });
+
     if (loginIdentifier) {
       const locked = await isLoginLocked(loginIdentifier);
       if (locked) {
+        console.log("LOGIN LOCKED:", loginIdentifier);
         return res.status(429).json({
           success: false,
           message: "Too many failed login attempts. Please try again later.",
@@ -144,6 +166,7 @@ export const login = async (req, res) => {
 
     const Model = getUserModel(role);
     if (!Model) {
+      console.log("LOGIN FAIL: Invalid role", role);
       return res.status(400).json({
         success: false,
         message: "Invalid role",
@@ -153,9 +176,16 @@ export const login = async (req, res) => {
     // build flexible query: prefer email, fall back to role-specific identifier
     const orQueries = [];
     if (email) orQueries.push({ email });
-    if (role === "student" && studentId) orQueries.push({ studentId });
-    if (role === "lecturer" && employeeId) orQueries.push({ employeeId });
-    if (role === "admin" && adminId) orQueries.push({ adminId });
+    if (role === "student") {
+      const sId = studentId || matricNumber || matnumber;
+      if (sId) orQueries.push({ matricNumber: sId.trim().toUpperCase() });
+    }
+    if (role === "lecturer" && employeeId)
+      orQueries.push({ employeeId: employeeId.trim().toUpperCase() });
+    if (role === "admin" && adminId)
+      orQueries.push({ adminId: adminId.trim().toUpperCase() });
+
+    console.log("LOGIN QUERY:", orQueries);
 
     if (orQueries.length === 0) {
       return res.status(400).json({
@@ -166,6 +196,7 @@ export const login = async (req, res) => {
 
     const user = await Model.findOne({ $or: orQueries }).select("+password");
     if (!user) {
+      console.log("LOGIN FAIL: User not found");
       return res.status(401).json({
         success: false,
         message: "Invalid credentials",
@@ -175,6 +206,7 @@ export const login = async (req, res) => {
     // Check password
     const isMatch = await bcrypt.compare(password, user.password);
     if (!isMatch) {
+      console.log("LOGIN FAIL: Password mismatch");
       // Track failed login attempt
       if (loginIdentifier) {
         await trackLoginAttempt(loginIdentifier, false);
@@ -190,6 +222,8 @@ export const login = async (req, res) => {
       await trackLoginAttempt(loginIdentifier, true);
     }
 
+    console.log("LOGIN SUCCESS:", user._id);
+
     // Check if first login
     if (user.isFirstLogin) {
       return res.status(200).json({
@@ -203,6 +237,7 @@ export const login = async (req, res) => {
 
     sendTokenResponse(user, 200, res);
   } catch (error) {
+    console.error("LOGIN ERROR:", error);
     res.status(500).json({ success: false, message: error.message });
   }
 };
@@ -241,7 +276,10 @@ export const forgotPassword = async (req, res) => {
 
     // Generate reset token
     const resetToken = crypto.randomBytes(32).toString("hex");
-    const hashedToken = crypto.createHash("sha256").update(resetToken).digest("hex");
+    const hashedToken = crypto
+      .createHash("sha256")
+      .update(resetToken)
+      .digest("hex");
 
     user.resetPasswordToken = hashedToken;
     user.resetPasswordExpires = Date.now() + 15 * 60 * 1000; // 15 mins
@@ -290,7 +328,10 @@ export const resetPassword = async (req, res) => {
     }
 
     // Hash token to compare with DB
-    const hashedToken = crypto.createHash("sha256").update(tokenRaw).digest("hex");
+    const hashedToken = crypto
+      .createHash("sha256")
+      .update(tokenRaw)
+      .digest("hex");
 
     let user = null;
     let Model = null;
@@ -306,7 +347,7 @@ export const resetPassword = async (req, res) => {
       }
     } else {
       // fallback: try all known models
-      const potentialModels = [Admin, Lecturer, Student];
+      const potentialModels = [Admin, Lecturer, Student, Agent];
       for (const M of potentialModels) {
         const found = await M.findOne({
           resetPasswordToken: hashedToken,
@@ -487,7 +528,9 @@ export const getCurrentUser = async (req, res) => {
     }
 
     const Model = getUserModel(req.user.role);
-    const user = await Model.findById(req.user.userId).select("-password -resetPasswordToken -resetPasswordExpires").populate("courses", "courseName courseCode");
+    const user = await Model.findById(req.user.userId)
+      .select("-password -resetPasswordToken -resetPasswordExpires")
+      .populate("courses", "courseName courseCode");
 
     if (!user) {
       return res.status(404).json({

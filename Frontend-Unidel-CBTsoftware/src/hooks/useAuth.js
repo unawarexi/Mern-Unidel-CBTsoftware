@@ -10,6 +10,7 @@ import {
   changePassword,
   logout,
   refreshToken,
+  agentSignup,
 } from "../core/apis/auth-api";
 
 // ========== REACT QUERY HOOKS ==========
@@ -51,6 +52,17 @@ export const useAdminSignup = () => {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: adminSignup,
+    onSuccess: (data) => {
+      queryClient.setQueryData(["currentUser"], { user: data.user });
+    },
+  });
+};
+
+// Agent signup mutation
+export const useAgentSignup = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: agentSignup,
     onSuccess: (data) => {
       queryClient.setQueryData(["currentUser"], { user: data.user });
     },

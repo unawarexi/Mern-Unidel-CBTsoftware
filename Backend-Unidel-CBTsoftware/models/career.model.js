@@ -1,4 +1,5 @@
 import mongoose from "mongoose";
+import softDeletePlugin from "../core/plugins/soft-delete.plugin.js";
 
 const careerSchema = new mongoose.Schema(
   {
@@ -26,7 +27,15 @@ const careerSchema = new mongoose.Schema(
     },
     category: {
       type: String,
-      enum: ["technology", "engineering", "business", "healthcare", "education", "finance", "other"],
+      enum: [
+        "technology",
+        "engineering",
+        "business",
+        "healthcare",
+        "education",
+        "finance",
+        "other",
+      ],
       default: "other",
     },
     description: {
@@ -39,6 +48,11 @@ const careerSchema = new mongoose.Schema(
       },
     ],
     responsibilities: [
+      {
+        type: String,
+      },
+    ],
+    expectations: [
       {
         type: String,
       },
@@ -90,8 +104,10 @@ const careerSchema = new mongoose.Schema(
   },
   {
     timestamps: true,
-  }
+  },
 );
+
+careerSchema.plugin(softDeletePlugin);
 
 // Indexes
 careerSchema.index({ isActive: 1, isFeatured: -1, createdAt: -1 });

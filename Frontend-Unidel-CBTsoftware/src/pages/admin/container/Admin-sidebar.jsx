@@ -18,6 +18,7 @@ import {
   Menu,
   X,
   GraduationCap,
+  Globe,
 } from "lucide-react";
 import { useNavigate, Link } from "react-router-dom";
 import { useAuthLogout } from "../../../store/auth-store";
@@ -127,6 +128,25 @@ const Sidebar = () => {
         { title: "Login Activity", href: "/admin/audit/logins" },
         { title: "Exam Submissions", href: "/admin/audit/submissions" },
         { title: "Security Events", href: "/admin/audit/security" },
+      ],
+    },
+    // LANDING PAGE CONTENT
+    {
+      id: "content",
+      title: "Landing Page Content",
+      icon: Globe,
+      href: "/admin/content",
+      subItems: [
+        { title: "Faculties", href: "/admin/content/faculties" },
+        { title: "Scholarships", href: "/admin/content/scholarships" },
+        { title: "Special Programs", href: "/admin/content/programs" },
+        { title: "Governing Bodies", href: "/admin/content/governing-bodies" },
+        { title: "Waitlist", href: "/admin/content/waitlist" },
+        { title: "Support Tickets", href: "/admin/content/tickets" },
+        {
+          title: "Job Applications",
+          href: "/admin/content/career-applications",
+        },
       ],
     },
     // UPLOADS & DOCUMENTS

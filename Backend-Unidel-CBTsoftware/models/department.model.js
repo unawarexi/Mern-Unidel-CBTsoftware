@@ -1,4 +1,5 @@
 import mongoose from "mongoose";
+import softDeletePlugin from "../core/plugins/soft-delete.plugin.js";
 
 const departmentSchema = new mongoose.Schema(
   {
@@ -70,7 +71,9 @@ const departmentSchema = new mongoose.Schema(
   },
   {
     timestamps: true,
-  }
+  },
 );
+
+departmentSchema.plugin(softDeletePlugin);
 
 export default mongoose.model("Department", departmentSchema);

@@ -1,17 +1,22 @@
 import mongoose from "mongoose";
+import softDeletePlugin from "../core/plugins/soft-delete.plugin.js";
 
 const courseMaterialSchema = new mongoose.Schema(
   {
     filename: { type: String, required: true },
     url: { type: String, required: true },
-    uploadedBy: { type: mongoose.Schema.Types.ObjectId, ref: "Lecturer", required: true },
+    uploadedBy: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Lecturer",
+      required: true,
+    },
     uploadedAt: { type: Date, default: Date.now },
     description: { type: String },
     public_id: { type: String },
     type: { type: String, default: "document" },
     category: { type: String, default: "document" },
   },
-  { _id: true }
+  { _id: true },
 );
 
 const courseSchema = new mongoose.Schema(
@@ -50,7 +55,9 @@ const courseSchema = new mongoose.Schema(
   },
   {
     timestamps: true,
-  }
+  },
 );
+
+courseSchema.plugin(softDeletePlugin);
 
 export default mongoose.model("Course", courseSchema);

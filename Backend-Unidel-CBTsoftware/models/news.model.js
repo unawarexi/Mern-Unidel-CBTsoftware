@@ -1,4 +1,5 @@
 import mongoose from "mongoose";
+import softDeletePlugin from "../core/plugins/soft-delete.plugin.js";
 
 const newsSchema = new mongoose.Schema(
   {
@@ -23,7 +24,15 @@ const newsSchema = new mongoose.Schema(
     },
     category: {
       type: String,
-      enum: ["announcements", "academic", "research", "events", "sports", "alumni", "general"],
+      enum: [
+        "announcements",
+        "academic",
+        "research",
+        "events",
+        "sports",
+        "alumni",
+        "general",
+      ],
       default: "general",
     },
     author: {
@@ -74,8 +83,10 @@ const newsSchema = new mongoose.Schema(
   },
   {
     timestamps: true,
-  }
+  },
 );
+
+newsSchema.plugin(softDeletePlugin);
 
 // Generate slug from title
 newsSchema.pre("save", function (next) {
@@ -94,7 +105,6 @@ newsSchema.pre("save", function (next) {
 // Indexes
 newsSchema.index({ isPublished: 1, isFeatured: -1, publishedAt: -1 });
 newsSchema.index({ category: 1, isPublished: 1 });
-newsSchema.index({ slug: 1 });
 newsSchema.index({ tags: 1 });
 
 export default mongoose.model("News", newsSchema);

@@ -1,4 +1,5 @@
 import mongoose from "mongoose";
+import softDeletePlugin from "../core/plugins/soft-delete.plugin.js";
 
 const activityLogSchema = new mongoose.Schema(
   {
@@ -64,7 +65,16 @@ const activityLogSchema = new mongoose.Schema(
     },
     entityType: {
       type: String,
-      enum: ["User", "Course", "Exam", "QuestionBank", "Submission", "Department", "File", "System"],
+      enum: [
+        "User",
+        "Course",
+        "Exam",
+        "QuestionBank",
+        "Submission",
+        "Department",
+        "File",
+        "System",
+      ],
     },
     entityId: {
       type: mongoose.Schema.Types.ObjectId,
@@ -85,7 +95,7 @@ const activityLogSchema = new mongoose.Schema(
   },
   {
     timestamps: true,
-  }
+  },
 );
 
 // Indexes for performance
@@ -94,5 +104,7 @@ activityLogSchema.index({ role: 1, createdAt: -1 });
 activityLogSchema.index({ action: 1, createdAt: -1 });
 activityLogSchema.index({ entityType: 1, entityId: 1 });
 activityLogSchema.index({ createdAt: -1 });
+
+activityLogSchema.plugin(softDeletePlugin);
 
 export default mongoose.model("ActivityLog", activityLogSchema);

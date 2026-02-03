@@ -1,4 +1,5 @@
 import mongoose from "mongoose";
+import softDeletePlugin from "../core/plugins/soft-delete.plugin.js";
 
 const gallerySchema = new mongoose.Schema(
   {
@@ -16,7 +17,16 @@ const gallerySchema = new mongoose.Schema(
     },
     category: {
       type: String,
-      enum: ["campus", "events", "academics", "sports", "facilities", "students", "graduation", "research"],
+      enum: [
+        "campus",
+        "events",
+        "academics",
+        "sports",
+        "facilities",
+        "students",
+        "graduation",
+        "research",
+      ],
       default: "campus",
     },
     description: {
@@ -56,12 +66,14 @@ const gallerySchema = new mongoose.Schema(
   },
   {
     timestamps: true,
-  }
+  },
 );
 
 // Indexes
 gallerySchema.index({ isPublished: 1, isFeatured: -1, order: 1 });
 gallerySchema.index({ category: 1, isPublished: 1 });
 gallerySchema.index({ tags: 1 });
+
+gallerySchema.plugin(softDeletePlugin);
 
 export default mongoose.model("Gallery", gallerySchema);

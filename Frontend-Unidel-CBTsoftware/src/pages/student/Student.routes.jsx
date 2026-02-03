@@ -35,6 +35,7 @@ import Announcements from "./notifications/Announcements";
 // Support
 import IntegrityPolicy from "./support/Integrity";
 import HelpSupport from "./support/Help";
+import SupportPage from "../shared/SupportPage";
 
 // Profile
 import AccountInfo from "./profile/AccountInfo";
@@ -107,6 +108,7 @@ export default function StudentRoutes() {
       />
       <Route path="support/integrity" element={<IntegrityPolicy />} />
       <Route path="support/help" element={<HelpSupport />} />
+      <Route path="support/tickets" element={<SupportPage />} />
 
       {/* Profile & Settings */}
       <Route

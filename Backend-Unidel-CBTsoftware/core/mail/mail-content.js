@@ -5,7 +5,8 @@ class EmailContentGenerator {
     this.baseUrl = process.env.BASE_URL || "https://cbt.unidel.edu.ng";
     this.supportEmail = "support@unidel.edu.ng";
     this.unsubscribeBaseUrl = `${this.baseUrl}/unsubscribe`;
-    this.logoUrl = process.env.UNIDEL_LOGO_URL || "https://via.placeholder.com/80"; // Fallback placeholder
+    this.logoUrl =
+      process.env.UNIDEL_LOGO_URL || "https://via.placeholder.com/80"; // Fallback placeholder
   }
 
   generateUnsubscribeLink(userId, emailType) {
@@ -14,7 +15,12 @@ class EmailContentGenerator {
 
   // 1) Admin-created account (student or lecturer)
   adminCreatedAccountEmail(userData) {
-    const roleLabel = (userData.role || "student").toLowerCase() === "lecturer" ? "Lecturer" : "Student";
+    let roleLabel = "User";
+    const role = (userData.role || "student").toLowerCase();
+    if (role === "lecturer") roleLabel = "Lecturer";
+    else if (role === "admin") roleLabel = "Administrator";
+    else if (role === "superadmin") roleLabel = "Super Admin";
+    else roleLabel = "Student";
     return {
       EMAIL_TITLE: `Welcome to UNIDEL CBT — Your ${roleLabel} Account`,
       GREETING: `Hello ${roleLabel},`,
@@ -54,7 +60,10 @@ class EmailContentGenerator {
       // `,
 
       FEATURE_CARDS: true, // Show feature cards only on account creation
-      UNSUBSCRIBE_LINK: this.generateUnsubscribeLink(userData.userId, "account"),
+      UNSUBSCRIBE_LINK: this.generateUnsubscribeLink(
+        userData.userId,
+        "account",
+      ),
     };
   }
 
@@ -76,7 +85,10 @@ class EmailContentGenerator {
       ADDITIONAL_CONTENT: `
         <p style="color:#6b7280;font-size:13px;">If you didn't request this, you can safely ignore this message or contact ${this.supportEmail}.</p>
       `,
-      UNSUBSCRIBE_LINK: this.generateUnsubscribeLink(userData.userId, "security"),
+      UNSUBSCRIBE_LINK: this.generateUnsubscribeLink(
+        userData.userId,
+        "security",
+      ),
     };
   }
 
@@ -102,17 +114,26 @@ class EmailContentGenerator {
       ADDITIONAL_CONTENT: `
         <p style="color:#DC2626;">If you did not make this change, contact ${this.supportEmail} immediately.</p>
       `,
-      UNSUBSCRIBE_LINK: this.generateUnsubscribeLink(userData.userId, "security"),
+      UNSUBSCRIBE_LINK: this.generateUnsubscribeLink(
+        userData.userId,
+        "security",
+      ),
     };
   }
 
   // 4) Exam registration notice (student registered for an exam/course)
   examRegistration(regData) {
     const examDetails = [
-      { label: "Course", value: `${regData.courseCode || ""} — ${regData.courseTitle || ""}` },
+      {
+        label: "Course",
+        value: `${regData.courseCode || ""} — ${regData.courseTitle || ""}`,
+      },
       { label: "Exam", value: regData.examTitle || regData.examName || "—" },
       { label: "Start Time", value: regData.startTime || "—" },
-      { label: "Duration", value: regData.duration ? `${regData.duration} minutes` : "—" },
+      {
+        label: "Duration",
+        value: regData.duration ? `${regData.duration} minutes` : "—",
+      },
       { label: "Exam ID", value: regData.examId || "—" },
     ];
 
@@ -126,7 +147,9 @@ class EmailContentGenerator {
       BUTTONS: [
         {
           text: "View Exam Details",
-          url: regData.viewExamUrl || `${this.baseUrl}/exams/${regData.examId || ""}`,
+          url:
+            regData.viewExamUrl ||
+            `${this.baseUrl}/exams/${regData.examId || ""}`,
           primary: true,
         },
       ],
@@ -135,7 +158,10 @@ class EmailContentGenerator {
         title: "Note",
         content: `Arrive/Log in at least 15 minutes before the start time. Contact ${this.supportEmail} for issues.`,
       },
-      UNSUBSCRIBE_LINK: this.generateUnsubscribeLink(regData.studentId, "exam-registration"),
+      UNSUBSCRIBE_LINK: this.generateUnsubscribeLink(
+        regData.studentId,
+        "exam-registration",
+      ),
     };
   }
 
@@ -148,9 +174,17 @@ class EmailContentGenerator {
         <p>This is a reminder that your exam <strong>${reminderData.examTitle || ""}</strong> will start at <strong>${reminderData.startTime || ""}</strong> (${reminderData.timezone || "local time"}).</p>
       `,
       EXAM_DETAILS: [
-        { label: "Course", value: `${reminderData.courseCode || ""} — ${reminderData.courseTitle || ""}` },
+        {
+          label: "Course",
+          value: `${reminderData.courseCode || ""} — ${reminderData.courseTitle || ""}`,
+        },
         { label: "Start Time", value: reminderData.startTime || "—" },
-        { label: "Duration", value: reminderData.duration ? `${reminderData.duration} minutes` : "—" },
+        {
+          label: "Duration",
+          value: reminderData.duration
+            ? `${reminderData.duration} minutes`
+            : "—",
+        },
       ],
       INFO_BOX: {
         type: "warning",
@@ -160,11 +194,16 @@ class EmailContentGenerator {
       BUTTONS: [
         {
           text: "View Exam Instructions",
-          url: reminderData.instructionsUrl || `${this.baseUrl}/exams/${reminderData.examId || ""}/instructions`,
+          url:
+            reminderData.instructionsUrl ||
+            `${this.baseUrl}/exams/${reminderData.examId || ""}/instructions`,
           primary: true,
         },
       ],
-      UNSUBSCRIBE_LINK: this.generateUnsubscribeLink(reminderData.studentId, "exam-reminder"),
+      UNSUBSCRIBE_LINK: this.generateUnsubscribeLink(
+        reminderData.studentId,
+        "exam-reminder",
+      ),
     };
   }
 
@@ -191,17 +230,25 @@ class EmailContentGenerator {
       BUTTONS: [
         {
           text: "View Submission",
-          url: subData.viewSubmissionUrl || `${this.baseUrl}/submissions/${subData.submissionId || ""}`,
+          url:
+            subData.viewSubmissionUrl ||
+            `${this.baseUrl}/submissions/${subData.submissionId || ""}`,
           primary: true,
         },
       ],
-      UNSUBSCRIBE_LINK: this.generateUnsubscribeLink(subData.studentId, "submissions"),
+      UNSUBSCRIBE_LINK: this.generateUnsubscribeLink(
+        subData.studentId,
+        "submissions",
+      ),
     };
   }
 
   // 7) Grade / result notification
   gradeNotification(gradeData) {
-    const percent = gradeData.score != null && gradeData.total != null ? ((gradeData.score / gradeData.total) * 100).toFixed(2) : null;
+    const percent =
+      gradeData.score != null && gradeData.total != null
+        ? ((gradeData.score / gradeData.total) * 100).toFixed(2)
+        : null;
     return {
       EMAIL_TITLE: `UNIDEL CBT — Your result for ${gradeData.examTitle || ""} is available`,
       GREETING: `Hello ${gradeData.studentName || ""},`,
@@ -224,11 +271,16 @@ class EmailContentGenerator {
       BUTTONS: [
         {
           text: "View Full Result",
-          url: gradeData.viewResultsUrl || `${this.baseUrl}/results/${gradeData.examId || ""}`,
+          url:
+            gradeData.viewResultsUrl ||
+            `${this.baseUrl}/results/${gradeData.examId || ""}`,
           primary: true,
         },
       ],
-      UNSUBSCRIBE_LINK: this.generateUnsubscribeLink(gradeData.studentId, "grades"),
+      UNSUBSCRIBE_LINK: this.generateUnsubscribeLink(
+        gradeData.studentId,
+        "grades",
+      ),
     };
   }
 
@@ -240,7 +292,10 @@ class EmailContentGenerator {
       MAIN_CONTENT: notificationData.message || "",
       CONTENT_SECTIONS: notificationData.sections || [],
       BUTTONS: notificationData.buttons || [],
-      UNSUBSCRIBE_LINK: this.generateUnsubscribeLink(notificationData.recipientId, "notifications"),
+      UNSUBSCRIBE_LINK: this.generateUnsubscribeLink(
+        notificationData.recipientId,
+        "notifications",
+      ),
     };
   }
 
@@ -269,16 +324,23 @@ class EmailContentGenerator {
       BUTTONS: [
         {
           text: "View Question Bank",
-          url: data.viewUrl || `${this.baseUrl}/question-banks/${data.questionBankId || ""}`,
+          url:
+            data.viewUrl ||
+            `${this.baseUrl}/question-banks/${data.questionBankId || ""}`,
           primary: true,
         },
         {
           text: "Schedule Exam",
-          url: data.scheduleUrl || `${this.baseUrl}/exams/create?qbId=${data.questionBankId || ""}`,
+          url:
+            data.scheduleUrl ||
+            `${this.baseUrl}/exams/create?qbId=${data.questionBankId || ""}`,
           primary: false,
         },
       ],
-      UNSUBSCRIBE_LINK: this.generateUnsubscribeLink(data.lecturerId, "question-banks"),
+      UNSUBSCRIBE_LINK: this.generateUnsubscribeLink(
+        data.lecturerId,
+        "question-banks",
+      ),
     };
   }
 
@@ -310,11 +372,16 @@ class EmailContentGenerator {
       BUTTONS: [
         {
           text: "Edit Question Bank",
-          url: data.editUrl || `${this.baseUrl}/question-banks/${data.questionBankId || ""}/edit`,
+          url:
+            data.editUrl ||
+            `${this.baseUrl}/question-banks/${data.questionBankId || ""}/edit`,
           primary: true,
         },
       ],
-      UNSUBSCRIBE_LINK: this.generateUnsubscribeLink(data.lecturerId, "question-banks"),
+      UNSUBSCRIBE_LINK: this.generateUnsubscribeLink(
+        data.lecturerId,
+        "question-banks",
+      ),
     };
   }
 
@@ -330,13 +397,17 @@ class EmailContentGenerator {
         { label: "Exam Title", value: data.examTitle || "—" },
         { label: "Start Time", value: data.startTime || "—" },
         { label: "End Time", value: data.endTime || "—" },
-        { label: "Duration", value: data.duration ? `${data.duration} minutes` : "—" },
+        {
+          label: "Duration",
+          value: data.duration ? `${data.duration} minutes` : "—",
+        },
         { label: "Total Questions", value: data.totalQuestions || "—" },
       ],
       INFO_BOX: {
         type: "warning",
         title: "Important",
-        content: "Make sure to log in at least 15 minutes before the exam starts. Late submissions will not be accepted.",
+        content:
+          "Make sure to log in at least 15 minutes before the exam starts. Late submissions will not be accepted.",
       },
       BUTTONS: [
         {
@@ -374,7 +445,10 @@ class EmailContentGenerator {
           `,
         },
       ],
-      UNSUBSCRIBE_LINK: this.generateUnsubscribeLink(data.studentId, "security"),
+      UNSUBSCRIBE_LINK: this.generateUnsubscribeLink(
+        data.studentId,
+        "security",
+      ),
     };
   }
 
@@ -431,7 +505,10 @@ class EmailContentGenerator {
           `,
         },
       ],
-      UNSUBSCRIBE_LINK: this.generateUnsubscribeLink(data.studentId, "submissions"),
+      UNSUBSCRIBE_LINK: this.generateUnsubscribeLink(
+        data.studentId,
+        "submissions",
+      ),
     };
   }
 
@@ -452,32 +529,236 @@ class EmailContentGenerator {
       BUTTONS: [
         {
           text: "View Submission",
-          url: data.viewUrl || `${this.baseUrl}/submissions/${data.submissionId || ""}`,
+          url:
+            data.viewUrl ||
+            `${this.baseUrl}/submissions/${data.submissionId || ""}`,
           primary: true,
         },
       ],
-      UNSUBSCRIBE_LINK: this.generateUnsubscribeLink(data.studentId, "feedback"),
+      UNSUBSCRIBE_LINK: this.generateUnsubscribeLink(
+        data.studentId,
+        "feedback",
+      ),
     };
   }
 
-  // Example: Exam results with attachments
-  examResultsWithAttachments(data) {
+  // 16) Waitlist Confirmation (Public)
+  waitlistConfirmation(data) {
     return {
-      EMAIL_TITLE: `UNIDEL CBT — Exam Results Available`,
-      GREETING: `Hello ${data.studentName || ""},`,
+      EMAIL_TITLE: "Waitlist Confirmation — UNIDEL",
+      GREETING: `Hello ${data.fullName || "there"},`,
       MAIN_CONTENT: `
-        <p>Your exam results for <strong>${data.examTitle || ""}</strong> are now available.</p>
+        <p>You have successfully subscribed to the <strong>${data.interest || "general"}</strong> waitlist at University of Delta (UNIDEL).</p>
+        <p>We will keep you updated on any news, openings, or developments related to your area of interest.</p>
       `,
+      CONTENT_SECTIONS: [
+        { title: "Interest Area", content: data.interest || "General Inquiry" },
+        {
+          title: "Registration Date",
+          content: new Date().toLocaleDateString(),
+        },
+      ],
+      INFO_BOX: {
+        type: "success",
+        title: "Stay Tuned",
+        content:
+          "We appreciate your interest in UNIDEL. You'll hear from us soon!",
+      },
+      UNSUBSCRIBE_LINK: this.generateUnsubscribeLink(data.userId, "waitlist"),
+    };
+  }
+
+  // 17) Student Application Submitted
+  studentApplicationSubmission(data) {
+    return {
+      EMAIL_TITLE: "Application Received — UNIDEL Enrollment",
+      GREETING: `Hello ${data.firstName || "Applicant"},`,
+      MAIN_CONTENT: `
+        <p>Your application for enrollment at UNIDEL has been successfully submitted and is now under review by our admissions team.</p>
+      `,
+      CONTENT_SECTIONS: [
+        {
+          title: "Application Summary",
+          content: `
+            <ul style="margin-left:18px;color:#475569;">
+              <li><strong>Reference ID:</strong> ${data.applicationId || "—"}</li>
+              <li><strong>Program Target:</strong> ${data.program || "—"}</li>
+              <li><strong>Date Formed:</strong> ${new Date().toLocaleDateString()}</li>
+            </ul>
+          `,
+        },
+      ],
       BUTTONS: [
         {
-          text: "View Results",
-          url: data.viewUrl || `${this.baseUrl}/results/${data.examId || ""}`,
+          text: "Check Application Status",
+          url: `${this.baseUrl}/auth/selection`,
           primary: true,
         },
       ],
-      // Only include ATTACHMENTS if there are actual files
-      ATTACHMENTS: data.attachments || undefined, // undefined will hide the section
-      UNSUBSCRIBE_LINK: this.generateUnsubscribeLink(data.studentId, "results"),
+      UNSUBSCRIBE_LINK: this.generateUnsubscribeLink(data.userId, "enrollment"),
+    };
+  }
+
+  // 18) Student Application Reviewed (Approved/Rejected)
+  studentApplicationReview(data) {
+    const isApproved = data.status === "approved" || data.status === "admitted";
+    return {
+      EMAIL_TITLE: `Application Status Update: ${data.status.toUpperCase()}`,
+      GREETING: `Hello ${data.firstName || "Applicant"},`,
+      MAIN_CONTENT: `
+        <p>Your enrollment application status has been updated to: <strong>${data.status}</strong>.</p>
+        ${data.feedback ? `<div style="background:#F3F4F6;padding:12px;border-radius:6px;margin:16px 0;"><strong>Feedback:</strong> ${data.feedback}</div>` : ""}
+      `,
+      INFO_BOX: isApproved
+        ? {
+            type: "success",
+            title: "Congratulations!",
+            content:
+              "Please log in to the portal to complete your registration and NEXT steps.",
+          }
+        : undefined,
+      BUTTONS: [
+        {
+          text: "View Portal",
+          url: `${this.baseUrl}/auth/selection`,
+          primary: true,
+        },
+      ],
+      UNSUBSCRIBE_LINK: this.generateUnsubscribeLink(data.userId, "enrollment"),
+    };
+  }
+
+  // 19) Support Ticket Created
+  supportTicketCreated(data) {
+    return {
+      EMAIL_TITLE: `Support Ticket Created: [${data.ticketId}]`,
+      GREETING: `Hello ${data.name || "there"},`,
+      MAIN_CONTENT: `
+        <p>Your support ticket has been successfully created. Our team will review your request and get back to you shortly.</p>
+      `,
+      CONTENT_SECTIONS: [
+        {
+          title: "Ticket Information",
+          content: `
+            <ul style="margin-left:18px;color:#475569;">
+              <li><strong>Ticket ID:</strong> ${data.ticketId}</li>
+              <li><strong>Subject:</strong> ${data.title}</li>
+              <li><strong>Type:</strong> ${data.type}</li>
+              <li><strong>Priority:</strong> ${data.priority}</li>
+            </ul>
+          `,
+        },
+      ],
+      BUTTONS: [
+        {
+          text: "View Ticket Status",
+          url: data.viewUrl || `${this.baseUrl}/support/tickets`,
+          primary: true,
+        },
+      ],
+      UNSUBSCRIBE_LINK: this.generateUnsubscribeLink(data.userId, "support"),
+    };
+  }
+
+  // 20) Support Ticket Updated / Response Added
+  supportTicketUpdated(data) {
+    return {
+      EMAIL_TITLE: `Update on your Ticket: [${data.ticketId}]`,
+      GREETING: `Hello ${data.name || "there"},`,
+      MAIN_CONTENT: `
+        <p>There is a new update on your support ticket <strong>"${data.title}"</strong>.</p>
+        <div style="background:#F9FAFB;padding:15px;border-radius:8px;border-left:4px solid #EA580C;margin:20px 0;">
+          <p style="margin-bottom:8px;font-weight:600;">Response from Support/System:</p>
+          <p>${data.message}</p>
+        </div>
+      `,
+      BUTTONS: [
+        {
+          text: "View Ticket Status",
+          url: data.viewUrl || `${this.baseUrl}/support/tickets`,
+          primary: true,
+        },
+      ],
+      CONTENT_SECTIONS: [
+        {
+          title: "Current Status",
+          content: (data.status || "Updated").toUpperCase(),
+        },
+      ],
+      UNSUBSCRIBE_LINK: this.generateUnsubscribeLink(data.userId, "support"),
+    };
+  }
+
+  // 21) Career Application Submission
+  careerApplicationSubmission(data) {
+    return {
+      EMAIL_TITLE: "Job Application Received — UNIDEL Careers",
+      GREETING: `Hello ${data.fullName},`,
+      MAIN_CONTENT: `
+        <p>Thank you for your interest in joining the University of Delta. We have received your application for the <strong>"${data.jobTitle}"</strong> position.</p>
+        <p>Our recruitment team will review your credentials and contact you if your profile matches our requirements.</p>
+      `,
+      CONTENT_SECTIONS: [
+        {
+          title: "Application Reference",
+          content: `
+            <ul style="margin-left:18px;color:#475569;">
+              <li><strong>Position:</strong> ${data.jobTitle}</li>
+              <li><strong>Reference ID:</strong> ${data.applicationId}</li>
+              <li><strong>Date Submitted:</strong> ${new Date().toLocaleDateString()}</li>
+            </ul>
+          `,
+        },
+      ],
+      UNSUBSCRIBE_LINK: this.generateUnsubscribeLink(data.userId, "careers"),
+    };
+  }
+
+  // 22) Career Application Status Update
+  careerApplicationStatusUpdate(data) {
+    const statusLabels = {
+      submitted: "Application Received",
+      reviewed: "Application Under Review",
+      shortlisted: "Shortlisted for Further Review",
+      interview: "Interview Invitation",
+      offered: "Employment Offer",
+      rejected: "Application Outcome",
+    };
+
+    const isInterview = data.status === "interview";
+
+    return {
+      EMAIL_TITLE: `Career Update: ${statusLabels[data.status] || "Status Update"}`,
+      GREETING: `Hello ${data.fullName},`,
+      MAIN_CONTENT: `
+        <p>Your application status for the <strong>"${data.jobTitle}"</strong> position has been updated to: <strong>${statusLabels[data.status] || data.status}</strong>.</p>
+        ${data.feedback ? `<div style="background:#F3F4F6;padding:12px;border-radius:6px;margin:16px 0;"><strong>Feedback:</strong> ${data.feedback}</div>` : ""}
+      `,
+      CONTENT_SECTIONS:
+        isInterview && data.interview
+          ? [
+              {
+                title: "Interview Schedule",
+                content: `
+            <p><strong>Date & Time:</strong> ${new Date(data.interview.date).toLocaleString()}</p>
+            <p><strong>Location:</strong> ${data.interview.location}</p>
+            ${data.interview.link ? `<p><strong>Remote Link:</strong> <a href="${data.interview.link}">${data.interview.link}</a></p>` : ""}
+          `,
+              },
+            ]
+          : undefined,
+      BUTTONS: isInterview
+        ? [
+            {
+              text: "Confirm Attendance",
+              url:
+                data.confirmUrl ||
+                `mailto:${this.supportEmail}?subject=Interview Confirmation: ${data.jobTitle}`,
+              primary: true,
+            },
+          ]
+        : undefined,
+      UNSUBSCRIBE_LINK: this.generateUnsubscribeLink(data.userId, "careers"),
     };
   }
 
@@ -519,7 +800,13 @@ class EmailContentGenerator {
 
     const required = requiredFields[emailType];
     if (!required) return true;
-    return required.every((field) => data && data.hasOwnProperty(field) && data[field] !== null && data[field] !== "");
+    return required.every(
+      (field) =>
+        data &&
+        data.hasOwnProperty(field) &&
+        data[field] !== null &&
+        data[field] !== "",
+    );
   }
 
   // Add method to get logo URL for templates

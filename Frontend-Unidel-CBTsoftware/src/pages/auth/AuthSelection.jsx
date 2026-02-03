@@ -9,6 +9,7 @@ import {
   School,
   Moon,
   Sun,
+  Globe,
 } from "lucide-react";
 import useThemeStore from "../../store/theme-store";
 import { cn } from "../../core/lib/cn";
@@ -56,6 +57,19 @@ const AuthSelection = () => {
       lightBg: "bg-emerald-50",
       darkBg: "bg-emerald-900/10",
       accent: "text-emerald-600",
+    },
+    {
+      id: "agent",
+      title: "Agent Portal",
+      description:
+        "Portal for licensed educational partners and institutional agents.",
+      icon: Globe,
+      href: "/signin-agent",
+      color: "purple",
+      gradient: "from-indigo-600 to-purple-600",
+      lightBg: "bg-indigo-50",
+      darkBg: "bg-indigo-900/10",
+      accent: "text-indigo-600",
     },
   ];
 
@@ -137,12 +151,12 @@ const AuthSelection = () => {
       </nav>
 
       {/* Main Content */}
-      <main className="flex-1 flex flex-col items-center justify-center p-6 relative z-10">
+      <main className="flex-1 flex flex-col items-center justify-center p-4 sm:p-6 lg:p-8 relative z-10">
         <motion.div
           initial="hidden"
           animate="visible"
           variants={containerVariants}
-          className="max-w-5xl w-full"
+          className="w-full max-w-7xl mx-auto"
         >
           <motion.div variants={itemVariants} className="text-center mb-12">
             <h1
@@ -164,7 +178,7 @@ const AuthSelection = () => {
             </p>
           </motion.div>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 lg:gap-8">
+          <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4 sm:gap-6 lg:gap-8">
             {roles.map((role) => (
               <motion.div
                 key={role.id}

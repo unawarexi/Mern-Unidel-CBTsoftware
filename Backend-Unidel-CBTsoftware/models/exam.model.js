@@ -1,4 +1,5 @@
 import mongoose from "mongoose";
+import softDeletePlugin from "../core/plugins/soft-delete.plugin.js";
 
 const examSchema = new mongoose.Schema(
   {
@@ -69,10 +70,16 @@ const examSchema = new mongoose.Schema(
       type: Number,
       default: 0,
     },
+    agentId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Agent",
+    },
   },
   {
     timestamps: true,
-  }
+  },
 );
+
+examSchema.plugin(softDeletePlugin);
 
 export default mongoose.model("Exam", examSchema);

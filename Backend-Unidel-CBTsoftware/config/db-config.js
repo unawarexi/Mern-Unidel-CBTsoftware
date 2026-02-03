@@ -1,4 +1,5 @@
 import mongoose from "mongoose";
+import { seedSuperAdmin } from "../scripts/admin.seed.js";
 
 const connectDB = async () => {
   const uri = process.env.DB_URI;
@@ -10,6 +11,9 @@ const connectDB = async () => {
   try {
     await mongoose.connect(uri);
     console.log("MongoDB connected successfully");
+
+    // Seed Super Admin
+    await seedSuperAdmin();
   } catch (error) {
     console.error(`MongoDB connection error: ${error.message || error}`);
     process.exit(1);

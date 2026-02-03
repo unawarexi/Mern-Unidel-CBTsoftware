@@ -1,4 +1,5 @@
 import mongoose from "mongoose";
+import softDeletePlugin from "../core/plugins/soft-delete.plugin.js";
 
 const reportSchema = new mongoose.Schema(
   {
@@ -72,6 +73,8 @@ const reportSchema = new mongoose.Schema(
   },
   { timestamps: true },
 );
+
+reportSchema.plugin(softDeletePlugin);
 
 // Index for faster retrieval of user reports
 reportSchema.index({ userId: 1, type: 1, generatedAt: -1 });

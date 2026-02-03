@@ -1,4 +1,5 @@
-const BASE_URL = import.meta.env.VITE_API_BASE_URL || "http://localhost:3000/api/auth";
+const BASE_URL =
+  import.meta.env.VITE_API_BASE_URL || "http://localhost:3000/api/auth";
 
 // ========== API FUNCTIONS ==========
 
@@ -61,7 +62,22 @@ export const resetPassword = async (data) => {
   return response.json();
 };
 
-// Admin signup
+// Agent signup
+export const agentSignup = async (data) => {
+  const response = await fetch(`${BASE_URL}/agent/signup`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    credentials: "include",
+    body: JSON.stringify(data),
+  });
+  if (!response.ok) {
+    const error = await response.json();
+    throw new Error(error.message || "Agent signup failed");
+  }
+  return response.json();
+};
+
+// Admin signup (Invitation based - this endpoint might change but export is needed for boot)
 export const adminSignup = async (data) => {
   const response = await fetch(`${BASE_URL}/admin/signup`, {
     method: "POST",
@@ -71,9 +87,7 @@ export const adminSignup = async (data) => {
   });
   if (!response.ok) {
     const error = await response.json();
-    console.log(error.message);
-    throw new Error(error.message || "Signup failed");
-    
+    throw new Error(error.message || "Admin signup failed");
   }
   return response.json();
 };
@@ -86,13 +100,8 @@ export const getCurrentUser = async () => {
   });
 
   // If not authenticated or session expired, dispatch event and return null
+  // If not authenticated, just return null (don't force redirect for guest visits)
   if (response.status === 401 || response.status === 403) {
-    window.dispatchEvent(new CustomEvent("session-expired", {
-      detail: {
-        status: response.status,
-        message: "Session expired"
-      }
-    }));
     return { user: null };
   }
 

@@ -11,6 +11,7 @@ import {
   removeFromCourse,
   uploadCourseMaterial,
   deleteCourseMaterial,
+  restoreCourse,
 } from "../core/apis/course-api";
 
 const STANDARD_QUERY_OPTIONS = {
@@ -118,7 +119,9 @@ export const useUploadCourseMaterial = () => {
   return useMutation({
     mutationFn: uploadCourseMaterial,
     onSuccess: (data, variables) => {
-      queryClient.invalidateQueries({ queryKey: ["course", variables.courseId] });
+      queryClient.invalidateQueries({
+        queryKey: ["course", variables.courseId],
+      });
       queryClient.invalidateQueries({ queryKey: ["courses"] });
     },
   });
@@ -129,8 +132,21 @@ export const useDeleteCourseMaterial = () => {
   return useMutation({
     mutationFn: deleteCourseMaterial,
     onSuccess: (data, variables) => {
-      queryClient.invalidateQueries({ queryKey: ["course", variables.courseId] });
+      queryClient.invalidateQueries({
+        queryKey: ["course", variables.courseId],
+      });
       queryClient.invalidateQueries({ queryKey: ["courses"] });
+    },
+  });
+};
+
+export const useRestoreCourse = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: restoreCourse,
+    onSuccess: (data, id) => {
+      queryClient.invalidateQueries({ queryKey: ["courses"] });
+      queryClient.invalidateQueries({ queryKey: ["course", id] });
     },
   });
 };

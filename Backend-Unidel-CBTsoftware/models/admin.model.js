@@ -1,4 +1,5 @@
 import mongoose from "mongoose";
+import softDeletePlugin from "../core/plugins/soft-delete.plugin.js";
 
 const adminSchema = new mongoose.Schema(
   {
@@ -43,7 +44,9 @@ const adminSchema = new mongoose.Schema(
   },
   {
     timestamps: true,
-  }
+  },
 );
+
+adminSchema.plugin(softDeletePlugin);
 
 export default mongoose.model("Admin", adminSchema);

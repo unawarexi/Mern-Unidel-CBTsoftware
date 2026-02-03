@@ -1,4 +1,5 @@
 import mongoose from "mongoose";
+import softDeletePlugin from "../core/plugins/soft-delete.plugin.js";
 
 const scholarshipSchema = new mongoose.Schema(
   {
@@ -65,8 +66,10 @@ const scholarshipSchema = new mongoose.Schema(
   },
   {
     timestamps: true,
-  }
+  },
 );
+
+scholarshipSchema.plugin(softDeletePlugin);
 
 // Indexes
 scholarshipSchema.index({ isActive: 1, isFeatured: -1, order: 1 });

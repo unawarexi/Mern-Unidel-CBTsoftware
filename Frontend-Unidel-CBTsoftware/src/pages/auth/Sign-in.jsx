@@ -15,11 +15,16 @@ import { InfoCard } from "../../components/Cards";
 import useThemeStore from "../../store/theme-store";
 import { cn } from "../../core/lib/cn";
 
-const signInSchema = z.object({
-  studentId: z.string().min(5, "Student ID must be at least 5 characters"),
-  email: z.string().email("Invalid email address"),
-  password: z.string().min(8, "Password must be at least 8 characters"),
-});
+const signInSchema = z
+  .object({
+    studentId: z.string().optional(),
+    email: z.string().email("Invalid email address").optional(),
+    password: z.string().min(8, "Password must be at least 8 characters"),
+  })
+  .refine((data) => data.studentId || data.email, {
+    message: "Either Student ID or Email is required",
+    path: ["studentId"],
+  });
 
 const SignIn = () => {
   const navigate = useNavigate();
@@ -61,8 +66,15 @@ const SignIn = () => {
         role: "student",
         password: data.password,
       };
-      if (data.email && data.email.trim()) payload.email = data.email.trim();
-      else payload.studentId = data.studentId.trim();
+
+      if (data.email && data.email.trim()) {
+        payload.email = data.email.trim();
+      }
+
+      if (data.studentId && data.studentId.trim()) {
+        payload.studentId = data.studentId.trim();
+        payload.matricNumber = data.studentId.trim(); // Add as matricNumber for backend compatibility
+      }
 
       const result = await login(payload);
 
@@ -195,7 +207,13 @@ const SignIn = () => {
               />
             </div>
 
-            <Button type="submit" isLoading={isLoading} fullWidth size="lg">
+            <Button
+              type="submit"
+              isLoading={false}
+              disableOnLoading={false}
+              fullWidth
+              size="lg"
+            >
               Sign In to Portal
             </Button>
           </form>

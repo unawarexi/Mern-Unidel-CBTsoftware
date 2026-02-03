@@ -133,7 +133,8 @@ const Sidebar = () => {
       href: "/lecturer/support",
       subItems: [
         { title: "Exam Integrity Policy", href: "/lecturer/support/integrity" },
-        { title: "Help & Support", href: "/lecturer/support/help" },
+        { title: "Help Center", href: "/lecturer/support/help" },
+        { title: "Support Tickets", href: "/lecturer/support/tickets" },
         { title: "Announcements", href: "/lecturer/support/announcements" },
         { title: "System Messages", href: "/lecturer/support/system" },
       ],

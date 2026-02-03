@@ -1,4 +1,5 @@
 import mongoose from "mongoose";
+import softDeletePlugin from "../core/plugins/soft-delete.plugin.js";
 
 const questionBankSchema = new mongoose.Schema(
   {
@@ -71,10 +72,16 @@ const questionBankSchema = new mongoose.Schema(
       originalName: String,
       uploadedAt: Date,
     },
+    agentId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Agent",
+    },
   },
   {
     timestamps: true,
-  }
+  },
 );
+
+questionBankSchema.plugin(softDeletePlugin);
 
 export default mongoose.model("QuestionBank", questionBankSchema);

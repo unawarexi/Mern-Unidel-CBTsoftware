@@ -1,4 +1,5 @@
 import mongoose from "mongoose";
+import softDeletePlugin from "../core/plugins/soft-delete.plugin.js";
 
 const siteSettingsSchema = new mongoose.Schema(
   {
@@ -43,23 +44,36 @@ const siteSettingsSchema = new mongoose.Schema(
   },
   {
     timestamps: true,
-  }
+  },
 );
 
 // Indexes
-siteSettingsSchema.index({ key: 1 });
 siteSettingsSchema.index({ category: 1, isPublic: 1 });
 
 // Static method to get setting by key
-siteSettingsSchema.statics.getSetting = async function (key, defaultValue = null) {
+siteSettingsSchema.statics.getSetting = async function (
+  key,
+  defaultValue = null,
+) {
   const setting = await this.findOne({ key });
   return setting ? setting.value : defaultValue;
 };
 
 // Static method to set setting
-siteSettingsSchema.statics.setSetting = async function (key, value, options = {}) {
-  const { category = "general", label, description, valueType = "string", isPublic = true, updatedBy } = options;
-  
+siteSettingsSchema.statics.setSetting = async function (
+  key,
+  value,
+  options = {},
+) {
+  const {
+    category = "general",
+    label,
+    description,
+    valueType = "string",
+    isPublic = true,
+    updatedBy,
+  } = options;
+
   return this.findOneAndUpdate(
     { key },
     {
@@ -72,12 +86,15 @@ siteSettingsSchema.statics.setSetting = async function (key, value, options = {}
       isPublic,
       updatedBy,
     },
-    { upsert: true, new: true }
+    { upsert: true, new: true },
   );
 };
 
 // Static method to get all settings by category
-siteSettingsSchema.statics.getByCategory = async function (category, publicOnly = true) {
+siteSettingsSchema.statics.getByCategory = async function (
+  category,
+  publicOnly = true,
+) {
   const query = { category };
   if (publicOnly) query.isPublic = true;
   return this.find(query).sort({ order: 1 });
@@ -91,5 +108,7 @@ siteSettingsSchema.statics.getPublicStats = async function () {
     return acc;
   }, {});
 };
+
+siteSettingsSchema.plugin(softDeletePlugin);
 
 export default mongoose.model("SiteSettings", siteSettingsSchema);

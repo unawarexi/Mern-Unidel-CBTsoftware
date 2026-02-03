@@ -254,7 +254,7 @@ const HeroSection = () => {
                 className="flex flex-wrap gap-4"
               >
                 <Link
-                  to="/auth/selection"
+                  to="/apply"
                   className={cn(
                     "inline-flex items-center gap-2 px-8 py-4 rounded-xl font-semibold text-base transition-all hover:scale-105",
                     "bg-orange-500 text-white hover:bg-orange-600 shadow-lg shadow-orange-500/25",

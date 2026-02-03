@@ -16,6 +16,7 @@ const Button = React.forwardRef(
       size = "md",
       isLoading = false,
       disabled = false,
+      disableOnLoading = true,
       leftIcon,
       rightIcon,
       fullWidth = false,
@@ -26,6 +27,7 @@ const Button = React.forwardRef(
     },
     ref,
   ) => {
+    const disabledState = disabled || (disableOnLoading && isLoading);
     const baseStyles =
       "inline-flex items-center justify-center font-semibold rounded-xl transition-all focus:outline-none focus:ring-4 disabled:opacity-60 disabled:cursor-not-allowed";
 
@@ -60,8 +62,8 @@ const Button = React.forwardRef(
       <motion.button
         ref={ref}
         type={type}
-        disabled={disabled || isLoading}
-        whileTap={{ scale: disabled || isLoading ? 1 : 0.98 }}
+        disabled={disabledState}
+        whileTap={{ scale: disabledState ? 1 : 0.98 }}
         className={clsx(
           baseStyles,
           variants[variant],

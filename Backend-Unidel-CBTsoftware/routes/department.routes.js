@@ -8,6 +8,7 @@ import {
   updateDepartment,
   deleteDepartment,
   promoteStudents,
+  restoreDepartment,
 } from "../controllers/department.controller.js";
 
 const router = express.Router();
@@ -15,8 +16,24 @@ const router = express.Router();
 // Admin-only create, update, delete, promote
 router.post("/", protect, authorize("admin", "superadmin"), createDepartment);
 router.put("/:id", protect, authorize("admin", "superadmin"), updateDepartment);
-router.delete("/:id", protect, authorize("admin", "superadmin"), deleteDepartment);
-router.post("/promote", protect, authorize("admin", "superadmin"), promoteStudents);
+router.delete(
+  "/:id",
+  protect,
+  authorize("admin", "superadmin"),
+  deleteDepartment,
+);
+router.post(
+  "/:id/restore",
+  protect,
+  authorize("admin", "superadmin"),
+  restoreDepartment,
+);
+router.post(
+  "/promote",
+  protect,
+  authorize("admin", "superadmin"),
+  promoteStudents,
+);
 
 // Public/fetch routes (protected, but any role)
 router.get("/", protect, getAllDepartments);

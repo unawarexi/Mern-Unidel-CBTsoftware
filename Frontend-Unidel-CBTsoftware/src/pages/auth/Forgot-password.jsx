@@ -2,7 +2,7 @@
 import React from "react";
 import { AlertCircle, Mail, User } from "lucide-react";
 import { Images } from "../../constants/image-strings";
-import { useNavigate, Link } from "react-router-dom";
+import { useNavigate, Link, useLocation } from "react-router-dom";
 import { useAuthForgotPassword } from "../../store/auth-store";
 import { ButtonSpinner } from "../../components/Spinners";
 import { useForm } from "react-hook-form";
@@ -10,7 +10,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
 
 const forgotPasswordSchema = z.object({
-  role: z.enum(["student", "lecturer", "admin"]),
+  role: z.enum(["student", "lecturer", "admin", "agent"]),
   identifier: z.string().min(3, "ID is required"),
   email: z.string().email("Invalid email address"),
 });
@@ -26,6 +26,8 @@ const ForgotPassword = () => {
   const { forgotPassword, isLoading } = useAuthForgotPassword();
   const { isDarkMode } = useThemeStore();
 
+  const location = useLocation();
+
   const {
     register,
     handleSubmit,
@@ -36,7 +38,7 @@ const ForgotPassword = () => {
     resolver: zodResolver(forgotPasswordSchema),
     mode: "onBlur",
     defaultValues: {
-      role: "student",
+      role: location.state?.role || "student",
       identifier: "",
       email: "",
     },
@@ -111,7 +113,7 @@ const ForgotPassword = () => {
                 I am a
               </label>
               <div className="grid grid-cols-3 gap-3">
-                {["student", "lecturer", "admin"].map((r) => (
+                {["student", "lecturer", "admin", "agent"].map((r) => (
                   <label
                     key={r}
                     className={cn(
@@ -142,14 +144,18 @@ const ForgotPassword = () => {
                   ? "Matric / Student ID"
                   : role === "lecturer"
                     ? "Employee ID"
-                    : "Admin ID"
+                    : role === "agent"
+                      ? "Agent Email"
+                      : "Admin ID"
               }
               placeholder={
                 role === "student"
                   ? "UNIDEL/2023/0001"
                   : role === "lecturer"
                     ? "EMP12345"
-                    : "ADM001"
+                    : role === "agent"
+                      ? "agent@partner.com"
+                      : "ADM001"
               }
               error={errors.identifier?.message}
               {...register("identifier")}

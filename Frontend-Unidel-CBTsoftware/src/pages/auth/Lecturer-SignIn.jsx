@@ -193,7 +193,8 @@ const LecturerSignIn = () => {
 
             <Button
               type="submit"
-              isLoading={isLoading}
+              isLoading={false}
+              disableOnLoading={false}
               variant="lecturer"
               fullWidth
               size="lg"

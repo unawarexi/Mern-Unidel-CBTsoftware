@@ -1,4 +1,5 @@
 import mongoose from "mongoose";
+import softDeletePlugin from "../core/plugins/soft-delete.plugin.js";
 
 const eventSchema = new mongoose.Schema(
   {
@@ -38,7 +39,16 @@ const eventSchema = new mongoose.Schema(
     },
     category: {
       type: String,
-      enum: ["academic", "research", "career", "student-life", "admissions", "alumni", "sports", "cultural"],
+      enum: [
+        "academic",
+        "research",
+        "career",
+        "student-life",
+        "admissions",
+        "alumni",
+        "sports",
+        "cultural",
+      ],
       default: "academic",
     },
     featuredImage: {
@@ -85,8 +95,10 @@ const eventSchema = new mongoose.Schema(
   },
   {
     timestamps: true,
-  }
+  },
 );
+
+eventSchema.plugin(softDeletePlugin);
 
 // Generate slug from title
 eventSchema.pre("save", function (next) {
@@ -103,6 +115,5 @@ eventSchema.pre("save", function (next) {
 eventSchema.index({ isPublished: 1, isFeatured: -1, startDate: 1 });
 eventSchema.index({ category: 1, isPublished: 1 });
 eventSchema.index({ startDate: 1, endDate: 1 });
-eventSchema.index({ slug: 1 });
 
 export default mongoose.model("Event", eventSchema);

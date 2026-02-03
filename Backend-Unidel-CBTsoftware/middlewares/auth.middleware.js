@@ -2,6 +2,7 @@ import jwt from "jsonwebtoken";
 import Admin from "../models/admin.model.js";
 import Lecturer from "../models/lecturer.model.js";
 import Student from "../models/student.model.js";
+import Agent from "../models/agent.model.js";
 
 // Helper to get user model based on role
 const getUserModel = (role) => {
@@ -9,6 +10,7 @@ const getUserModel = (role) => {
     admin: Admin,
     lecturer: Lecturer,
     student: Student,
+    agent: Agent,
     superadmin: Admin,
   };
   return models[role];
@@ -154,6 +156,11 @@ export const optionalProtect = async (req, res, next) => {
 // Grant access to specific roles
 export const authorize = (...roles) => {
   return (req, res, next) => {
+    // Superadmin has access to everything by default
+    if (req.user.role === "superadmin") {
+      return next();
+    }
+
     if (!roles.includes(req.user.role)) {
       return res.status(403).json({
         success: false,

@@ -1,4 +1,5 @@
-const BASE_URL = import.meta.env.VITE_API_BASE_URL || "http://localhost:3000/api/departments";
+const BASE_URL =
+  import.meta.env.VITE_API_BASE_URL || "http://localhost:3000/api/departments";
 
 // ========== DEPARTMENT API FUNCTIONS ==========
 
@@ -103,6 +104,20 @@ export const promoteStudents = async (data) => {
     const error = await response.json();
     console.error("[API] promoteStudents error:", error);
     throw new Error(error.message || "Failed to promote students");
+  }
+  return response.json();
+};
+
+export const restoreDepartment = async (id) => {
+  console.log("[API] restoreDepartment called", id);
+  const response = await fetch(`${BASE_URL}/${id}/restore`, {
+    method: "POST",
+    credentials: "include",
+  });
+  if (!response.ok) {
+    const error = await response.json();
+    console.error("[API] restoreDepartment error:", error);
+    throw new Error(error.message || "Failed to restore department");
   }
   return response.json();
 };

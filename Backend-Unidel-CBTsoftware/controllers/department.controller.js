@@ -2,7 +2,10 @@ import Department from "../models/department.model.js";
 import Student from "../models/student.model.js";
 import Lecturer from "../models/lecturer.model.js";
 import Course from "../models/course.model.js";
-import { generateDepartmentId, generateDepartmentCode } from "../core/helpers/helper-functions.js";
+import {
+  generateDepartmentId,
+  generateDepartmentCode,
+} from "../core/helpers/helper-functions.js";
 
 /**
  * Create a new department (Admin only)
@@ -32,7 +35,9 @@ export const createDepartment = async (req, res) => {
     await department.save();
     res.status(201).json({ message: "Department created", department });
   } catch (error) {
-    res.status(500).json({ message: "Failed to create department", error: error.message });
+    res
+      .status(500)
+      .json({ message: "Failed to create department", error: error.message });
   }
 };
 
@@ -48,7 +53,9 @@ export const getAllDepartments = async (req, res) => {
       .populate("hod", "fullname email");
     res.status(200).json({ departments });
   } catch (error) {
-    res.status(500).json({ message: "Failed to fetch departments", error: error.message });
+    res
+      .status(500)
+      .json({ message: "Failed to fetch departments", error: error.message });
   }
 };
 
@@ -63,10 +70,13 @@ export const getDepartmentById = async (req, res) => {
       .populate("lecturers", "fullname email")
       .populate("students", "fullname email matricNumber")
       .populate("hod", "fullname email");
-    if (!department) return res.status(404).json({ message: "Department not found" });
+    if (!department)
+      return res.status(404).json({ message: "Department not found" });
     res.status(200).json({ department });
   } catch (error) {
-    res.status(500).json({ message: "Failed to fetch department", error: error.message });
+    res
+      .status(500)
+      .json({ message: "Failed to fetch department", error: error.message });
   }
 };
 
@@ -92,7 +102,9 @@ export const getDepartmentsByEntity = async (req, res) => {
       .populate("hod", "fullname email");
     res.status(200).json({ departments });
   } catch (error) {
-    res.status(500).json({ message: "Failed to fetch departments", error: error.message });
+    res
+      .status(500)
+      .json({ message: "Failed to fetch departments", error: error.message });
   }
 };
 
@@ -122,11 +134,16 @@ export const updateDepartment = async (req, res) => {
     for (const key of allowedFields) {
       if (updates[key] !== undefined) updateObj[key] = updates[key];
     }
-    const department = await Department.findByIdAndUpdate(id, updateObj, { new: true });
-    if (!department) return res.status(404).json({ message: "Department not found" });
+    const department = await Department.findByIdAndUpdate(id, updateObj, {
+      new: true,
+    });
+    if (!department)
+      return res.status(404).json({ message: "Department not found" });
     res.status(200).json({ message: "Department updated", department });
   } catch (error) {
-    res.status(500).json({ message: "Failed to update department", error: error.message });
+    res
+      .status(500)
+      .json({ message: "Failed to update department", error: error.message });
   }
 };
 
@@ -136,11 +153,33 @@ export const updateDepartment = async (req, res) => {
 export const deleteDepartment = async (req, res) => {
   try {
     const { id } = req.params;
-    const department = await Department.findByIdAndDelete(id);
-    if (!department) return res.status(404).json({ message: "Department not found" });
-    res.status(200).json({ message: "Department deleted" });
+    const department = await Department.findById(id);
+    if (!department)
+      return res.status(404).json({ message: "Department not found" });
+    await department.softDelete();
+    res.status(200).json({ message: "Department soft-deleted" });
   } catch (error) {
-    res.status(500).json({ message: "Failed to delete department", error: error.message });
+    res
+      .status(500)
+      .json({ message: "Failed to delete department", error: error.message });
+  }
+};
+
+/**
+ * Restore department (Admin only)
+ */
+export const restoreDepartment = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const department = await Department.findWithDeleted().findOne({ _id: id });
+    if (!department)
+      return res.status(404).json({ message: "Department not found" });
+    await department.restore();
+    res.status(200).json({ message: "Department restored", department });
+  } catch (error) {
+    res
+      .status(500)
+      .json({ message: "Failed to restore department", error: error.message });
   }
 };
 
@@ -152,8 +191,10 @@ export const promoteStudents = async (req, res) => {
   try {
     const { departmentId, fromLevel, toLevel } = req.body;
     // Find students in department and fromLevel
-    const department = await Department.findById(departmentId).populate("students");
-    if (!department) return res.status(404).json({ message: "Department not found" });
+    const department =
+      await Department.findById(departmentId).populate("students");
+    if (!department)
+      return res.status(404).json({ message: "Department not found" });
 
     // Example: Assume Student model has a 'level' field and 'passedAllExams' method
     const studentsToPromote = await Student.find({
@@ -168,11 +209,15 @@ export const promoteStudents = async (req, res) => {
         student.level = toLevel;
         await student.save();
         return student._id;
-      })
+      }),
     );
 
-    res.status(200).json({ message: "Students promoted", promoted: result.length });
+    res
+      .status(200)
+      .json({ message: "Students promoted", promoted: result.length });
   } catch (error) {
-    res.status(500).json({ message: "Failed to promote students", error: error.message });
+    res
+      .status(500)
+      .json({ message: "Failed to promote students", error: error.message });
   }
 };

@@ -55,9 +55,22 @@ export const ProtectedRoute = ({ children, allowedRoles = [] }) => {
 
   // Check role permissions
   const role = (user.role || user.type || "").toString().toLowerCase();
-  if (allowedRoles.length > 0 && !allowedRoles.includes(role)) {
-    console.log(`⚠️ Role ${role} not allowed, redirecting to home`);
-    return <Navigate to="/" replace />;
+
+  // Debug role matching
+  console.log(
+    `Checking permissions for role: ${role}. Allowed roles:`,
+    allowedRoles,
+  );
+
+  if (allowedRoles.length > 0) {
+    const isAllowed =
+      allowedRoles.includes(role) ||
+      (role === "superadmin" && allowedRoles.includes("admin"));
+
+    if (!isAllowed) {
+      console.log(`⚠️ Role ${role} not allowed, redirecting to home`);
+      return <Navigate to="/" replace />;
+    }
   }
 
   return children;

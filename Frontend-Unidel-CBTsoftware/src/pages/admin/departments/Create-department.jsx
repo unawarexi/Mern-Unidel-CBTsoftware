@@ -10,6 +10,12 @@ import {
 import DeleteModal from "../../../components/Delete-modal";
 import useThemeStore from "../../../store/theme-store";
 import { cn } from "../../../core/lib/cn";
+import SuggestibleSearchInput from "../../../components/SuggestibleSearchInput";
+import { faculties } from "../../../core/data/faculty-mock-data";
+import {
+  departmentsByFaculty,
+  allDepartments,
+} from "../../../core/data/department-mock-data";
 
 const initialForm = {
   departmentName: "",
@@ -378,33 +384,22 @@ const CreateDepartment = () => {
                   </button>
                 </div>
                 <div className="space-y-3 sm:space-y-4">
-                  <div>
-                    <label
-                      className={cn(
-                        "block mb-1 sm:mb-2 font-medium text-xs sm:text-base",
-                        isDarkMode ? "text-slate-300" : "text-slate-700",
-                      )}
-                    >
-                      Department Name
-                    </label>
-                    <input
-                      type="text"
-                      value={formData.departmentName}
-                      onChange={(e) =>
-                        setFormData({
-                          ...formData,
-                          departmentName: e.target.value,
-                        })
-                      }
-                      className={cn(
-                        "w-full px-3 sm:px-4 py-1.5 sm:py-2 text-xs sm:text-base border rounded-lg focus:outline-none focus:ring-2 transition-colors",
-                        isDarkMode
-                          ? "bg-slate-800 border-slate-700 text-white placeholder-slate-500 focus:border-orange-500 focus:ring-orange-500/20"
-                          : "bg-white border-slate-300 text-slate-900 placeholder-gray-400 focus:border-blue-900 focus:ring-blue-900/20",
-                      )}
-                      placeholder="Enter department name"
-                    />
-                  </div>
+                  <SuggestibleSearchInput
+                    label="Department Name"
+                    value={formData.departmentName}
+                    onChange={(val) =>
+                      setFormData({
+                        ...formData,
+                        departmentName: val,
+                      })
+                    }
+                    suggestions={
+                      formData.faculty
+                        ? departmentsByFaculty[formData.faculty] || []
+                        : allDepartments
+                    }
+                    placeholder="Enter or select department name"
+                  />
                   <div>
                     <label
                       className={cn(
@@ -455,30 +450,15 @@ const CreateDepartment = () => {
                       placeholder="Will be generated"
                     />
                   </div>
-                  <div>
-                    <label
-                      className={cn(
-                        "block mb-1 sm:mb-2 font-medium text-xs sm:text-base",
-                        isDarkMode ? "text-slate-300" : "text-slate-700",
-                      )}
-                    >
-                      Faculty
-                    </label>
-                    <input
-                      type="text"
-                      value={formData.faculty}
-                      onChange={(e) =>
-                        setFormData({ ...formData, faculty: e.target.value })
-                      }
-                      className={cn(
-                        "w-full px-3 sm:px-4 py-1.5 sm:py-2 text-xs sm:text-base border rounded-lg focus:outline-none focus:ring-2 transition-colors",
-                        isDarkMode
-                          ? "bg-slate-800 border-slate-700 text-white placeholder-slate-500 focus:border-orange-500 focus:ring-orange-500/20"
-                          : "bg-white border-slate-300 text-slate-900 placeholder-gray-400 focus:border-blue-900 focus:ring-blue-900/20",
-                      )}
-                      placeholder="e.g. Science"
-                    />
-                  </div>
+                  <SuggestibleSearchInput
+                    label="Faculty"
+                    value={formData.faculty}
+                    onChange={(val) =>
+                      setFormData({ ...formData, faculty: val })
+                    }
+                    suggestions={faculties}
+                    placeholder="e.g. Science"
+                  />
                   <div>
                     <label
                       className={cn(

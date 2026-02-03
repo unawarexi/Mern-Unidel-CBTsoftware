@@ -1,4 +1,5 @@
 import mongoose from "mongoose";
+import softDeletePlugin from "../core/plugins/soft-delete.plugin.js";
 
 const violationSchema = new mongoose.Schema(
   {
@@ -26,7 +27,7 @@ const violationSchema = new mongoose.Schema(
         "EXIT_FULLSCREEN",
         "CONTEXT_MENU",
         "COPY_PASTE",
-        "DEVTOOLS_OPEN"
+        "DEVTOOLS_OPEN",
       ],
       required: true,
     },
@@ -52,7 +53,7 @@ const violationSchema = new mongoose.Schema(
   },
   {
     timestamps: true,
-  }
+  },
 );
 
 // Compound index for efficient querying
@@ -61,12 +62,15 @@ violationSchema.index({ submissionId: 1, violationType: 1 });
 violationSchema.index({ timestamp: -1 });
 
 // Method to count violations for a submission
-violationSchema.statics.countViolations = async function(submissionId) {
+violationSchema.statics.countViolations = async function (submissionId) {
   return await this.countDocuments({ submissionId });
 };
 
 // Method to check if threshold exceeded
-violationSchema.statics.hasExceededThreshold = async function(submissionId, threshold = 3) {
+violationSchema.statics.hasExceededThreshold = async function (
+  submissionId,
+  threshold = 3,
+) {
   const count = await this.countViolations(submissionId);
   return count >= threshold;
 };

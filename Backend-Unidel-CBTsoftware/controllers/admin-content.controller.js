@@ -48,11 +48,28 @@ export const updateFaculty = async (req, res, next) => {
 
 export const deleteFaculty = async (req, res, next) => {
   try {
-    const faculty = await Faculty.findByIdAndDelete(req.params.id);
+    const faculty = await Faculty.findById(req.params.id);
     if (!faculty) return next(new AppError("Faculty not found", 404));
+    await faculty.softDelete();
     await cacheDeletePattern("public:faculties*");
     await cacheDelete("public:homepage");
-    res.status(200).json({ success: true, message: "Faculty deleted" });
+    res.status(200).json({ success: true, message: "Faculty soft-deleted" });
+  } catch (error) {
+    next(new AppError(error.message, 400));
+  }
+};
+
+export const restoreFaculty = async (req, res, next) => {
+  try {
+    const faculty = await Faculty.findWithDeleted().findOne({
+      _id: req.params.id,
+    });
+    if (!faculty) return next(new AppError("Faculty not found", 404));
+    await faculty.restore();
+    await cacheDeletePattern("public:faculties*");
+    res
+      .status(200)
+      .json({ success: true, data: faculty, message: "Faculty restored" });
   } catch (error) {
     next(new AppError(error.message, 400));
   }
@@ -89,10 +106,14 @@ export const createScholarship = async (req, res, next) => {
 
 export const updateScholarship = async (req, res, next) => {
   try {
-    const scholarship = await Scholarship.findByIdAndUpdate(req.params.id, req.body, {
-      new: true,
-      runValidators: true,
-    });
+    const scholarship = await Scholarship.findByIdAndUpdate(
+      req.params.id,
+      req.body,
+      {
+        new: true,
+        runValidators: true,
+      },
+    );
     if (!scholarship) return next(new AppError("Scholarship not found", 404));
     await cacheDeletePattern("public:scholarships*");
     await cacheDelete("public:homepage");
@@ -104,10 +125,31 @@ export const updateScholarship = async (req, res, next) => {
 
 export const deleteScholarship = async (req, res, next) => {
   try {
-    const scholarship = await Scholarship.findByIdAndDelete(req.params.id);
+    const scholarship = await Scholarship.findById(req.params.id);
     if (!scholarship) return next(new AppError("Scholarship not found", 404));
+    await scholarship.softDelete();
     await cacheDeletePattern("public:scholarships*");
-    res.status(200).json({ success: true, message: "Scholarship deleted" });
+    res
+      .status(200)
+      .json({ success: true, message: "Scholarship soft-deleted" });
+  } catch (error) {
+    next(new AppError(error.message, 400));
+  }
+};
+
+export const restoreScholarship = async (req, res, next) => {
+  try {
+    const scholarship = await Scholarship.findWithDeleted().findOne({
+      _id: req.params.id,
+    });
+    if (!scholarship) return next(new AppError("Scholarship not found", 404));
+    await scholarship.restore();
+    await cacheDeletePattern("public:scholarships*");
+    res.status(200).json({
+      success: true,
+      data: scholarship,
+      message: "Scholarship restored",
+    });
   } catch (error) {
     next(new AppError(error.message, 400));
   }
@@ -115,7 +157,10 @@ export const deleteScholarship = async (req, res, next) => {
 
 export const getAllScholarships = async (req, res, next) => {
   try {
-    const scholarships = await Scholarship.find().sort({ order: 1, createdAt: -1 });
+    const scholarships = await Scholarship.find().sort({
+      order: 1,
+      createdAt: -1,
+    });
     res.status(200).json({ success: true, data: scholarships });
   } catch (error) {
     next(new AppError(error.message, 400));
@@ -153,9 +198,25 @@ export const updateCareer = async (req, res, next) => {
 
 export const deleteCareer = async (req, res, next) => {
   try {
-    const career = await Career.findByIdAndDelete(req.params.id);
+    const career = await Career.findById(req.params.id);
     if (!career) return next(new AppError("Career not found", 404));
-    res.status(200).json({ success: true, message: "Career deleted" });
+    await career.softDelete();
+    res.status(200).json({ success: true, message: "Career soft-deleted" });
+  } catch (error) {
+    next(new AppError(error.message, 400));
+  }
+};
+
+export const restoreCareer = async (req, res, next) => {
+  try {
+    const career = await Career.findWithDeleted().findOne({
+      _id: req.params.id,
+    });
+    if (!career) return next(new AppError("Career not found", 404));
+    await career.restore();
+    res
+      .status(200)
+      .json({ success: true, data: career, message: "Career restored" });
   } catch (error) {
     next(new AppError(error.message, 400));
   }
@@ -215,10 +276,25 @@ export const updateNews = async (req, res, next) => {
 
 export const deleteNews = async (req, res, next) => {
   try {
-    const news = await News.findByIdAndDelete(req.params.id);
+    const news = await News.findById(req.params.id);
     if (!news) return next(new AppError("News not found", 404));
+    await news.softDelete();
     await cacheDelete("public:homepage");
-    res.status(200).json({ success: true, message: "News deleted" });
+    res.status(200).json({ success: true, message: "News soft-deleted" });
+  } catch (error) {
+    next(new AppError(error.message, 400));
+  }
+};
+
+export const restoreNews = async (req, res, next) => {
+  try {
+    const news = await News.findWithDeleted().findOne({ _id: req.params.id });
+    if (!news) return next(new AppError("News not found", 404));
+    await news.restore();
+    await cacheDelete("public:homepage");
+    res
+      .status(200)
+      .json({ success: true, data: news, message: "News restored" });
   } catch (error) {
     next(new AppError(error.message, 400));
   }
@@ -277,10 +353,25 @@ export const updateEvent = async (req, res, next) => {
 
 export const deleteEvent = async (req, res, next) => {
   try {
-    const event = await Event.findByIdAndDelete(req.params.id);
+    const event = await Event.findById(req.params.id);
     if (!event) return next(new AppError("Event not found", 404));
+    await event.softDelete();
     await cacheDelete("public:homepage");
-    res.status(200).json({ success: true, message: "Event deleted" });
+    res.status(200).json({ success: true, message: "Event soft-deleted" });
+  } catch (error) {
+    next(new AppError(error.message, 400));
+  }
+};
+
+export const restoreEvent = async (req, res, next) => {
+  try {
+    const event = await Event.findWithDeleted().findOne({ _id: req.params.id });
+    if (!event) return next(new AppError("Event not found", 404));
+    await event.restore();
+    await cacheDelete("public:homepage");
+    res
+      .status(200)
+      .json({ success: true, data: event, message: "Event restored" });
   } catch (error) {
     next(new AppError(error.message, 400));
   }
@@ -339,10 +430,27 @@ export const updateGalleryImage = async (req, res, next) => {
 
 export const deleteGalleryImage = async (req, res, next) => {
   try {
-    const image = await Gallery.findByIdAndDelete(req.params.id);
+    const image = await Gallery.findById(req.params.id);
     if (!image) return next(new AppError("Image not found", 404));
+    await image.softDelete();
     await cacheDeletePattern("public:gallery*");
-    res.status(200).json({ success: true, message: "Image deleted" });
+    res.status(200).json({ success: true, message: "Image soft-deleted" });
+  } catch (error) {
+    next(new AppError(error.message, 400));
+  }
+};
+
+export const restoreGalleryImage = async (req, res, next) => {
+  try {
+    const image = await Gallery.findWithDeleted().findOne({
+      _id: req.params.id,
+    });
+    if (!image) return next(new AppError("Image not found", 404));
+    await image.restore();
+    await cacheDeletePattern("public:gallery*");
+    res
+      .status(200)
+      .json({ success: true, data: image, message: "Image restored" });
   } catch (error) {
     next(new AppError(error.message, 400));
   }
@@ -401,10 +509,23 @@ export const updateFee = async (req, res, next) => {
 
 export const deleteFee = async (req, res, next) => {
   try {
-    const fee = await Fee.findByIdAndDelete(req.params.id);
+    const fee = await Fee.findById(req.params.id);
     if (!fee) return next(new AppError("Fee not found", 404));
+    await fee.softDelete();
     await cacheDeletePattern("public:fees*");
-    res.status(200).json({ success: true, message: "Fee deleted" });
+    res.status(200).json({ success: true, message: "Fee soft-deleted" });
+  } catch (error) {
+    next(new AppError(error.message, 400));
+  }
+};
+
+export const restoreFee = async (req, res, next) => {
+  try {
+    const fee = await Fee.findWithDeleted().findOne({ _id: req.params.id });
+    if (!fee) return next(new AppError("Fee not found", 404));
+    await fee.restore();
+    await cacheDeletePattern("public:fees*");
+    res.status(200).json({ success: true, data: fee, message: "Fee restored" });
   } catch (error) {
     next(new AppError(error.message, 400));
   }
@@ -429,7 +550,10 @@ export const getSiteSettings = async (req, res, next) => {
   try {
     const { category } = req.query;
     const query = category ? { category } : {};
-    const settings = await SiteSettings.find(query).sort({ category: 1, order: 1 });
+    const settings = await SiteSettings.find(query).sort({
+      category: 1,
+      order: 1,
+    });
     res.status(200).json({ success: true, data: settings });
   } catch (error) {
     next(new AppError(error.message, 400));
@@ -438,8 +562,9 @@ export const getSiteSettings = async (req, res, next) => {
 
 export const updateSiteSetting = async (req, res, next) => {
   try {
-    const { key, value, category, label, description, valueType, isPublic } = req.body;
-    
+    const { key, value, category, label, description, valueType, isPublic } =
+      req.body;
+
     const setting = await SiteSettings.setSetting(key, value, {
       category,
       label,
@@ -459,14 +584,14 @@ export const updateSiteSetting = async (req, res, next) => {
 export const bulkUpdateSettings = async (req, res, next) => {
   try {
     const { settings } = req.body;
-    
+
     const updates = await Promise.all(
       settings.map((s) =>
         SiteSettings.setSetting(s.key, s.value, {
           ...s,
           updatedBy: req.user.userId,
-        })
-      )
+        }),
+      ),
     );
 
     await cacheDeletePattern("public:*");
@@ -492,36 +617,43 @@ export default {
   createFaculty,
   updateFaculty,
   deleteFaculty,
+  restoreFaculty,
   getAllFaculties,
   // Scholarships
   createScholarship,
   updateScholarship,
   deleteScholarship,
+  restoreScholarship,
   getAllScholarships,
   // Careers
   createCareer,
   updateCareer,
   deleteCareer,
+  restoreCareer,
   getAllCareers,
   // News
   createNews,
   updateNews,
   deleteNews,
+  restoreNews,
   getAllNews,
   // Events
   createEvent,
   updateEvent,
   deleteEvent,
+  restoreEvent,
   getAllEvents,
   // Gallery
   createGalleryImage,
   updateGalleryImage,
   deleteGalleryImage,
+  restoreGalleryImage,
   getAllGalleryImages,
   // Fees
   createFee,
   updateFee,
   deleteFee,
+  restoreFee,
   getAllFees,
   // Settings
   getSiteSettings,

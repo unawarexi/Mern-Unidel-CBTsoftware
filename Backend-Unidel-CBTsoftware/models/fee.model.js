@@ -1,4 +1,5 @@
 import mongoose from "mongoose";
+import softDeletePlugin from "../core/plugins/soft-delete.plugin.js";
 
 const otherFeeSchema = new mongoose.Schema(
   {
@@ -16,7 +17,7 @@ const otherFeeSchema = new mongoose.Schema(
       default: "per_session",
     },
   },
-  { _id: false }
+  { _id: false },
 );
 
 const feeSchema = new mongoose.Schema(
@@ -90,8 +91,10 @@ const feeSchema = new mongoose.Schema(
   },
   {
     timestamps: true,
-  }
+  },
 );
+
+feeSchema.plugin(softDeletePlugin);
 
 // Calculate total fee before saving
 feeSchema.pre("save", function (next) {

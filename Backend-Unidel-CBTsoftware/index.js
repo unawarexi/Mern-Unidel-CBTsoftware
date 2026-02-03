@@ -35,6 +35,14 @@ import securityRoutes from "./routes/security.routes.js";
 import publicRoutes from "./routes/public.routes.js";
 import adminContentRoutes from "./routes/admin-content.routes.js";
 import reportRoutes from "./routes/report.routes.js";
+import specialProgramRoutes from "./routes/special-program.routes.js";
+import governingBodyRoutes from "./routes/governing-body.routes.js";
+import waitlistRoutes from "./routes/waitlist.routes.js";
+import applicationRoutes from "./routes/application.routes.js";
+import supportRoutes from "./routes/support.routes.js";
+import careerApplicationRoutes from "./routes/career-application.routes.js";
+import agentRoutes from "./routes/agent.routes.js";
+import paymentRoutes from "./routes/payment.routes.js";
 import { startExamScheduler } from "./core/utils/time-lapse.util.js";
 
 // Create Express app
@@ -93,6 +101,14 @@ app.use("/api/security", securityRoutes);
 app.use("/api/public", publicRoutes);
 app.use("/api/admin/content", adminContentRoutes);
 app.use("/api/reports", reportRoutes);
+app.use("/api/programs", specialProgramRoutes);
+app.use("/api/governing-bodies", governingBodyRoutes);
+app.use("/api/waitlist", waitlistRoutes);
+app.use("/api/applications", applicationRoutes);
+app.use("/api/support", supportRoutes);
+app.use("/api/careers/apply", careerApplicationRoutes);
+app.use("/api/agents", agentRoutes);
+app.use("/api/payments", paymentRoutes);
 
 // 404 handler
 app.use(notFoundHandler);

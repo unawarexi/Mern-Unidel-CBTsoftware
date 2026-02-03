@@ -27,6 +27,11 @@ import { useGetAllDepartmentsAction } from "../../../store/department-store";
 import DeleteModal from "../../../components/Delete-modal";
 import useThemeStore from "../../../store/theme-store";
 import { cn } from "../../../core/lib/cn";
+import SuggestibleSearchInput from "../../../components/SuggestibleSearchInput";
+import {
+  allCourses,
+  coursesByDepartment,
+} from "../../../core/data/courses-mock-data";
 
 const CourseCreation = () => {
   const { isDarkMode } = useThemeStore();
@@ -629,33 +634,31 @@ const CourseCreation = () => {
                 </div>
 
                 <div className="space-y-4">
-                  <div>
-                    <label
-                      className={cn(
-                        "block mb-2 font-medium",
-                        isDarkMode ? "text-slate-300" : "text-slate-700",
-                      )}
-                    >
-                      Course Title
-                    </label>
-                    <input
-                      type="text"
-                      value={formData.courseTitle}
-                      onChange={(e) =>
-                        setFormData({
-                          ...formData,
-                          courseTitle: e.target.value,
-                        })
-                      }
-                      className={cn(
-                        "w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 transition-colors",
-                        isDarkMode
-                          ? "bg-slate-800 border-slate-700 text-white placeholder-slate-500 focus:border-orange-500 focus:ring-orange-500/20"
-                          : "bg-white border-slate-300 text-slate-900 placeholder-gray-400 focus:border-blue-900 focus:ring-blue-900/20",
-                      )}
-                      placeholder="Enter course title"
-                    />
-                  </div>
+                  <SuggestibleSearchInput
+                    label="Course Title"
+                    value={formData.courseTitle}
+                    onChange={(val) =>
+                      setFormData({
+                        ...formData,
+                        courseTitle: val,
+                      })
+                    }
+                    suggestions={
+                      formData.department.length > 0
+                        ? Array.from(
+                            new Set(
+                              formData.department.flatMap((deptId) => {
+                                const deptName = departments.find(
+                                  (d) => d._id === deptId,
+                                )?.departmentName;
+                                return coursesByDepartment[deptName] || [];
+                              }),
+                            ),
+                          )
+                        : allCourses
+                    }
+                    placeholder="Enter course title"
+                  />
 
                   <div>
                     <label

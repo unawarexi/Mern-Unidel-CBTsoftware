@@ -47,6 +47,17 @@ import LecturerAssignment from "./courses/Lecturer-assignment";
 import BulkUpload from "./uploads/Bulk-upload";
 import QuestionUploads from "./uploads/Question-uploads";
 
+// Content Management
+import ManageFaculties from "./content-management/ManageFaculties";
+import ManageScholarships from "./content-management/ManageScholarships";
+import ManagePrograms from "./content-management/ManagePrograms";
+import ManageGoverningBodies from "./content-management/ManageGoverningBodies";
+import WaitlistManagement from "./content-management/WaitlistManagement";
+import ApplicationsManagement from "./content-management/ApplicationsManagement";
+import ManageTickets from "./content-management/ManageTickets";
+import ManageCareerApplications from "./content-management/ManageCareerApplications";
+import SupportPage from "../shared/SupportPage";
+
 // Main user routes based on UserLeftContainer menuItems
 export default function AdminRoutes() {
   return (
@@ -63,6 +74,7 @@ export default function AdminRoutes() {
       <Route path="users/students" element={<StudentsManagement />} />
       <Route path="users/lecturers" element={<LecturersManagement />} />
       <Route path="users/admins" element={<AdminsManagement />} />
+      <Route path="users/applications" element={<ApplicationsManagement />} />
       {/* Departments & Faculties */}
       <Route path="departments" element={<CreateDepartment />} />{" "}
       {/* Show manage departments by default */}
@@ -111,6 +123,21 @@ export default function AdminRoutes() {
       />
       <Route path="uploads/bulk" element={<BulkUpload />} />
       <Route path="uploads/questions" element={<QuestionUploads />} />
+      {/* Content Management */}
+      <Route path="content/faculties" element={<ManageFaculties />} />
+      <Route path="content/scholarships" element={<ManageScholarships />} />
+      <Route path="content/programs" element={<ManagePrograms />} />
+      <Route
+        path="content/governing-bodies"
+        element={<ManageGoverningBodies />}
+      />
+      <Route path="content/waitlist" element={<WaitlistManagement />} />
+      <Route path="content/tickets" element={<ManageTickets />} />
+      <Route
+        path="content/career-applications"
+        element={<ManageCareerApplications />}
+      />
+      <Route path="support" element={<SupportPage />} />
       {/* System Settings */}
       <Route
         path="settings"

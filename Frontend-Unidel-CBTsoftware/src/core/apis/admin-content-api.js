@@ -63,6 +63,17 @@ export const deleteFaculty = async (id) => {
   return handleResponse(response, "Failed to delete faculty");
 };
 
+export const restoreFaculty = async (id) => {
+  console.log("[API] restoreFaculty called", id);
+  const response = await fetchWithAuth(
+    `${ADMIN_CONTENT_URL}/faculties/${id}/restore`,
+    {
+      method: "POST",
+    },
+  );
+  return handleResponse(response, "Failed to restore faculty");
+};
+
 // ========== SCHOLARSHIPS ==========
 
 export const getAllScholarships = async () => {
@@ -103,6 +114,17 @@ export const deleteScholarship = async (id) => {
   return handleResponse(response, "Failed to delete scholarship");
 };
 
+export const restoreScholarship = async (id) => {
+  console.log("[API] restoreScholarship called", id);
+  const response = await fetchWithAuth(
+    `${ADMIN_CONTENT_URL}/scholarships/${id}/restore`,
+    {
+      method: "POST",
+    },
+  );
+  return handleResponse(response, "Failed to restore scholarship");
+};
+
 // ========== CAREERS ==========
 
 export const getAllCareers = async (params = {}) => {
@@ -139,6 +161,17 @@ export const deleteCareer = async (id) => {
     method: "DELETE",
   });
   return handleResponse(response, "Failed to delete career");
+};
+
+export const restoreCareer = async (id) => {
+  console.log("[API] restoreCareer called", id);
+  const response = await fetchWithAuth(
+    `${ADMIN_CONTENT_URL}/careers/${id}/restore`,
+    {
+      method: "POST",
+    },
+  );
+  return handleResponse(response, "Failed to restore career");
 };
 
 // ========== NEWS ==========
@@ -179,6 +212,17 @@ export const deleteNews = async (id) => {
   return handleResponse(response, "Failed to delete news");
 };
 
+export const restoreNews = async (id) => {
+  console.log("[API] restoreNews called", id);
+  const response = await fetchWithAuth(
+    `${ADMIN_CONTENT_URL}/news/${id}/restore`,
+    {
+      method: "POST",
+    },
+  );
+  return handleResponse(response, "Failed to restore news");
+};
+
 // ========== EVENTS ==========
 
 export const getAllEvents = async (params = {}) => {
@@ -215,6 +259,17 @@ export const deleteEvent = async (id) => {
     method: "DELETE",
   });
   return handleResponse(response, "Failed to delete event");
+};
+
+export const restoreEvent = async (id) => {
+  console.log("[API] restoreEvent called", id);
+  const response = await fetchWithAuth(
+    `${ADMIN_CONTENT_URL}/events/${id}/restore`,
+    {
+      method: "POST",
+    },
+  );
+  return handleResponse(response, "Failed to restore event");
 };
 
 // ========== GALLERY ==========
@@ -255,6 +310,17 @@ export const deleteGalleryImage = async (id) => {
   return handleResponse(response, "Failed to delete gallery image");
 };
 
+export const restoreGalleryImage = async (id) => {
+  console.log("[API] restoreGalleryImage called", id);
+  const response = await fetchWithAuth(
+    `${ADMIN_CONTENT_URL}/gallery/${id}/restore`,
+    {
+      method: "POST",
+    },
+  );
+  return handleResponse(response, "Failed to restore gallery image");
+};
+
 // ========== FEES ==========
 
 export const getAllFees = async () => {
@@ -287,6 +353,17 @@ export const deleteFee = async (id) => {
     method: "DELETE",
   });
   return handleResponse(response, "Failed to delete fee");
+};
+
+export const restoreFee = async (id) => {
+  console.log("[API] restoreFee called", id);
+  const response = await fetchWithAuth(
+    `${ADMIN_CONTENT_URL}/fees/${id}/restore`,
+    {
+      method: "POST",
+    },
+  );
+  return handleResponse(response, "Failed to restore fee");
 };
 
 // ========== SITE SETTINGS ==========

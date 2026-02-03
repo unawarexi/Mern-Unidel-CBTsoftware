@@ -1,4 +1,5 @@
-const BASE_URL = import.meta.env.VITE_API_BASE_URL || "http://localhost:3000/api/courses";
+const BASE_URL =
+  import.meta.env.VITE_API_BASE_URL || "http://localhost:3000/api/courses";
 
 // ========== COURSE API FUNCTIONS ==========
 
@@ -124,7 +125,11 @@ export const assignToCourse = async ({ id, students = [], lecturers = [] }) => {
   return response.json();
 };
 
-export const removeFromCourse = async ({ id, students = [], lecturers = [] }) => {
+export const removeFromCourse = async ({
+  id,
+  students = [],
+  lecturers = [],
+}) => {
   console.log("[API] removeFromCourse called", id, students, lecturers);
   const response = await fetch(`${BASE_URL}/${id}/remove`, {
     method: "POST",
@@ -143,7 +148,12 @@ export const removeFromCourse = async ({ id, students = [], lecturers = [] }) =>
 // ========== COURSE MATERIALS API FUNCTIONS ==========
 
 // Upload course material (document) for a course
-export const uploadCourseMaterial = async ({ courseId, file, description, type }) => {
+export const uploadCourseMaterial = async ({
+  courseId,
+  file,
+  description,
+  type,
+}) => {
   const formData = new FormData();
   formData.append("file", file);
   if (description) formData.append("description", description);
@@ -163,13 +173,28 @@ export const uploadCourseMaterial = async ({ courseId, file, description, type }
 
 // Delete course material
 export const deleteCourseMaterial = async ({ courseId, materialId }) => {
-  const response = await fetch(`${BASE_URL}/${courseId}/materials/${materialId}`, {
-    method: "DELETE",
+  const response = await fetch(
+    `${BASE_URL}/${courseId}/materials/${materialId}`,
+    {
+      method: "DELETE",
+      credentials: "include",
+    },
+  );
+  if (!response.ok) {
+    const error = await response.json();
+    throw new Error(error.message || "Failed to delete course material");
+  }
+  return response.json();
+};
+
+export const restoreCourse = async (id) => {
+  const response = await fetch(`${BASE_URL}/${id}/restore`, {
+    method: "POST",
     credentials: "include",
   });
   if (!response.ok) {
     const error = await response.json();
-    throw new Error(error.message || "Failed to delete course material");
+    throw new Error(error.message || "Failed to restore course");
   }
   return response.json();
 };

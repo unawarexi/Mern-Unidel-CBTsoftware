@@ -1,4 +1,5 @@
 import mongoose from "mongoose";
+import softDeletePlugin from "../core/plugins/soft-delete.plugin.js";
 
 const facultySchema = new mongoose.Schema(
   {
@@ -71,11 +72,12 @@ const facultySchema = new mongoose.Schema(
   },
   {
     timestamps: true,
-  }
+  },
 );
 
 // Index for public queries
 facultySchema.index({ isActive: 1, order: 1 });
-facultySchema.index({ code: 1 });
+
+facultySchema.plugin(softDeletePlugin);
 
 export default mongoose.model("Faculty", facultySchema);

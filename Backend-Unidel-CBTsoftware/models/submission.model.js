@@ -1,4 +1,5 @@
 import mongoose from "mongoose";
+import softDeletePlugin from "../core/plugins/soft-delete.plugin.js";
 
 const examSubmissionSchema = new mongoose.Schema(
   {
@@ -88,8 +89,10 @@ const examSubmissionSchema = new mongoose.Schema(
   },
   {
     timestamps: true,
-  }
+  },
 );
+
+examSubmissionSchema.plugin(softDeletePlugin);
 
 // Compound index to ensure one submission per student per exam
 examSubmissionSchema.index({ examId: 1, studentId: 1 }, { unique: true });

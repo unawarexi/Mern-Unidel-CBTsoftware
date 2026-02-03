@@ -52,6 +52,7 @@ import IntegrityMonitoring from "./monitoring/Integrity";
 import IntegrityPolicy from "./support/Integrity";
 import Help from "./support/Help";
 import Announcements from "./support/Announcements";
+import SupportPage from "../shared/SupportPage";
 import System from "./support/System";
 
 // Profile pages
@@ -136,6 +137,7 @@ export default function LecturerRoutes() {
       />
       <Route path="support/integrity" element={<IntegrityPolicy />} />
       <Route path="support/help" element={<Help />} />
+      <Route path="support/tickets" element={<SupportPage />} />
       <Route path="support/announcements" element={<Announcements />} />
       <Route path="support/system" element={<System />} />
 

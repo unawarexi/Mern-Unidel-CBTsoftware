@@ -2,7 +2,7 @@
  * Redis Service - Production-ready caching and session management
  * Converted from TypeScript to JavaScript
  */
-import { createClient } from 'redis';
+import { createClient } from "redis";
 
 // ============================================================================
 // REDIS CLIENT SINGLETON
@@ -39,53 +39,53 @@ export async function getRedisClient() {
  */
 async function initializeRedis() {
   try {
-    const redisHost = process.env.REDIS_HOST || 'localhost';
-    const redisPort = parseInt(process.env.REDIS_PORT || '6379', 10);
-    const redisPassword = process.env.REDIS_PASSWORD || '';
+    const redisHost = process.env.REDIS_HOST || "localhost";
+    const redisPort = parseInt(process.env.REDIS_PORT || "6379", 10);
+    const redisPassword = process.env.REDIS_PASSWORD || "";
 
     redisClient = createClient({
-      username: 'default',
+      username: "default",
       password: redisPassword,
       socket: {
         host: redisHost,
         port: redisPort,
         reconnectStrategy: (retries) => {
           if (retries > 10) {
-            console.error('[Redis] Max reconnection attempts reached');
-            return new Error('Max reconnection attempts reached');
+            console.error("[Redis] Max reconnection attempts reached");
+            return new Error("Max reconnection attempts reached");
           }
           return Math.min(retries * 100, 3000);
         },
       },
     });
 
-    redisClient.on('error', (err) => {
-      console.error('[Redis] Client Error:', err.message);
+    redisClient.on("error", (err) => {
+      console.error("[Redis] Client Error:", err.message);
       isConnected = false;
     });
 
-    redisClient.on('connect', () => {
-      console.log('[Redis] ✅ Connected to Redis');
+    redisClient.on("connect", () => {
+      console.log("[Redis] ✅ Connected to Redis");
       isConnected = true;
     });
 
-    redisClient.on('reconnecting', () => {
-      console.log('[Redis] 🔄 Reconnecting...');
+    redisClient.on("reconnecting", () => {
+      console.log("[Redis] 🔄 Reconnecting...");
     });
 
-    redisClient.on('end', () => {
-      console.log('[Redis] Connection closed');
+    redisClient.on("end", () => {
+      console.log("[Redis] Connection closed");
       isConnected = false;
     });
 
     await redisClient.connect();
     isConnected = true;
-    console.log('[Redis] ✅ Redis connection established');
+    console.log("[Redis] ✅ Redis connection established");
   } catch (error) {
-    console.error('[Redis] Failed to connect:', error);
+    console.error("[Redis] Failed to connect:", error);
     isConnected = false;
     // Don't throw - allow app to work without Redis in development
-    console.warn('[Redis] Application will continue without Redis caching');
+    console.warn("[Redis] Application will continue without Redis caching");
   }
 }
 
@@ -99,7 +99,7 @@ export async function disconnectRedis() {
     isConnected = false;
     redisClient = null;
     connectionPromise = null;
-    console.log('[Redis] Disconnected');
+    console.log("[Redis] Disconnected");
   }
 }
 
@@ -120,25 +120,25 @@ export const CACHE_KEYS = {
   USER_PROFILE: (userId) => `cbt:user:profile:${userId}`,
   USER_SESSION: (userId, sessionId) => `cbt:session:${userId}:${sessionId}`,
   USER_SESSIONS_LIST: (userId) => `cbt:user:sessions:${userId}`,
-  
+
   // Exam related
   EXAM: (examId) => `cbt:exam:${examId}`,
   EXAM_QUESTIONS: (examId) => `cbt:exam:questions:${examId}`,
   EXAM_SUBMISSIONS: (examId) => `cbt:exam:submissions:${examId}`,
   USER_EXAM_PROGRESS: (userId, examId) => `cbt:user:exam:${userId}:${examId}`,
-  
+
   // Course related
   COURSE: (courseId) => `cbt:course:${courseId}`,
   COURSE_EXAMS: (courseId) => `cbt:course:exams:${courseId}`,
-  
+
   // Rate limiting
   RATE_LIMIT: (identifier) => `cbt:ratelimit:${identifier}`,
   LOGIN_ATTEMPTS: (email) => `cbt:login:attempts:${email}`,
-  
+
   // Statistics
   ADMIN_STATS: () => `cbt:admin:stats`,
   USER_STATS: (userId) => `cbt:user:stats:${userId}`,
-  
+
   // Security
   BLOCKED_IPS: () => `cbt:security:blocked_ips`,
   PASSWORD_RESET: (token) => `cbt:verify:password:${token}`,
@@ -150,14 +150,14 @@ export const CACHE_KEYS = {
 // ============================================================================
 
 export const CACHE_TTL = {
-  USER_PROFILE: 300,        // 5 minutes
-  SESSION: 86400,           // 24 hours
-  EXAM: 300,                // 5 minutes
-  COURSE: 600,              // 10 minutes
-  RATE_LIMIT: 900,          // 15 minutes
-  LOGIN_ATTEMPTS: 1800,     // 30 minutes
-  ADMIN_STATS: 300,         // 5 minutes
-  PASSWORD_RESET: 3600,     // 1 hour
+  USER_PROFILE: 300, // 5 minutes
+  SESSION: 86400, // 24 hours
+  EXAM: 300, // 5 minutes
+  COURSE: 600, // 10 minutes
+  RATE_LIMIT: 900, // 15 minutes
+  LOGIN_ATTEMPTS: 1800, // 30 minutes
+  ADMIN_STATS: 300, // 5 minutes
+  PASSWORD_RESET: 3600, // 1 hour
   EMAIL_VERIFICATION: 86400, // 24 hours
 };
 
@@ -251,7 +251,7 @@ export async function cacheGetOrSet(key, fetchFn, ttlSeconds) {
   if (cached !== null) {
     return cached;
   }
-  
+
   const freshData = await fetchFn();
   await cacheSet(key, freshData, ttlSeconds);
   return freshData;
@@ -289,19 +289,26 @@ export async function createSession(userId, sessionId, sessionData) {
     if (!isConnected) return true; // Allow without Redis
     const client = await getRedisClient();
     const key = CACHE_KEYS.USER_SESSION(userId, sessionId);
-    
-    await client.setEx(key, CACHE_TTL.SESSION, JSON.stringify({
-      ...sessionData,
-      userId,
-      sessionId,
-      createdAt: new Date().toISOString(),
-      lastActivity: new Date().toISOString(),
-    }));
-    
+
+    await client.setEx(
+      key,
+      CACHE_TTL.SESSION,
+      JSON.stringify({
+        ...sessionData,
+        userId,
+        sessionId,
+        createdAt: new Date().toISOString(),
+        lastActivity: new Date().toISOString(),
+      }),
+    );
+
     // Add to user's session list
     await client.sAdd(CACHE_KEYS.USER_SESSIONS_LIST(userId), sessionId);
-    await client.expire(CACHE_KEYS.USER_SESSIONS_LIST(userId), CACHE_TTL.SESSION);
-    
+    await client.expire(
+      CACHE_KEYS.USER_SESSIONS_LIST(userId),
+      CACHE_TTL.SESSION,
+    );
+
     return true;
   } catch (error) {
     console.error(`[Redis] Create session error:`, error);
@@ -334,7 +341,7 @@ export async function deleteSession(userId, sessionId) {
   try {
     if (!isConnected) return true;
     const client = await getRedisClient();
-    
+
     if (sessionId) {
       await client.del(CACHE_KEYS.USER_SESSION(userId, sessionId));
       await client.sRem(CACHE_KEYS.USER_SESSIONS_LIST(userId), sessionId);
@@ -357,13 +364,17 @@ export async function deleteAllUserSessions(userId) {
   try {
     if (!isConnected) return true;
     const client = await getRedisClient();
-    const sessionIds = await client.sMembers(CACHE_KEYS.USER_SESSIONS_LIST(userId));
-    
+    const sessionIds = await client.sMembers(
+      CACHE_KEYS.USER_SESSIONS_LIST(userId),
+    );
+
     if (sessionIds.length > 0) {
-      const sessionKeys = sessionIds.map(sid => CACHE_KEYS.USER_SESSION(userId, sid));
+      const sessionKeys = sessionIds.map((sid) =>
+        CACHE_KEYS.USER_SESSION(userId, sid),
+      );
       await client.del(sessionKeys);
     }
-    
+
     await client.del(CACHE_KEYS.USER_SESSIONS_LIST(userId));
     return true;
   } catch (error) {
@@ -381,13 +392,15 @@ export async function getUserSessions(userId) {
   try {
     if (!isConnected) return [];
     const client = await getRedisClient();
-    const sessionIds = await client.sMembers(CACHE_KEYS.USER_SESSIONS_LIST(userId));
-    
-    const sessions = await Promise.all(
-      sessionIds.map(sid => getSession(userId, sid))
+    const sessionIds = await client.sMembers(
+      CACHE_KEYS.USER_SESSIONS_LIST(userId),
     );
-    
-    return sessions.filter(s => s !== null);
+
+    const sessions = await Promise.all(
+      sessionIds.map((sid) => getSession(userId, sid)),
+    );
+
+    return sessions.filter((s) => s !== null);
   } catch (error) {
     console.error(`[Redis] Get user sessions error:`, error);
     return [];
@@ -408,23 +421,27 @@ export async function getUserSessions(userId) {
 export async function checkRateLimit(identifier, limit, windowMs) {
   try {
     if (!isConnected) {
-      return { allowed: true, remaining: limit, resetTime: Date.now() + windowMs };
+      return {
+        allowed: true,
+        remaining: limit,
+        resetTime: Date.now() + windowMs,
+      };
     }
-    
+
     const client = await getRedisClient();
     const key = CACHE_KEYS.RATE_LIMIT(identifier);
     const windowSeconds = Math.ceil(windowMs / 1000);
-    
+
     const current = await client.incr(key);
-    
+
     if (current === 1) {
       await client.expire(key, windowSeconds);
     }
-    
+
     const ttl = await client.ttl(key);
     const resetTime = Date.now() + (ttl > 0 ? ttl * 1000 : windowMs);
     const remaining = Math.max(0, limit - current);
-    
+
     return {
       allowed: current <= limit,
       remaining,
@@ -433,7 +450,11 @@ export async function checkRateLimit(identifier, limit, windowMs) {
     };
   } catch (error) {
     console.error(`[Redis] Rate limit check error:`, error);
-    return { allowed: true, remaining: limit, resetTime: Date.now() + windowMs };
+    return {
+      allowed: true,
+      remaining: limit,
+      resetTime: Date.now() + windowMs,
+    };
   }
 }
 
@@ -446,21 +467,21 @@ export async function checkRateLimit(identifier, limit, windowMs) {
 export async function trackLoginAttempt(email, success) {
   try {
     if (!isConnected) return { attempts: 0, locked: false };
-    
+
     const client = await getRedisClient();
     const key = CACHE_KEYS.LOGIN_ATTEMPTS(email.toLowerCase());
-    
+
     if (success) {
       await client.del(key);
       return { attempts: 0, locked: false };
     }
-    
+
     const attempts = await client.incr(key);
     if (attempts === 1) {
       await client.expire(key, CACHE_TTL.LOGIN_ATTEMPTS);
     }
-    
-    const maxAttempts = 5;
+
+    const maxAttempts = 30; // Increased from 5
     return {
       attempts,
       locked: attempts >= maxAttempts,
@@ -482,7 +503,7 @@ export async function isLoginLocked(email) {
     const client = await getRedisClient();
     const key = CACHE_KEYS.LOGIN_ATTEMPTS(email.toLowerCase());
     const attempts = await client.get(key);
-    return attempts !== null && parseInt(attempts, 10) >= 5;
+    return attempts !== null && parseInt(attempts, 10) >= 30; // Increased from 5
   } catch (error) {
     return false;
   }
@@ -508,7 +529,11 @@ export async function resetRateLimit(identifier) {
  * @returns {Promise<boolean>}
  */
 export async function cacheUserProfile(userId, profile) {
-  return cacheSet(CACHE_KEYS.USER_PROFILE(userId), profile, CACHE_TTL.USER_PROFILE);
+  return cacheSet(
+    CACHE_KEYS.USER_PROFILE(userId),
+    profile,
+    CACHE_TTL.USER_PROFILE,
+  );
 }
 
 /**
@@ -600,7 +625,11 @@ export async function invalidateExamCache(examId) {
  * @returns {Promise<boolean>}
  */
 export async function storePasswordResetToken(token, userId) {
-  return cacheSet(CACHE_KEYS.PASSWORD_RESET(token), { userId, createdAt: Date.now() }, CACHE_TTL.PASSWORD_RESET);
+  return cacheSet(
+    CACHE_KEYS.PASSWORD_RESET(token),
+    { userId, createdAt: Date.now() },
+    CACHE_TTL.PASSWORD_RESET,
+  );
 }
 
 /**
@@ -624,7 +653,11 @@ export async function verifyPasswordResetToken(token) {
  * @returns {Promise<boolean>}
  */
 export async function storeEmailVerificationToken(token, userId) {
-  return cacheSet(CACHE_KEYS.EMAIL_VERIFICATION(token), { userId, createdAt: Date.now() }, CACHE_TTL.EMAIL_VERIFICATION);
+  return cacheSet(
+    CACHE_KEYS.EMAIL_VERIFICATION(token),
+    { userId, createdAt: Date.now() },
+    CACHE_TTL.EMAIL_VERIFICATION,
+  );
 }
 
 /**
@@ -655,7 +688,7 @@ export async function blockIP(ip, durationSeconds = 3600) {
   try {
     if (!isConnected) return false;
     const client = await getRedisClient();
-    await client.setEx(`cbt:blocked_ip:${ip}`, durationSeconds, '1');
+    await client.setEx(`cbt:blocked_ip:${ip}`, durationSeconds, "1");
     return true;
   } catch (error) {
     console.error(`[Redis] Block IP error:`, error);
@@ -689,21 +722,21 @@ export async function isIPBlocked(ip) {
  */
 export async function healthCheck() {
   const start = Date.now();
-  
+
   try {
     if (!isConnected) {
-      return { status: 'disconnected', connected: false };
+      return { status: "disconnected", connected: false };
     }
     const client = await getRedisClient();
     await client.ping();
     return {
-      status: 'healthy',
+      status: "healthy",
       latency: Date.now() - start,
       connected: isConnected,
     };
   } catch (error) {
     return {
-      status: 'unhealthy',
+      status: "unhealthy",
       connected: false,
     };
   }
