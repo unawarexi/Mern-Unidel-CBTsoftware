@@ -1,5 +1,5 @@
-const BASE_URL =
-  import.meta.env.VITE_API_BASE_URL || "http://localhost:3000/api/support";
+const API_ROOT = import.meta.env.VITE_API_BASE_URL || "http://localhost:3000/api";
+const BASE_URL = `${API_ROOT}/support`;
 
 export const createTicket = async (ticketData) => {
   const response = await fetch(BASE_URL, {

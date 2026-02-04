@@ -1,6 +1,6 @@
-const BASE_URL =
-  import.meta.env.VITE_API_BASE_URL ||
-  "http://localhost:3000/api/governing-bodies";
+const API_ROOT =
+  import.meta.env.VITE_API_BASE_URL || "http://localhost:3000/api";
+const BASE_URL = `${API_ROOT}/governing-bodies`;
 
 export const createBody = async (data) => {
   const response = await fetch(`${BASE_URL}`, {

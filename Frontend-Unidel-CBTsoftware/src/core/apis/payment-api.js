@@ -1,5 +1,5 @@
-const BASE_URL =
-  import.meta.env.VITE_API_BASE_URL || "http://localhost:3000/api/payments";
+const API_ROOT = import.meta.env.VITE_API_BASE_URL || "http://localhost:3000/api";
+const BASE_URL = `${API_ROOT}/payments`;
 
 // @desc    Initiate Payment
 export const initiatePayment = async (data) => {

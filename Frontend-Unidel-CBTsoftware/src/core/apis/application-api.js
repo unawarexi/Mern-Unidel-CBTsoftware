@@ -1,5 +1,5 @@
-const BASE_URL =
-  import.meta.env.VITE_API_BASE_URL || "http://localhost:3000/api/applications";
+const API_ROOT = import.meta.env.VITE_API_BASE_URL || "http://localhost:3000/api";
+const BASE_URL = `${API_ROOT}/applications`;
 
 export const getAllApplications = async (params = {}) => {
   const query = new URLSearchParams(params).toString();

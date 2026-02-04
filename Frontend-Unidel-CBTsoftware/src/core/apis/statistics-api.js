@@ -1,4 +1,5 @@
-const BASE_URL = import.meta.env.VITE_API_BASE_URL || "http://localhost:3000/api/statistics";
+const API_ROOT = import.meta.env.VITE_API_BASE_URL || "http://localhost:3000/api";
+const BASE_URL = `${API_ROOT}/statistics`;
 
 // ========== RAW API FUNCTIONS - ACTIVITY LOGS ==========
 
