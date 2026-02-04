@@ -25,11 +25,11 @@ router.post("/login", login);
 router.post("/agent/signup", authLimiter, agentSignup);
 router.post(
   "/change-password-first-login",
-
+  authLimiter,
   changePasswordFirstLogin,
 );
-router.post("/forgot-password", passwordResetLimiter, forgotPassword);
-router.post("/reset-password", passwordResetLimiter, resetPassword);
+router.post("/forgot-password", forgotPassword);
+router.post("/reset-password", resetPassword);
 
 // ========== PROTECTED ROUTES ==========
 router.get("/me", protect, getCurrentUser);

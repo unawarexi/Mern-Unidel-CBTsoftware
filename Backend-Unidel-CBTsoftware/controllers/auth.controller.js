@@ -9,6 +9,7 @@ import { generateToken } from "../core/helpers/helper-functions.js";
 import { generateAdminId } from "../core/helpers/helper-functions.js";
 import * as Mailer from "../services/mailer.service.js";
 import EmailContentGenerator from "../core/mail/mail-content.js";
+import { emitToRoom } from "../services/socketIO.service.js";
 // Redis for login tracking and caching
 import {
   trackLoginAttempt,
@@ -98,22 +99,30 @@ export const agentSignup = async (req, res) => {
 
     // Send notification to admin (non-blocking)
     try {
+      const admins = await Admin.find({ role: "admin" }).select("email");
       const mailGen = new EmailContentGenerator();
-      const emailContent = mailGen.generalNotification({
-        title: "New Agent Registration",
-        recipientName: "Super Admin",
-        message: `<p>A new agent <strong>${agent.fullname}</strong> from <strong>${agent.organisation}</strong> has registered and is awaiting verification.</p>`,
+      const emailContent = mailGen.agentApplication({
+        agentName: agent.fullname,
+        email: agent.email,
+        organisation: agent.organisation,
       });
-      // Assuming a central admin email or just logging for now
-      await Mailer.sendTemplatedMail(
-        "drop.cryptobinary@gmail.com",
-        emailContent,
-      );
+
+      // Send to all admins
+      for (const admin of admins) {
+        await Mailer.sendTemplatedMail(admin.email, emailContent);
+      }
+
+      // Real-time notification
+      emitToRoom("admin_notifications", "agent:new", agent);
     } catch (err) {
       console.error("Error sending admin notification:", err);
     }
 
-    sendTokenResponse(agent, 201, res);
+    // Do NOT log them in automatically. They are pending.
+    res.status(201).json({
+      success: true,
+      message: "Registration successful. Please wait for admin verification.",
+    });
   } catch (error) {
     res.status(500).json({ success: false, message: error.message });
   }

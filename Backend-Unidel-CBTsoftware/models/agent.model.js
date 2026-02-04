@@ -24,6 +24,11 @@ const agentSchema = new mongoose.Schema(
       type: String,
       required: true,
     },
+    approvalStatus: {
+      type: String,
+      enum: ["pending", "approved", "rejected"],
+      default: "pending",
+    },
     isVerified: {
       type: Boolean,
       default: false,

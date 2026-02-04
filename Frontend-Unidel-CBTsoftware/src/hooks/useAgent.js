@@ -9,7 +9,8 @@ import {
   getAgentQuestionBanks,
   createAgentQuestionBank,
   getAgentSubscription,
-  verifyAgent,
+  getAgents,
+  updateAgentStatus,
 } from "../core/apis/agent-api";
 
 // ========== STUDENT HOOKS ==========
@@ -100,10 +101,17 @@ export const useAgentSubscription = () => {
 
 // ========== ADMIN HOOKS ==========
 
-export const useVerifyAgent = () => {
+export const useGetAgents = (status) => {
+  return useQuery({
+    queryKey: ["agents", status],
+    queryFn: () => getAgents(status),
+  });
+};
+
+export const useUpdateAgentStatus = () => {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: verifyAgent,
+    mutationFn: updateAgentStatus,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["agents"] });
     },

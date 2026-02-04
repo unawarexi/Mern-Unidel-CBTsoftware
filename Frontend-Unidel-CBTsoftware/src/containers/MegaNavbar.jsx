@@ -50,20 +50,24 @@ const megaMenuData = {
         links: [
           {
             label: "Undergraduate Programs",
-            href: "/programs",
+            href: "/academics/programs",
             icon: BookOpen,
           },
           {
             label: "Graduate Studies",
-            href: "/graduate-studies",
+            href: "/academics/programs",
             icon: GraduationCap,
           },
           {
             label: "Professional Certificates",
-            href: "/certificates",
+            href: "/academics/programs",
             icon: Award,
           },
-          { label: "Online Learning", href: "/online-learning", icon: Globe },
+          {
+            label: "Online Learning",
+            href: "/academics/resources",
+            icon: Globe,
+          },
         ],
       },
       {
@@ -71,22 +75,42 @@ const megaMenuData = {
         links: [
           {
             label: "Academic Calendar",
-            href: "/academic-calendar",
+            href: "/academics/resources",
             icon: Calendar,
           },
-          { label: "Course Catalog", href: "/courses", icon: FileText },
-          { label: "Digital Library", href: "/library", icon: Library },
-          { label: "Study Guides", href: "/study-guides", icon: BookOpen },
+          {
+            label: "Course Catalog",
+            href: "/academics/resources",
+            icon: FileText,
+          },
+          {
+            label: "Digital Library",
+            href: "/academics/resources",
+            icon: Library,
+          },
+          {
+            label: "Study Guides",
+            href: "/academics/resources",
+            icon: BookOpen,
+          },
         ],
       },
       {
         title: "Departments",
         links: [
-          { label: "All Departments", href: "/departments", icon: Building2 },
-          { label: "Faculty Directory", href: "/faculties", icon: Users },
+          {
+            label: "All Departments",
+            href: "/academics/departments",
+            icon: Building2,
+          },
+          {
+            label: "Faculty Directory",
+            href: "/academics/departments",
+            icon: Users,
+          },
           {
             label: "Research Centers",
-            href: "/research-centers",
+            href: "/research/centers",
             icon: Microscope,
           },
         ],
@@ -104,17 +128,17 @@ const megaMenuData = {
           { label: "Apply Now", href: "/auth/selection", icon: FileText },
           {
             label: "Admission Requirements",
-            href: "/requirements",
+            href: "/admissions/requirements",
             icon: FileText,
           },
           {
             label: "Application Deadlines",
-            href: "/deadlines",
+            href: "/admissions/requirements",
             icon: Calendar,
           },
           {
             label: "Check Application Status",
-            href: "/application-status",
+            href: "/portal-signin",
             icon: HelpCircle,
           },
         ],
@@ -122,10 +146,26 @@ const megaMenuData = {
       {
         title: "Financial Information",
         links: [
-          { label: "Tuition & Fees", href: "/fees", icon: DollarSign },
-          { label: "Scholarships", href: "/scholarships", icon: Award },
-          { label: "Financial Aid", href: "/financial-aid", icon: DollarSign },
-          { label: "Payment Plans", href: "/payment-plans", icon: DollarSign },
+          {
+            label: "Tuition & Fees",
+            href: "/admissions/fees",
+            icon: DollarSign,
+          },
+          {
+            label: "Scholarships",
+            href: "/admissions/scholarships",
+            icon: Award,
+          },
+          {
+            label: "Financial Aid",
+            href: "/admissions/scholarships",
+            icon: DollarSign,
+          },
+          {
+            label: "Payment Plans",
+            href: "/admissions/fees",
+            icon: DollarSign,
+          },
         ],
       },
       {
@@ -133,11 +173,19 @@ const megaMenuData = {
         links: [
           {
             label: "International Students",
-            href: "/international-students",
+            href: "/admissions/requirements",
             icon: Globe,
           },
-          { label: "Transfer Students", href: "/transfer", icon: Users },
-          { label: "Mature Students", href: "/mature-students", icon: Users },
+          {
+            label: "Transfer Students",
+            href: "/admissions/requirements",
+            icon: Users,
+          },
+          {
+            label: "Mature Students",
+            href: "/admissions/requirements",
+            icon: Users,
+          },
         ],
       },
     ],
@@ -150,10 +198,22 @@ const megaMenuData = {
       {
         title: "Campus",
         links: [
-          { label: "Campus Tour", href: "/campus", icon: MapPin },
-          { label: "Housing & Accommodation", href: "/housing", icon: Home },
-          { label: "Dining Services", href: "/dining", icon: Coffee },
-          { label: "Campus Facilities", href: "/facilities", icon: Building2 },
+          { label: "Campus Tour", href: "/student-life/campus", icon: MapPin },
+          {
+            label: "Housing & Accommodation",
+            href: "/student-life/housing",
+            icon: Home,
+          },
+          {
+            label: "Dining Services",
+            href: "/student-life/campus",
+            icon: Coffee,
+          },
+          {
+            label: "Campus Facilities",
+            href: "/student-life/campus",
+            icon: Building2,
+          },
         ],
       },
       {
@@ -161,12 +221,24 @@ const megaMenuData = {
         links: [
           {
             label: "Student Organizations",
-            href: "/organizations",
+            href: "/student-life/organizations",
             icon: Users,
           },
-          { label: "Events & Activities", href: "/events", icon: PartyPopper },
-          { label: "Sports & Recreation", href: "/sports", icon: Award },
-          { label: "Cultural Programs", href: "/cultural", icon: Globe },
+          {
+            label: "Events & Activities",
+            href: "/about/news",
+            icon: PartyPopper,
+          },
+          {
+            label: "Sports & Recreation",
+            href: "/student-life/campus",
+            icon: Award,
+          },
+          {
+            label: "Cultural Programs",
+            href: "/student-life/organizations",
+            icon: Globe,
+          },
         ],
       },
       {
@@ -174,14 +246,14 @@ const megaMenuData = {
         links: [
           {
             label: "Career Services",
-            href: "/career-services",
+            href: "/careers",
             icon: Briefcase,
           },
-          { label: "Health Services", href: "/health", icon: HelpCircle },
-          { label: "Counseling", href: "/counseling", icon: HelpCircle },
+          { label: "Health Services", href: "/support", icon: HelpCircle },
+          { label: "Counseling", href: "/support", icon: HelpCircle },
           {
             label: "Disability Services",
-            href: "/accessibility",
+            href: "/support",
             icon: HelpCircle,
           },
         ],
@@ -198,26 +270,34 @@ const megaMenuData = {
         links: [
           {
             label: "Research Centers",
-            href: "/research-centers",
+            href: "/research/centers",
             icon: Microscope,
           },
-          { label: "Laboratories", href: "/labs", icon: FlaskConical },
-          { label: "Publications", href: "/publications", icon: FileText },
-          { label: "Research Grants", href: "/grants", icon: Award },
+          {
+            label: "Laboratories",
+            href: "/research/centers",
+            icon: FlaskConical,
+          },
+          { label: "Publications", href: "/research", icon: FileText },
+          { label: "Research Grants", href: "/research", icon: Award },
         ],
       },
       {
         title: "Innovation",
         links: [
-          { label: "Innovation Hub", href: "/innovation", icon: FlaskConical },
+          {
+            label: "Innovation Hub",
+            href: "/research/centers",
+            icon: FlaskConical,
+          },
           {
             label: "Industry Partnerships",
-            href: "/partnerships",
+            href: "/research",
             icon: Briefcase,
           },
           {
             label: "Technology Transfer",
-            href: "/technology-transfer",
+            href: "/research",
             icon: Globe,
           },
         ],
@@ -233,26 +313,26 @@ const megaMenuData = {
         title: "About UNIDEL",
         links: [
           { label: "Our History", href: "/about", icon: Building2 },
-          { label: "Vision & Mission", href: "/vision", icon: Award },
-          { label: "Leadership", href: "/leadership", icon: Users },
-          { label: "Accreditation", href: "/accreditation", icon: Shield },
+          { label: "Vision & Mission", href: "/about", icon: Award },
+          { label: "Leadership", href: "/about", icon: Users },
+          { label: "Accreditation", href: "/about", icon: Shield },
         ],
       },
       {
         title: "News & Media",
         links: [
-          { label: "News & Updates", href: "/news", icon: Newspaper },
-          { label: "Press Releases", href: "/press", icon: FileText },
-          { label: "Photo Gallery", href: "/gallery", icon: Building2 },
-          { label: "Media Contacts", href: "/media", icon: Phone },
+          { label: "News & Updates", href: "/about/news", icon: Newspaper },
+          { label: "Press Releases", href: "/about/news", icon: FileText },
+          { label: "Photo Gallery", href: "/about/news", icon: Building2 },
+          { label: "Media Contacts", href: "/contact", icon: Phone },
         ],
       },
       {
         title: "Contact",
         links: [
           { label: "Contact Us", href: "/contact", icon: Phone },
-          { label: "Locations", href: "/locations", icon: MapPin },
-          { label: "Help Center", href: "/help", icon: HelpCircle },
+          { label: "Locations", href: "/contact", icon: MapPin },
+          { label: "Help Center", href: "/support", icon: HelpCircle },
         ],
       },
     ],
@@ -308,7 +388,7 @@ const MegaNavbar = () => {
           : "bg-white/95 backdrop-blur-md border-b border-gray-100 shadow-sm",
       )}
     >
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div className="max-w-[95%] mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-16 lg:h-20">
           {/* Logo */}
           <Link to="/" className="flex items-center gap-2 group flex-shrink-0">
@@ -330,7 +410,7 @@ const MegaNavbar = () => {
 
           {/* Desktop Navigation */}
           <nav
-            className="hidden lg:flex items-center gap-1"
+            className="hidden lg:flex items-center gap-3"
             onMouseLeave={handleMenuLeave}
           >
             {Object.entries(megaMenuData).map(([key, menu]) => (
@@ -397,13 +477,185 @@ const MegaNavbar = () => {
               )}
             </button>
 
-            {/* CTA Button */}
-            <Link
-              to="/auth/selection"
-              className="hidden sm:inline-flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-orange-500 to-red-600 text-white text-sm font-semibold rounded-lg hover:from-orange-600 hover:to-red-700 transition-all shadow-lg shadow-orange-500/20"
-            >
-              Apply Now
-            </Link>
+            {/* Login Split Button */}
+            <div className="relative group flex items-center">
+              <Link
+                to="/auth/selection"
+                className={cn(
+                  "hidden sm:inline-flex items-center px-4 py-2 rounded-l-lg font-medium text-sm transition-all border-r border-gray-200 dark:border-slate-700",
+                  activeMenu === "login"
+                    ? isDarkMode
+                      ? "bg-slate-800 text-white"
+                      : "bg-gray-100 text-gray-900"
+                    : isDarkMode
+                      ? "text-gray-300 hover:text-white hover:bg-slate-800"
+                      : "text-gray-700 hover:text-gray-900 hover:bg-gray-50",
+                )}
+              >
+                Login
+              </Link>
+              <button
+                onClick={(e) => {
+                  e.preventDefault();
+                  setActiveMenu(activeMenu === "login" ? null : "login");
+                }}
+                className={cn(
+                  "hidden sm:inline-flex items-center px-2 py-2.5 rounded-r-lg font-medium text-sm transition-all",
+                  activeMenu === "login"
+                    ? isDarkMode
+                      ? "bg-slate-800 text-white"
+                      : "bg-gray-100 text-gray-900"
+                    : isDarkMode
+                      ? "text-gray-300 hover:text-white hover:bg-slate-800"
+                      : "text-gray-700 hover:text-gray-900 hover:bg-gray-50",
+                )}
+              >
+                <ChevronDown
+                  className={cn(
+                    "w-3.5 h-3.5 transition-transform",
+                    activeMenu === "login" && "rotate-180",
+                  )}
+                />
+              </button>
+
+              {/* Login Dropdown Content */}
+              <AnimatePresence>
+                {activeMenu === "login" && (
+                  <motion.div
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: 10 }}
+                    className={cn(
+                      "absolute right-0 top-full mt-2 w-56 rounded-xl border shadow-xl p-2 z-50",
+                      isDarkMode
+                        ? "bg-slate-900 border-slate-800"
+                        : "bg-white border-gray-100",
+                    )}
+                  >
+                    <Link
+                      to="/portal-signin"
+                      className={cn(
+                        "flex items-center gap-3 px-3 py-2 rounded-lg text-sm transition-colors",
+                        isDarkMode
+                          ? "hover:bg-slate-800 text-gray-300"
+                          : "hover:bg-gray-50 text-gray-700",
+                      )}
+                    >
+                      <Users className="w-4 h-4 text-orange-500" /> Student
+                      Portal
+                    </Link>
+                    <Link
+                      to="/signin-agent"
+                      className={cn(
+                        "flex items-center gap-3 px-3 py-2 rounded-lg text-sm transition-colors",
+                        isDarkMode
+                          ? "hover:bg-slate-800 text-gray-300"
+                          : "hover:bg-gray-50 text-gray-700",
+                      )}
+                    >
+                      <Globe className="w-4 h-4 text-purple-500" /> Agent Portal
+                    </Link>
+                    <Link
+                      to="/lecturer-signin"
+                      className={cn(
+                        "flex items-center gap-3 px-3 py-2 rounded-lg text-sm transition-colors",
+                        isDarkMode
+                          ? "hover:bg-slate-800 text-gray-300"
+                          : "hover:bg-gray-50 text-gray-700",
+                      )}
+                    >
+                      <GraduationCap className="w-4 h-4 text-indigo-500" />{" "}
+                      Staff Portal
+                    </Link>
+                    <Link
+                      to="/admin-signin"
+                      className={cn(
+                        "flex items-center gap-3 px-3 py-2 rounded-lg text-sm transition-colors",
+                        isDarkMode
+                          ? "hover:bg-slate-800 text-gray-300"
+                          : "hover:bg-gray-50 text-gray-700",
+                      )}
+                    >
+                      <Shield className="w-4 h-4 text-red-500" /> Admin Portal
+                    </Link>
+                  </motion.div>
+                )}
+              </AnimatePresence>
+            </div>
+
+            {/* Apply Dropdown */}
+            <div className="relative group">
+              <button
+                onClick={() =>
+                  setActiveMenu(activeMenu === "apply" ? null : "apply")
+                }
+                className="hidden sm:inline-flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-orange-500 to-red-600 text-white text-sm font-semibold rounded-lg hover:from-orange-600 hover:to-red-700 transition-all shadow-lg shadow-orange-500/20"
+              >
+                Apply Now{" "}
+                <ChevronDown
+                  className={cn(
+                    "w-3.5 h-3.5 transition-transform",
+                    activeMenu === "apply" && "rotate-180",
+                  )}
+                />
+              </button>
+
+              {/* Apply Dropdown Content */}
+              <AnimatePresence>
+                {activeMenu === "apply" && (
+                  <motion.div
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: 10 }}
+                    className={cn(
+                      "absolute right-0 top-full mt-2 w-64 rounded-xl border shadow-xl p-2 z-50",
+                      isDarkMode
+                        ? "bg-slate-900 border-slate-800"
+                        : "bg-white border-gray-100",
+                    )}
+                  >
+                    <Link
+                      to="/apply"
+                      className={cn(
+                        "flex items-center gap-3 px-3 py-2 rounded-lg text-sm transition-colors",
+                        isDarkMode
+                          ? "hover:bg-slate-800 text-gray-300"
+                          : "hover:bg-gray-50 text-gray-700",
+                      )}
+                    >
+                      <div className="p-2 rounded-lg bg-orange-100 dark:bg-orange-900/30 text-orange-600">
+                        <UserPlus className="w-4 h-4" />
+                      </div>
+                      <div>
+                        <div className="font-semibold">Student Admission</div>
+                        <div className="text-xs text-gray-500">
+                          Undergraduate & Postgrad
+                        </div>
+                      </div>
+                    </Link>
+                    <Link
+                      to="/agent-signup"
+                      className={cn(
+                        "flex items-center gap-3 px-3 py-2 rounded-lg text-sm transition-colors mt-1",
+                        isDarkMode
+                          ? "hover:bg-slate-800 text-gray-300"
+                          : "hover:bg-gray-50 text-gray-700",
+                      )}
+                    >
+                      <div className="p-2 rounded-lg bg-purple-100 dark:bg-purple-900/30 text-purple-600">
+                        <Globe className="w-4 h-4" />
+                      </div>
+                      <div>
+                        <div className="font-semibold">Become an Agent</div>
+                        <div className="text-xs text-gray-500">
+                          Partner with UNIDEL
+                        </div>
+                      </div>
+                    </Link>
+                  </motion.div>
+                )}
+              </AnimatePresence>
+            </div>
 
             {/* Mobile Menu Toggle */}
             <button
@@ -427,7 +679,7 @@ const MegaNavbar = () => {
 
         {/* Mega Menu Dropdown */}
         <AnimatePresence>
-          {activeMenu && (
+          {activeMenu && megaMenuData[activeMenu] && (
             <motion.div
               initial={{ opacity: 0, y: -10 }}
               animate={{ opacity: 1, y: 0 }}
@@ -442,7 +694,7 @@ const MegaNavbar = () => {
               onMouseEnter={() => setActiveMenu(activeMenu)}
               onMouseLeave={handleMenuLeave}
             >
-              <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+              <div className="max-w-[95%] mx-auto px-4 sm:px-6 lg:px-8 py-8">
                 {/* Menu Header */}
                 <div className="flex items-start justify-between mb-6 pb-4 border-b border-gray-200 dark:border-slate-700">
                   <div>

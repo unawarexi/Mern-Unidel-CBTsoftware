@@ -2,28 +2,24 @@
  * Socket.IO Service - WebSocket management for real-time features
  * Converted from TypeScript to JavaScript
  */
-import { Server as SocketIOServer } from 'socket.io';
+import { Server as SocketIOServer } from "socket.io";
 
 // ============================================================================
 // SOCKET MANAGER CLASS
 // ============================================================================
 
 class SocketManager {
-  /**
-   * @param {import('http').Server} httpServer
-   * @param {string | string[]} [corsOrigin='*']
-   */
-  constructor(httpServer, corsOrigin = '*') {
+  constructor(httpServer, corsOrigin = "*") {
     /** @type {SocketIOServer} */
     this.io = new SocketIOServer(httpServer, {
       cors: {
         origin: corsOrigin,
-        methods: ['GET', 'POST'],
+        methods: ["GET", "POST"],
         credentials: true,
       },
       pingTimeout: 60000,
       pingInterval: 25000,
-      transports: ['websocket', 'polling'],
+      transports: ["websocket", "polling"],
     });
 
     /** @type {Map<string, import('socket.io').Socket>} */
@@ -37,16 +33,16 @@ class SocketManager {
    * @private
    */
   setupConnection() {
-    this.io.on('connection', (socket) => {
+    this.io.on("connection", (socket) => {
       console.log(`✅ Socket Connected: ${socket.id}`);
       this.connectedUsers.set(socket.id, socket);
 
-      socket.on('disconnect', (reason) => {
+      socket.on("disconnect", (reason) => {
         console.log(`❌ Socket Disconnected: ${socket.id} - ${reason}`);
         this.connectedUsers.delete(socket.id);
       });
 
-      socket.on('error', (error) => {
+      socket.on("error", (error) => {
         console.error(`🔥 Socket error ${socket.id}:`, error);
       });
 
@@ -61,19 +57,19 @@ class SocketManager {
    */
   registerEvents(socket) {
     // Join room
-    socket.on('join_room', (room) => {
+    socket.on("join_room", (room) => {
       socket.join(room);
-      socket.emit('joined_room', { room, socketId: socket.id });
+      socket.emit("joined_room", { room, socketId: socket.id });
     });
 
     // Leave room
-    socket.on('leave_room', (room) => {
+    socket.on("leave_room", (room) => {
       socket.leave(room);
-      socket.emit('left_room', { room, socketId: socket.id });
+      socket.emit("left_room", { room, socketId: socket.id });
     });
 
     // Send message to room or broadcast
-    socket.on('send_message', (data) => {
+    socket.on("send_message", (data) => {
       const payload = {
         ...data,
         socketId: socket.id,
@@ -81,19 +77,19 @@ class SocketManager {
       };
 
       if (data.room) {
-        this.io.to(data.room).emit('new_message', payload);
+        this.io.to(data.room).emit("new_message", payload);
       } else {
-        this.io.emit('new_message', payload);
+        this.io.emit("new_message", payload);
       }
     });
 
     // Exam-specific events
-    socket.on('join_exam', (examId) => {
+    socket.on("join_exam", (examId) => {
       socket.join(`exam:${examId}`);
-      socket.emit('joined_exam', { examId });
+      socket.emit("joined_exam", { examId });
     });
 
-    socket.on('leave_exam', (examId) => {
+    socket.on("leave_exam", (examId) => {
       socket.leave(`exam:${examId}`);
     });
   }
@@ -230,7 +226,8 @@ export const initializeWebSocket = (httpServer, corsOrigin) => {
 
   // Add authentication middleware
   io.use((socket, next) => {
-    const userId = socket.handshake.auth?.userId || socket.handshake.query?.userId;
+    const userId =
+      socket.handshake.auth?.userId || socket.handshake.query?.userId;
     if (userId) {
       socket.userId = userId;
     }
@@ -238,25 +235,34 @@ export const initializeWebSocket = (httpServer, corsOrigin) => {
   });
 
   // Handle user room joining on connection
-  io.on('connection', (socket) => {
+  io.on("connection", (socket) => {
     const userId = socket.userId;
+    const role = socket.handshake.query?.role || socket.handshake.auth?.role;
 
     if (userId) {
       // Join user's personal room
       socket.join(`user:${userId}`);
       console.log(`User ${userId} joined their room`);
 
-      socket.on('disconnect', () => {
+      if (role && ["admin", "superadmin"].includes(role)) {
+        socket.join("admin_notifications");
+        console.log(`User ${userId} joined admin_notifications`);
+      }
+
+      socket.on("disconnect", () => {
         socket.leave(`user:${userId}`);
+        if (role && ["admin", "superadmin"].includes(role)) {
+          socket.leave("admin_notifications");
+        }
       });
     }
 
     // Handle manual room joining (for authenticated users)
-    socket.on('authenticate', (data) => {
+    socket.on("authenticate", (data) => {
       if (data.userId) {
         socket.userId = data.userId;
         socket.join(`user:${data.userId}`);
-        socket.emit('authenticated', { success: true });
+        socket.emit("authenticated", { success: true });
       }
     });
   });

@@ -8,6 +8,7 @@ import {
   adminReview,
   deleteApplication,
   getAllApplications,
+  uploadApplicationFile,
 } from "../core/apis/application-api";
 
 const STANDARD_QUERY_OPTIONS = {
@@ -93,6 +94,18 @@ export const useDeleteApplication = () => {
     mutationFn: deleteApplication,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["applications"] });
+    },
+  });
+};
+
+export const useUploadApplicationFile = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: uploadApplicationFile,
+    onSuccess: (data, variables) => {
+      queryClient.invalidateQueries({
+        queryKey: ["application", variables.id],
+      });
     },
   });
 };

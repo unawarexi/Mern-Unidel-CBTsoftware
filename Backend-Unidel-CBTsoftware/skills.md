@@ -1,172 +1,155 @@
-AUTH COOKIE SETUP & CONSENT PROMPT (FULL IMPLEMENTATION)
+SENTRY INTEGRATION PROMPT — EXPRESS.JS (PRODUCTION-GRADE)
 
-You are a senior full-stack engineer tasked with implementing secure cookie-based authentication and cookie consent management for an existing web application that currently does not use cookies.
+You are a senior backend engineer tasked with integrating Sentry into an existing Express.js application using industry-standard practices.
 
-🎯 Goals
+The integration must be production-ready, secure, and follow correct middleware ordering and observability principles.
 
-Move authentication tokens from client storage to secure HttpOnly cookies
+🎯 Objectives
 
-Implement proper backend cookie handling
+Properly integrate Sentry into the Express.js backend
 
-Add frontend support for cookie-based auth
+Capture:
 
-Implement a cookie consent banner (accept / reject)
+Uncaught exceptions
 
-Ensure compliance-friendly structure and clean architecture
+Async errors
 
-🧱 Backend Implementation
-1️⃣ Required Packages
+Route-level failures
 
-Install and configure the following:
+Attach request and user context to errors
 
-cookie-parser
+Ensure correct middleware ordering
 
-(If Express) cors
+Avoid noise and sensitive data leakage
 
-(Optional) csurf for CSRF protection
+Make the setup maintainable and environment-aware
 
-2️⃣ Cookie Configuration
+🧱 Required Packages
 
-Configure cookies with:
+Install and configure:
 
-httpOnly: true
+@sentry/node
 
-secure: true (conditional for production)
+@sentry/tracing
 
-sameSite: 'lax' or 'strict'
+Do not use unofficial or deprecated packages.
 
-Proper path and maxAge
+⚙️ Initialization Requirements
 
-3️⃣ Auth Flow Changes
+Initialize Sentry before any routes or middleware
 
-On successful login:
+Use environment variables for:
 
-Set access token in an HttpOnly cookie
+SENTRY_DSN
 
-Optionally set a refresh token in a separate cookie
+NODE_ENV
 
-Remove token return in JSON responses
+Configure:
 
-Example responsibilities:
+environment
 
-POST /auth/login → sets cookies
+tracesSampleRate (lower in production)
 
-POST /auth/logout → clears cookies
+🧩 Middleware Order (CRITICAL)
 
-GET /auth/me → reads token from cookies
+Implement middleware in the following exact order:
 
-4️⃣ Middleware
+Sentry.Handlers.requestHandler()
 
-Implement auth middleware that:
+Sentry.Handlers.tracingHandler() (if enabled)
 
-Reads token from cookies
+Application middlewares (bodyParser, cors, etc.)
 
-Verifies token
+Application routes
 
-Attaches user to request context
+Sentry.Handlers.errorHandler()
 
-Ensure rate limiting still works correctly with cookies
+Final fallback error handler
 
-5️⃣ CORS & Credentials
+Incorrect ordering is unacceptable.
 
-Enable credentials:
+🧠 Error Capture Strategy
 
-credentials: true
+Automatically capture unhandled errors
 
-Ensure allowed origins are explicitly set
+Explicitly capture exceptions in:
 
-Cookies must be sent automatically by the browser
+Controllers
 
-🎨 Frontend Implementation
-6️⃣ API Layer Changes
+Services
 
-Remove all token reads from:
+Async flows
 
-localStorage
+Ensure errors are re-thrown or passed to next()
 
-sessionStorage
+👤 User Context
 
-Ensure all API calls use:
+If authentication exists:
 
-credentials: 'include'
+Attach user metadata to Sentry context:
 
-Update auth hooks and API clients accordingly
+User ID
 
-7️⃣ Auth State
+Email
 
-Store user data only in client state (Zustand / React)
+Role (if available)
 
-Do NOT store tokens in state
+Do not attach sensitive data.
 
-Auth status is determined by /auth/me
+🔐 Security & Privacy
 
-🍪 Cookie Consent Banner
-8️⃣ Banner Requirements
+Ensure Sentry does NOT log:
 
-Implement a cookie consent banner that:
+Passwords
 
-Appears on first visit
+Tokens
 
-Allows:
+Cookies
 
-Accept all cookies
+PII beyond identifiers
 
-Reject non-essential cookies
+Configure ignore lists for expected errors (e.g. validation, 401s)
 
-Stores user choice (cookie or localStorage)
+📈 Performance & Noise Control
 
-Does not block essential auth cookies
+Enable tracing optionally
 
-9️⃣ Banner Behavior
+Reduce sampling rate in production
 
-Essential cookies (auth) are always allowed
+Avoid capturing expected application errors
 
-Analytics / marketing cookies are conditional
+🧪 Verification
 
-Banner does not reappear once choice is made
+Add a temporary debug endpoint to verify integration:
 
-Banner UI must be accessible and responsive
+Throw a controlled error
 
-🧪 Edge Cases & Validation
+Confirm it appears in Sentry dashboard
 
-Handle expired cookies gracefully
+Remove debug endpoint after verification
 
-Handle blocked cookies
-
-Ensure login/logout works without page reload
-
-Ensure SSR or page refresh does not lose auth state
-
-Confirm no tokens exist in JS-accessible storage
-
-🧠 Engineering Standards
+📁 Code Quality Expectations
 
 Follow existing project structure
 
-Separate:
+Do not tightly couple Sentry logic to business logic
 
-Auth logic
-
-Cookie logic
-
-Consent logic
-
-Do not introduce global state for tokens
-
-Add comments where security decisions are made
+Add concise comments where decisions affect observability or security
 
 ✅ Deliverables
 
-Cookie-based auth fully working
+Fully working Sentry integration
 
-Backend cookie configuration
+Correct middleware order
 
-Updated frontend auth flow
+Environment-aware configuration
 
-Cookie consent banner component
+Verified error capture
 
-Documentation or comments explaining the flow
+Clean, maintainable implementation
 
-🔐 Guiding Principle
+🧭 Guiding Principle
 
-Tokens belong to the browser, not JavaScript.
+If an error happens in production,
+we must know exactly where, why, and for whom it happened —
+without exposing secrets.

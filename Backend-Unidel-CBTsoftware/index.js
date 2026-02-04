@@ -18,6 +18,7 @@ import {
   notFoundHandler,
   globalErrorHandler,
 } from "./middlewares/error-handler.middleware.js";
+import Sentry from "./config/sentry.config.js";
 
 // Load environment variables
 dotenv.config();
@@ -88,6 +89,11 @@ app.get("/api/health", (req, res) => {
   });
 });
 
+// --- SENTRY DEBUG ROUTE ---
+app.get("/api/debug-sentry", (req, res) => {
+  throw new Error("Sentry Debug Error: System Test");
+});
+
 // --- API ROUTES ---
 app.use("/api/auth", authRoutes);
 app.use("/api/users", userRoutes);
@@ -112,6 +118,9 @@ app.use("/api/payments", paymentRoutes);
 
 // 404 handler
 app.use(notFoundHandler);
+
+// Sentry Error Handler
+Sentry.setupExpressErrorHandler(app);
 
 // Global error handler
 app.use(globalErrorHandler);

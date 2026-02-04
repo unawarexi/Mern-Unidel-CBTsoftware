@@ -302,7 +302,7 @@ export const useAuthChangePassword = () => {
 };
 
 export const useAuthCurrentUser = () => {
-  const { setUser, clearAuth } = useAuthStore();
+  const { setUser, clearAuth, setLoading } = useAuthStore();
   const { data, isLoading, error, refetch } = useGetCurrentUser({
     // Always try to fetch unless we know we are explicitly logged out (optional optimization, but simple is better)
     enabled: true,
@@ -321,7 +321,12 @@ export const useAuthCurrentUser = () => {
       );
       if (isAuthErr) clearAuth();
     }
-  }, [data, error, setUser, clearAuth]);
+
+    // Sync loading state: if query is done, turn off global loader
+    if (!isLoading) {
+      setLoading(false);
+    }
+  }, [data, error, isLoading, setUser, clearAuth, setLoading]);
 
   return { user: data?.user || data?.data, isLoading, error, refetch };
 };

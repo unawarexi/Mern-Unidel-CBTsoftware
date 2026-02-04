@@ -46,6 +46,13 @@ import { SectionsApp } from "./components/SectionsApp";
 import { GlobalUIOverlay } from "./components/GlobalUIOverlay";
 import { PrivacyPolicy, TermsOfService } from "./pages/landing/Export-landing";
 
+// Public Content Routes
+import AcademicsRoutes from "./pages/public/academics/AcademicsRoutes";
+import AdmissionsRoutes from "./pages/public/admissions/AdmissionsRoutes";
+import StudentLifeRoutes from "./pages/public/student-life/StudentLifeRoutes";
+import ResearchRoutes from "./pages/public/research/ResearchRoutes";
+import AboutRoutes from "./pages/public/about/AboutRoutes";
+
 const App = () => {
   return (
     <ErrorBoundary>
@@ -120,7 +127,6 @@ const App = () => {
                   </GuestOnly>
                 }
               />
-
               {/* Protected Dashboard Routes */}
               <Route
                 path="/admin/*"
@@ -132,7 +138,6 @@ const App = () => {
               >
                 <Route path="*" element={<AdminRoutes />} />
               </Route>
-
               <Route
                 path="/lecturer/*"
                 element={
@@ -143,7 +148,6 @@ const App = () => {
               >
                 <Route path="*" element={<LecturerRoutes />} />
               </Route>
-
               <Route
                 path="/student/*"
                 element={
@@ -154,7 +158,6 @@ const App = () => {
               >
                 <Route path="*" element={<StudentRoutes />} />
               </Route>
-
               <Route
                 path="/agent/*"
                 element={
@@ -172,12 +175,17 @@ const App = () => {
                 <Route path="/apply" element={<StudentApplication />} />
                 <Route path="/careers" element={<PublicJobs />} />
                 <Route path="/support" element={<SupportPage />} />
-              </Route>
 
+                {/* Expanded Content Routes */}
+                <Route path="/academics/*" element={<AcademicsRoutes />} />
+                <Route path="/admissions/*" element={<AdmissionsRoutes />} />
+                <Route path="/student-life/*" element={<StudentLifeRoutes />} />
+                <Route path="/research/*" element={<ResearchRoutes />} />
+                <Route path="/about/*" element={<AboutRoutes />} />
+              </Route>
               {/* Policy pages */}
               <Route path="/privacy-policy" element={<PrivacyPolicy />} />
               <Route path="/terms-of-service" element={<TermsOfService />} />
-
               {/* 404 Catch-all */}
               <Route path="*" element={<NotFound />} />
             </Routes>

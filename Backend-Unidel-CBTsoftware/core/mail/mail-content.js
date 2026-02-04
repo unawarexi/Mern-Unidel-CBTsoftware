@@ -781,6 +781,65 @@ class EmailContentGenerator {
     `;
   }
 
+  // 23) Agent Application (To Admins)
+  agentApplication(data) {
+    return {
+      EMAIL_TITLE: "New Agent Application — Action Required",
+      GREETING: `Hello Admin,`,
+      MAIN_CONTENT: `
+        <p>A new agent has registered and is awaiting verification.</p>
+      `,
+      CONTENT_SECTIONS: [
+        {
+          title: "Agent Details",
+          content: `
+            <ul style="margin-left:18px;color:#475569;">
+              <li><strong>Name:</strong> ${data.agentName}</li>
+              <li><strong>Email:</strong> ${data.email}</li>
+              <li><strong>Organisation:</strong> ${data.organisation}</li>
+              <li><strong>Date:</strong> ${new Date().toLocaleString()}</li>
+            </ul>
+          `,
+        },
+      ],
+      BUTTONS: [
+        {
+          text: "Review Application",
+          url: `${this.baseUrl}/admin/users/agents`,
+          primary: true,
+        },
+      ],
+    };
+  }
+
+  // 24) Agent Status Update (To Agent)
+  agentStatusUpdate(data) {
+    const isApproved = data.status === "approved";
+    const statusColor = isApproved ? "green" : "red";
+    return {
+      EMAIL_TITLE: `Agent Application Update: ${data.status.toUpperCase()}`,
+      GREETING: `Hello ${data.agentName},`,
+      MAIN_CONTENT: `
+        <p>Your application to become an agent on the UNIDEL CBT platform has been <strong>${data.status}</strong>.</p>
+      `,
+      INFO_BOX: {
+        type: isApproved ? "success" : "alert",
+        title: "Status Update",
+        content: `Your application status is now <span style="color:${statusColor};font-weight:bold;">${data.status.toUpperCase()}</span>.`,
+      },
+      BUTTONS: isApproved
+        ? [
+            {
+              text: "Login to Dashboard",
+              url: `${this.baseUrl}/signin-agent`,
+              primary: true,
+            },
+          ]
+        : [],
+      UNSUBSCRIBE_LINK: this.generateUnsubscribeLink(data.userId, "agent"),
+    };
+  }
+
   formatContent(content, type = "html") {
     if (type === "plain") {
       return content.replace(/<[^>]*>/g, "").replace(/\n\s*\n/g, "\n");

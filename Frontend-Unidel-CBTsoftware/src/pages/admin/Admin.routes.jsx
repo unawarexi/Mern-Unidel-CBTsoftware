@@ -56,6 +56,7 @@ import WaitlistManagement from "./content-management/WaitlistManagement";
 import ApplicationsManagement from "./content-management/ApplicationsManagement";
 import ManageTickets from "./content-management/ManageTickets";
 import ManageCareerApplications from "./content-management/ManageCareerApplications";
+import ManageAgents from "./content-management/ManageAgents";
 import SupportPage from "../shared/SupportPage";
 
 // Main user routes based on UserLeftContainer menuItems
@@ -75,6 +76,7 @@ export default function AdminRoutes() {
       <Route path="users/lecturers" element={<LecturersManagement />} />
       <Route path="users/admins" element={<AdminsManagement />} />
       <Route path="users/applications" element={<ApplicationsManagement />} />
+      <Route path="users/agents" element={<ManageAgents />} />
       {/* Departments & Faculties */}
       <Route path="departments" element={<CreateDepartment />} />{" "}
       {/* Show manage departments by default */}

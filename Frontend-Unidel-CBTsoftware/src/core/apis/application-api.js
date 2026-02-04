@@ -92,6 +92,23 @@ export const adminReview = async ({ id, status, feedback }) => {
   return response.json();
 };
 
+export const uploadApplicationFile = async ({ id, field, file }) => {
+  const formData = new FormData();
+  formData.append("file", file);
+
+  const response = await fetch(`${BASE_URL}/${id}/upload?field=${field}`, {
+    method: "POST",
+    credentials: "include",
+    body: formData,
+  });
+
+  if (!response.ok) {
+    const error = await response.json();
+    throw new Error(error.message || "Failed to upload file");
+  }
+  return response.json();
+};
+
 export const deleteApplication = async (id) => {
   const response = await fetch(`${BASE_URL}/${id}`, {
     method: "DELETE",

@@ -1,7 +1,8 @@
 import express from "express";
 import {
   getMySubscription,
-  verifyAgent,
+  getAgents,
+  updateAgentStatus,
 } from "../controllers/agent.controller.js";
 import {
   createAgentStudent,
@@ -61,7 +62,8 @@ router.delete(
   deleteAgentQuestionBank,
 );
 
-// Admin routes for agents
-router.put("/verify/:id", authorize("admin", "superadmin"), verifyAgent);
+// Admin routes for agents management
+router.get("/", authorize("admin", "superadmin"), getAgents);
+router.put("/:id/status", authorize("admin", "superadmin"), updateAgentStatus);
 
 export default router;

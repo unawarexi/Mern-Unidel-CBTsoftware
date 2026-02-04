@@ -90,9 +90,19 @@ export const getAgentSubscription = async () => {
   return handleResponse(response);
 };
 
-// @desc    Verify Agent (Admin Only)
-export const verifyAgent = async ({ id, status }) => {
-  const response = await fetch(`${BASE_URL}/verify/${id}`, {
+// @desc    Get All Agents (Admin Only)
+export const getAgents = async (status) => {
+  const query = status ? `?status=${status}` : "";
+  const response = await fetch(`${BASE_URL}${query}`, {
+    method: "GET",
+    credentials: "include",
+  });
+  return handleResponse(response);
+};
+
+// @desc    Update Agent Status (Admin Only)
+export const updateAgentStatus = async ({ id, status }) => {
+  const response = await fetch(`${BASE_URL}/${id}/status`, {
     method: "PUT",
     headers: { "Content-Type": "application/json" },
     credentials: "include",

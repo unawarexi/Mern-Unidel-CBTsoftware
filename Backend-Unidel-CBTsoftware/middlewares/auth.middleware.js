@@ -3,6 +3,7 @@ import Admin from "../models/admin.model.js";
 import Lecturer from "../models/lecturer.model.js";
 import Student from "../models/student.model.js";
 import Agent from "../models/agent.model.js";
+import Sentry from "../config/sentry.config.js";
 
 // Helper to get user model based on role
 const getUserModel = (role) => {
@@ -91,6 +92,15 @@ export const protect = async (req, res, next) => {
       fullname: user.fullname,
     };
 
+    // Set Sentry User Context
+    Sentry.configureScope((scope) => {
+      scope.setUser({
+        id: user._id,
+        email: user.email,
+        role: user.role,
+      });
+    });
+
     next();
   } catch (error) {
     console.error("Auth protect error:", error);
@@ -143,6 +153,15 @@ export const optionalProtect = async (req, res, next) => {
             email: user.email,
             fullname: user.fullname,
           };
+
+          // Set Sentry User Context
+          Sentry.configureScope((scope) => {
+            scope.setUser({
+              id: user._id,
+              email: user.email,
+              role: user.role,
+            });
+          });
         }
       }
     }

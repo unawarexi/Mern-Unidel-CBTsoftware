@@ -95,7 +95,7 @@ const AgentSignUp = () => {
       <div className="absolute bottom-1/4 left-1/4 w-96 h-96 bg-purple-500/10 rounded-full blur-3xl animate-pulse delay-1000" />
 
       {/* Main Content */}
-      <div className="relative z-10 w-full max-w-6xl grid lg:grid-cols-5 gap-8 items-center">
+      <div className="relative z-10 w-full max-w-7xl grid lg:grid-cols-5 gap-8 items-center">
         {/* Left Info Panel */}
         <div
           className={cn(
@@ -106,7 +106,7 @@ const AgentSignUp = () => {
           <div>
             <Link
               to="/signin-agent"
-              className="inline-flex items-center gap-2 text-indigo-500 hover:text-indigo-600 font-bold mb-6 transition-colors"
+              className="inline-flex items-center pr-6 gap-2 text-indigo-500 hover:text-indigo-600 font-bold mb-6 transition-colors"
             >
               <ArrowLeft className="w-4 h-4" />
               Back to Sign In
@@ -163,7 +163,7 @@ const AgentSignUp = () => {
         <div className="lg:col-span-3">
           <div
             className={cn(
-              "p-6 sm:p-8 lg:p-12 rounded-3xl shadow-2xl border transition-all duration-300 max-w-xl mx-auto",
+              "p-6 sm:p-8 lg:p-8 rounded-3xl shadow-2xl border transition-all duration-300 max-w-2xl mx-auto",
               isDarkMode
                 ? "bg-slate-900/80 backdrop-blur-2xl border-white/10"
                 : "bg-white/98 backdrop-blur-2xl border-gray-100",

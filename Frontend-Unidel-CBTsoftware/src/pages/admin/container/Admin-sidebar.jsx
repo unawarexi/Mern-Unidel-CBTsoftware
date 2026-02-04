@@ -57,6 +57,7 @@ const Sidebar = () => {
         { title: "Students", href: "/admin/users/students" },
         { title: "Lecturers", href: "/admin/users/lecturers" },
         { title: "Admins", href: "/admin/users/admins" },
+        { title: "Agents", href: "/admin/users/agents" },
       ],
     },
     // DEPARTMENTS & FACULTIES

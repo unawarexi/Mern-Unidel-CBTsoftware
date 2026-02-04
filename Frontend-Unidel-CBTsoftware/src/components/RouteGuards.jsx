@@ -20,6 +20,8 @@ export const GuestOnly = ({ children }) => {
         target = "/lecturer";
       } else if (role === "student") {
         target = "/student";
+      } else if (role === "agent") {
+        target = "/agent";
       }
 
       console.log(` Redirecting authenticated ${role} to ${target}`);

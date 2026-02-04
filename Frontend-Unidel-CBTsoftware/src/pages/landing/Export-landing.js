@@ -1,28 +1,37 @@
-import { lazy } from "react";
+// Footer Pages
+export { default as PrivacyPolicy } from "./PrivacyPolicy";
+export { default as TermsOfService } from "./TermsOfService";
+export { default as HelpCenter } from "./HelpCenter";
+export { default as Faq } from "./Faq";
+export { default as Careers } from "./Careers";
+export { default as HeroSection } from "./Hero-section";
+export { default as Overview } from "./Overview";
+export { default as HowItWorks } from "./How-it-works";
+export { default as Pricing } from "./Pricing";
 
-// Lazy load ALL landing sections for smooth performance
-export const HeroSection = lazy(() => import("./Hero-section"));
-export const Overview = lazy(() => import("./Overview"));
-export const HowItWorks = lazy(() => import("./How-it-works"));
-export const Faculties = lazy(() => import("./Faculties"));
-export const Courses = lazy(() => import("./Courses"));
-export const Gallery = lazy(() => import("./Gallery"));
-export const Team = lazy(() => import("./Team"));
-export const Pricing = lazy(() => import("./Pricing"));
-export const Contact = lazy(() => import("./Contact"));
-export const Programs = lazy(() => import("./Programs"));
-export const About = lazy(() => import("./About"));
-export const Departments = lazy(() => import("./Departments"));
-export const Leadership = lazy(() => import("./Leadership"));
-export const ApplyNow = lazy(() => import("./ApplyNow"));
-export const Fees = lazy(() => import("./Fees"));
-export const Scholarships = lazy(() => import("./Scholarships"));
-export const Campus = lazy(() => import("./Campus"));
-export const News = lazy(() => import("./News"));
-export const HelpCenter = lazy(() => import("./HelpCenter"));
-export const Research = lazy(() => import("./Research"));
-export const Library = lazy(() => import("./Library"));
-export const Events = lazy(() => import("./Events"));
-export const Careers = lazy(() => import("./Careers"));
-export const PrivacyPolicy = lazy(() => import("./PrivacyPolicy"));
-export const TermsOfService = lazy(() => import("./TermsOfService"));
+// About
+export { default as About } from "./About";
+export { default as Leadership } from "./Leadership";
+export { default as Team } from "./Team";
+export { default as News } from "./News";
+export { default as Contact } from "./Contact";
+
+// Academics
+export { default as Programs } from "./Programs";
+export { default as Courses } from "./Courses";
+export { default as Faculties } from "./Faculties";
+export { default as Departments } from "./Departments";
+export { default as Library } from "./Library";
+
+// Admissions
+export { default as ApplyNow } from "./ApplyNow";
+export { default as Fees } from "./Fees";
+export { default as Scholarships } from "./Scholarships";
+
+// Research
+export { default as Research } from "./Research";
+
+// Student Life
+export { default as Campus } from "./Campus";
+export { default as Events } from "./Events";
+export { default as Gallery } from "./Gallery";
