@@ -70,7 +70,7 @@ out
 
 # Gatsby files (if applicable)
 .cache/
-public
+# public
 
 # Vite
 *.local
