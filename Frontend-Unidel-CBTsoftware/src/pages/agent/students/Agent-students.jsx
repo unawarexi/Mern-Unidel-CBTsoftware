@@ -25,7 +25,7 @@ import {
 import useThemeStore from "../../../store/theme-store";
 import { cn } from "../../../core/lib/cn";
 import SuggestibleSearchInput from "../../../components/SuggestibleSearchInput";
-import { allFaculties } from "../../../core/data/faculty-mock-data";
+import { faculties as allFaculties } from "../../../core/data/faculty-mock-data";
 import {
   departmentsByFaculty,
   allDepartments,
