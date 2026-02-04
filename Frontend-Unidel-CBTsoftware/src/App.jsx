@@ -32,7 +32,7 @@ import MainLayout from "./layouts/MainLayout";
 import AdminRoutes from "./pages/admin/Admin.routes";
 import LecturerRoutes from "./pages/lecturer/Lecturer.routes";
 import StudentRoutes from "./pages/student/Student.routes";
-import AgentRoutes from "./pages/agent/Agent.routes";
+import AgentRoutes from "./pages/agent/agent.routes";
 import AgentDashboard from "./pages/agent/layout/Agent-dashboard-layout";
 
 // Refactored Modular Components
