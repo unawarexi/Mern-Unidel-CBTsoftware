@@ -95,13 +95,29 @@ export const adminSignup = async (data) => {
 
 // Get current user with session expiry detection
 export const getCurrentUser = async () => {
-  const response = await fetch(`${BASE_URL}/me`, {
+  let response = await fetch(`${BASE_URL}/me`, {
     method: "GET",
     credentials: "include",
   });
 
-  // If not authenticated or session expired, dispatch event and return null
-  // If not authenticated, just return null (don't force redirect for guest visits)
+  // If 401, try to refresh token
+  if (response.status === 401) {
+    try {
+      const refreshRes = await refreshToken();
+      if (refreshRes.success) {
+        // Retry original request
+        response = await fetch(`${BASE_URL}/me`, {
+          method: "GET",
+          credentials: "include",
+        });
+      }
+    } catch (err) {
+      console.log("Silent refresh failed:", err);
+      // Fall through to return null
+    }
+  }
+
+  // If still not authenticated or session expired, return null
   if (response.status === 401 || response.status === 403) {
     return { user: null };
   }

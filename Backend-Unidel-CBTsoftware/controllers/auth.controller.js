@@ -106,16 +106,16 @@ const sendTokenResponse = async (
   // Access Token Cookie
   res.cookie("access_token", accessToken, {
     httpOnly: true,
-    secure: isProduction,
-    sameSite: "lax",
+    secure: true, // Required for SameSite: None
+    sameSite: "none",
     maxAge: 15 * 60 * 1000, // 15 minutes
   });
 
   // Refresh Token Cookie
   res.cookie("refresh_token", refreshToken, {
     httpOnly: true,
-    secure: isProduction,
-    sameSite: "lax",
+    secure: true, // Required for SameSite: None
+    sameSite: "none",
     path: "/api/auth/refresh-token",
     maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
   });
@@ -123,8 +123,8 @@ const sendTokenResponse = async (
   // Legacy / compatibility support: Clear old cookies
   const clearOptions = {
     httpOnly: true,
-    secure: isProduction,
-    sameSite: "lax",
+    secure: true,
+    sameSite: "none",
     maxAge: 0,
   };
   [
@@ -704,9 +704,9 @@ export const logout = async (req, res) => {
 
     const cookieOptions = {
       httpOnly: true,
-      secure: process.env.NODE_ENV === "production",
+      secure: true, // Required for SameSite: None
       expires: new Date(0),
-      sameSite: "lax",
+      sameSite: "none",
     };
 
     res.cookie("access_token", "", cookieOptions);
