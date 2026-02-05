@@ -3,7 +3,7 @@ import React, { useEffect } from "react";
 import { GraduationCap, Shield, Clock } from "lucide-react";
 import { Images } from "../../constants/image-strings";
 import { useNavigate, Link } from "react-router-dom";
-import { useAuthLogin } from "../../store/auth-store";
+import { useAuthLogin, useAuthLogout } from "../../store/auth-store";
 import useAuthStore from "../../store/auth-store";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -33,18 +33,25 @@ const SignIn = () => {
   const { isDarkMode } = useThemeStore();
 
   // redirect if already authenticated
+  const { logout: performLogout } = useAuthLogout();
+
+  // redirect if already authenticated
   useEffect(() => {
     if (isAuthenticated && user) {
       const role = (user.role || user.type || "").toString().toLowerCase();
-      const target =
-        role === "admin"
-          ? "/admin"
-          : role === "lecturer"
-            ? "/lecturer"
-            : "/student";
-      navigate(target, { replace: true });
+
+      // If User is Student, go to student dashboard
+      if (role === "student") {
+        navigate("/student", { replace: true });
+      } else {
+        // If logged in as Admin/Lecturer, auto-logout to allow student login
+        console.log(
+          "[Auth] Mismatched role detected, performing auto-logout for clean switch",
+        );
+        performLogout();
+      }
     }
-  }, [isAuthenticated, user, navigate]);
+  }, [isAuthenticated, user, navigate, performLogout]);
 
   const {
     register,

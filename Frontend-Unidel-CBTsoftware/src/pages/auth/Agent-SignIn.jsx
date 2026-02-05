@@ -3,7 +3,7 @@ import React, { useEffect } from "react";
 import { UserCheck, Lock, Globe, Users, Briefcase } from "lucide-react";
 import { Images } from "../../constants/image-strings";
 import { Link, useNavigate } from "react-router-dom";
-import { useAuthLogin } from "../../store/auth-store";
+import { useAuthLogin, useAuthLogout } from "../../store/auth-store";
 import useAuthStore from "../../store/auth-store";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -25,12 +25,20 @@ const AgentSignIn = () => {
   const { isAuthenticated, user } = useAuthStore();
   const { isDarkMode } = useThemeStore();
 
+  const { logout: performLogout } = useAuthLogout();
+
   useEffect(() => {
     if (isAuthenticated && user) {
-      // For now, redirect to selection or a placeholder since agent portal isn't built
-      navigate("/auth/selection", { replace: true });
+      const role = (user.role || user.type || "").toString().toLowerCase();
+
+      if (role === "agent") {
+        // Agent portal built, redirect to dashboard
+        navigate("/agent", { replace: true });
+      } else {
+        performLogout();
+      }
     }
-  }, [isAuthenticated, user, navigate]);
+  }, [isAuthenticated, user, navigate, performLogout]);
 
   const {
     register,
@@ -47,10 +55,10 @@ const AgentSignIn = () => {
 
   const onSubmit = async (data) => {
     try {
-      // Agent role - backend might not handle this yet but we're designing the UI
+      // Agent role
       const payload = { ...data, role: "agent" };
       await login(payload);
-      navigate("/auth/selection", { replace: true });
+      navigate("/agent", { replace: true });
     } catch (error) {
       // error handled via toast
     }
