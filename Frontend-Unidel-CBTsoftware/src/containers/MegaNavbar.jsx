@@ -856,24 +856,159 @@ const MegaNavbar = () => {
               ))}
 
               {/* Mobile CTA */}
-              <div className="pt-4 border-t border-gray-200 dark:border-slate-700">
-                <Link
-                  to="/auth/selection"
-                  className="block w-full text-center px-4 py-3 bg-gradient-to-r from-orange-500 to-red-600 text-white font-semibold rounded-lg"
-                >
-                  Apply Now
-                </Link>
-                <Link
-                  to="/portal-signin"
-                  className={cn(
-                    "block w-full text-center px-4 py-3 mt-2 rounded-lg font-medium",
-                    isDarkMode
-                      ? "bg-slate-800 text-white"
-                      : "bg-gray-100 text-gray-900",
-                  )}
-                >
-                  Student Portal
-                </Link>
+              {/* Mobile CTA: Login & Apply */}
+              <div className="pt-4 border-t border-gray-200 dark:border-slate-700 space-y-1">
+                {/* Apply dropdown */}
+                <div>
+                  <button
+                    onClick={() => toggleMobileSubmenu("apply")}
+                    className={cn(
+                      "flex items-center justify-between w-full px-4 py-3 rounded-lg font-medium text-left",
+                      mobileActiveMenu === "apply"
+                        ? "bg-gradient-to-r from-orange-500 to-red-600 text-white"
+                        : isDarkMode
+                          ? "text-gray-300 hover:bg-slate-800"
+                          : "text-gray-700 hover:bg-gray-50",
+                    )}
+                  >
+                    <span className="flex items-center gap-3">
+                      <UserPlus className="w-5 h-5" />
+                      Apply Now
+                    </span>
+                    <ChevronDown
+                      className={cn(
+                        "w-4 h-4 transition-transform",
+                        mobileActiveMenu === "apply" && "rotate-180",
+                      )}
+                    />
+                  </button>
+                  <AnimatePresence>
+                    {mobileActiveMenu === "apply" && (
+                      <motion.div
+                        initial={{ opacity: 0, height: 0 }}
+                        animate={{ opacity: 1, height: "auto" }}
+                        exit={{ opacity: 0, height: 0 }}
+                        className="overflow-hidden"
+                      >
+                        <div className="pl-4 pt-2 pb-2 space-y-1">
+                          <Link
+                            to="/apply"
+                            className={cn(
+                              "flex items-center gap-3 px-4 py-3 rounded-lg text-sm",
+                              isDarkMode
+                                ? "text-gray-400 hover:text-white hover:bg-slate-800"
+                                : "text-gray-600 hover:text-orange-600 hover:bg-orange-50",
+                            )}
+                          >
+                            <UserPlus className="w-4 h-4" />
+                            Student Admission
+                          </Link>
+                          <Link
+                            to="/agent-signup"
+                            className={cn(
+                              "flex items-center gap-3 px-4 py-3 rounded-lg text-sm",
+                              isDarkMode
+                                ? "text-gray-400 hover:text-white hover:bg-slate-800"
+                                : "text-gray-600 hover:text-orange-600 hover:bg-orange-50",
+                            )}
+                          >
+                            <Globe className="w-4 h-4" />
+                            Become an Agent
+                          </Link>
+                        </div>
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
+                </div>
+
+                {/* Login dropdown */}
+                <div>
+                  <button
+                    onClick={() => toggleMobileSubmenu("login")}
+                    className={cn(
+                      "flex items-center justify-between w-full px-4 py-3 rounded-lg font-medium text-left",
+                      mobileActiveMenu === "login"
+                        ? isDarkMode
+                          ? "bg-slate-800 text-white"
+                          : "bg-gray-100 text-gray-900"
+                        : isDarkMode
+                          ? "text-gray-300 hover:bg-slate-800"
+                          : "text-gray-700 hover:bg-gray-50",
+                    )}
+                  >
+                    <span className="flex items-center gap-3">
+                      <Users className="w-5 h-5" />
+                      Login
+                    </span>
+                    <ChevronDown
+                      className={cn(
+                        "w-4 h-4 transition-transform",
+                        mobileActiveMenu === "login" && "rotate-180",
+                      )}
+                    />
+                  </button>
+                  <AnimatePresence>
+                    {mobileActiveMenu === "login" && (
+                      <motion.div
+                        initial={{ opacity: 0, height: 0 }}
+                        animate={{ opacity: 1, height: "auto" }}
+                        exit={{ opacity: 0, height: 0 }}
+                        className="overflow-hidden"
+                      >
+                        <div className="pl-4 pt-2 pb-2 space-y-1">
+                          <Link
+                            to="/portal-signin"
+                            className={cn(
+                              "flex items-center gap-3 px-4 py-3 rounded-lg text-sm",
+                              isDarkMode
+                                ? "text-gray-400 hover:text-white hover:bg-slate-800"
+                                : "text-gray-600 hover:text-orange-600 hover:bg-orange-50",
+                            )}
+                          >
+                            <Users className="w-4 h-4" />
+                            Student Portal
+                          </Link>
+                          <Link
+                            to="/signin-agent"
+                            className={cn(
+                              "flex items-center gap-3 px-4 py-3 rounded-lg text-sm",
+                              isDarkMode
+                                ? "text-gray-400 hover:text-white hover:bg-slate-800"
+                                : "text-gray-600 hover:text-orange-600 hover:bg-orange-50",
+                            )}
+                          >
+                            <Globe className="w-4 h-4" />
+                            Agent Portal
+                          </Link>
+                          <Link
+                            to="/lecturer-signin"
+                            className={cn(
+                              "flex items-center gap-3 px-4 py-3 rounded-lg text-sm",
+                              isDarkMode
+                                ? "text-gray-400 hover:text-white hover:bg-slate-800"
+                                : "text-gray-600 hover:text-orange-600 hover:bg-orange-50",
+                            )}
+                          >
+                            <GraduationCap className="w-4 h-4" />
+                            Staff Portal
+                          </Link>
+                          <Link
+                            to="/admin-signin"
+                            className={cn(
+                              "flex items-center gap-3 px-4 py-3 rounded-lg text-sm",
+                              isDarkMode
+                                ? "text-gray-400 hover:text-white hover:bg-slate-800"
+                                : "text-gray-600 hover:text-orange-600 hover:bg-orange-50",
+                            )}
+                          >
+                            <Shield className="w-4 h-4" />
+                            Admin Portal
+                          </Link>
+                        </div>
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
+                </div>
               </div>
             </div>
           </motion.div>
