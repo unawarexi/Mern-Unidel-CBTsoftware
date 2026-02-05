@@ -75,8 +75,8 @@ const Footer = () => {
       className={`${isDarkMode ? "bg-slate-900 border-slate-800" : "bg-white border-gray-200"} text-gray-600 border-t transition-colors duration-300`}
     >
       {/* Main Footer Content */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 md:py-16 lg:py-20">
-        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-8 md:gap-10">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-12 md:py-16 lg:py-20">
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-6 md:gap-8 lg:gap-10">
           {footerSections.map((section, index) => (
             <div key={index} className="text-left">
               <h2

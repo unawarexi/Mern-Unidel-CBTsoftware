@@ -31,7 +31,7 @@ const StudentDashboard = () => {
       {/* Use flex-1 so navbar/footer stretch to remaining width automatically */}
       <main className="w-full flex-1 min-h-screen flex flex-col">
         <StudentNavbar />
-        <div className="flex-1 p-4 md:p-6 lg:p-8 overflow-y-auto">
+        <div className="flex-1 p-3 sm:p-4 md:p-6 lg:p-8 overflow-y-auto">
           <Outlet />
         </div>
         <Footer />

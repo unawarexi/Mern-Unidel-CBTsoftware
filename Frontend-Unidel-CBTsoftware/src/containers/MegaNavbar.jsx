@@ -388,8 +388,8 @@ const MegaNavbar = () => {
           : "bg-white/95 backdrop-blur-md border-b border-gray-100 shadow-sm",
       )}
     >
-      <div className="max-w-[95%] mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex items-center justify-between h-16 lg:h-20">
+      <div className="max-w-[98%] sm:max-w-[95%] mx-auto px-2 sm:px-6 lg:px-8">
+        <div className="flex items-center justify-between h-14 sm:h-16 lg:h-20">
           {/* Logo */}
           <Link to="/" className="flex items-center gap-2 group flex-shrink-0">
             <div className="w-10 h-10 bg-gradient-to-br from-orange-500 to-red-600 rounded-xl flex items-center justify-center shadow-lg shadow-orange-500/20">
