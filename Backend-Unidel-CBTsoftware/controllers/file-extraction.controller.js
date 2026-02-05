@@ -1,9 +1,21 @@
 import Lecturer from "../models/lecturer.model.js";
 import fs from "fs/promises";
-import { uploadToCloudinary } from "../services/cloudinary.service.js";
-import { extractTextFromPDFBuffer, extractTextFromDocxBuffer, extractTextFromDocxPath, extractQuestionsFromFile } from "../core/utils/pdf-docx-export.js";
+import {
+  uploadToCloudinary,
+  deleteFromCloudinary,
+} from "../services/cloudinary.service.js";
+import {
+  extractTextFromPDFBuffer,
+  extractTextFromDocxBuffer,
+  extractTextFromDocxPath,
+  extractQuestionsFromFile,
+} from "../core/utils/pdf-docx-export.js";
 import QuestionBank from "../models/question.model.js";
-import { generateQuestionsFromText, improveQuestions, generateImageFromPrompt } from "../config/huggingface.config.js";
+import {
+  generateQuestionsFromText,
+  improveQuestions,
+  generateImageFromPrompt,
+} from "../config/huggingface.config.js";
 
 /**
  * Helper function to extract text based on file type
@@ -19,7 +31,10 @@ async function extractText(file, fileType) {
       extractedText = await extractTextFromPDFBuffer(dataBuffer);
       await fs.unlink(file.path).catch(() => {});
     }
-  } else if (fileType === "application/vnd.openxmlformats-officedocument.wordprocessingml.document") {
+  } else if (
+    fileType ===
+    "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+  ) {
     if (file.buffer) {
       extractedText = await extractTextFromDocxBuffer(file.buffer);
     } else {
@@ -38,8 +53,14 @@ async function saveDocumentToCloudinary(file, userId) {
   if (!file.buffer) return null;
 
   const folder = `projects/unidel/lecturers/${userId}/documents`;
-  const uploadResult = await uploadToCloudinary(file.buffer, file.originalname, folder);
-  await Lecturer.findByIdAndUpdate(userId, { $push: { documents: uploadResult.url } });
+  const uploadResult = await uploadToCloudinary(
+    file.buffer,
+    file.originalname,
+    folder,
+  );
+  await Lecturer.findByIdAndUpdate(userId, {
+    $push: { documents: uploadResult.url },
+  });
   return uploadResult.url;
 }
 
@@ -53,24 +74,34 @@ export const extractTextFromFile = async (req, res) => {
     }
 
     const fileType = req.file.mimetype;
-    const supportedTypes = ["application/pdf", "application/vnd.openxmlformats-officedocument.wordprocessingml.document"];
+    const supportedTypes = [
+      "application/pdf",
+      "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+    ];
 
     if (!supportedTypes.includes(fileType)) {
       if (req.file.path) await fs.unlink(req.file.path).catch(() => {});
       return res.status(400).json({
-        message: "Unsupported file type for extraction. Only PDF and DOCX are supported.",
+        message:
+          "Unsupported file type for extraction. Only PDF and DOCX are supported.",
       });
     }
 
     // Save to Cloudinary
-    const uploadedDocUrl = await saveDocumentToCloudinary(req.file, req.user._id);
+    const uploadedDocUrl = await saveDocumentToCloudinary(
+      req.file,
+      req.user._id,
+    );
 
     // Extract text
     const extractedText = await extractText(req.file, fileType);
 
     if (!extractedText || extractedText.trim().length < 20) {
       return res.status(400).json({
-        message: fileType === "application/pdf" ? "Failed to extract text from PDF. This PDF may be scanned or image-based. Please upload a text-based PDF or use DOCX." : "DOCX file does not contain enough text to extract.",
+        message:
+          fileType === "application/pdf"
+            ? "Failed to extract text from PDF. This PDF may be scanned or image-based. Please upload a text-based PDF or use DOCX."
+            : "DOCX file does not contain enough text to extract.",
       });
     }
 
@@ -83,7 +114,10 @@ export const extractTextFromFile = async (req, res) => {
   } catch (error) {
     console.error("File extraction error:", error);
     if (req.file?.path) await fs.unlink(req.file.path).catch(() => {});
-    res.status(500).json({ message: "Failed to extract text from file", error: error.message });
+    res.status(500).json({
+      message: "Failed to extract text from file",
+      error: error.message,
+    });
   }
 };
 
@@ -98,12 +132,16 @@ export const generateQuestionsFromFile = async (req, res) => {
 
     const { numberOfQuestions = 10, difficulty = "medium" } = req.body;
     const fileType = req.file.mimetype;
-    const supportedTypes = ["application/pdf", "application/vnd.openxmlformats-officedocument.wordprocessingml.document"];
+    const supportedTypes = [
+      "application/pdf",
+      "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+    ];
 
     if (!supportedTypes.includes(fileType)) {
       if (req.file.path) await fs.unlink(req.file.path).catch(() => {});
       return res.status(400).json({
-        message: "Unsupported file type for question generation. Only PDF and DOCX are supported.",
+        message:
+          "Unsupported file type for question generation. Only PDF and DOCX are supported.",
       });
     }
 
@@ -112,11 +150,18 @@ export const generateQuestionsFromFile = async (req, res) => {
 
     if (!extractedText || extractedText.trim().length < 100) {
       return res.status(400).json({
-        message: fileType === "application/pdf" ? "Failed to extract enough text from PDF for question generation. This PDF may be scanned or image-based. Please upload a text-based PDF or use DOCX." : "DOCX file does not contain enough text for question generation.",
+        message:
+          fileType === "application/pdf"
+            ? "Failed to extract enough text from PDF for question generation. This PDF may be scanned or image-based. Please upload a text-based PDF or use DOCX."
+            : "DOCX file does not contain enough text for question generation.",
       });
     }
 
-    const questions = await generateQuestionsFromText(extractedText, parseInt(numberOfQuestions), difficulty);
+    const questions = await generateQuestionsFromText(
+      extractedText,
+      parseInt(numberOfQuestions),
+      difficulty,
+    );
 
     res.status(200).json({
       message: "Questions generated successfully",
@@ -126,7 +171,9 @@ export const generateQuestionsFromFile = async (req, res) => {
   } catch (error) {
     console.error("Question generation error:", error);
     if (req.file?.path) await fs.unlink(req.file.path).catch(() => {});
-    res.status(500).json({ message: "Failed to generate questions", error: error.message });
+    res
+      .status(500)
+      .json({ message: "Failed to generate questions", error: error.message });
   }
 };
 
@@ -158,7 +205,14 @@ export const bulkUploadQuestions = async (req, res) => {
 
     if (questions.length === 0) {
       return res.status(400).json({
-        message: "No valid questions found in the file. Please ensure questions are formatted correctly:\n\n" + "1. Question text\n" + "A. Option 1\n" + "B. Option 2\n" + "C. Option 3\n" + "D. Option 4\n" + "Answer: A (or full option text)",
+        message:
+          "No valid questions found in the file. Please ensure questions are formatted correctly:\n\n" +
+          "1. Question text\n" +
+          "A. Option 1\n" +
+          "B. Option 2\n" +
+          "C. Option 3\n" +
+          "D. Option 4\n" +
+          "Answer: A (or full option text)",
       });
     }
 
@@ -169,7 +223,10 @@ export const bulkUploadQuestions = async (req, res) => {
   } catch (error) {
     console.error("Bulk upload error:", error);
     if (req.file?.path) await fs.unlink(req.file.path).catch(() => {});
-    res.status(500).json({ message: "Failed to parse questions from file", error: error.message });
+    res.status(500).json({
+      message: "Failed to parse questions from file",
+      error: error.message,
+    });
   }
 };
 
@@ -205,7 +262,36 @@ export const improveQuestionsWithAI = async (req, res) => {
     });
   } catch (error) {
     console.error("Improve questions error:", error);
-    res.status(500).json({ message: "Failed to improve questions", error: error.message });
+    res
+      .status(500)
+      .json({ message: "Failed to improve questions", error: error.message });
+  }
+};
+
+/**
+ * Improve draft questions content using AI (no DB link)
+ * POST /api/exams/improve-content
+ */
+export const improveQuestionsContent = async (req, res) => {
+  try {
+    const { questions } = req.body;
+
+    if (!questions || !Array.isArray(questions) || questions.length === 0) {
+      return res.status(400).json({ message: "No questions provided" });
+    }
+
+    const improvedQuestions = await improveQuestions(questions);
+
+    res.status(200).json({
+      message: "Questions improved successfully",
+      questions: improvedQuestions,
+    });
+  } catch (error) {
+    console.error("Improve draft questions error:", error);
+    res.status(500).json({
+      message: "Failed to improve questions",
+      error: error.message,
+    });
   }
 };
 
@@ -216,42 +302,89 @@ export const improveQuestionsWithAI = async (req, res) => {
  */
 export const generateImageForQuestion = async (req, res) => {
   try {
-    const { question, questionBankId, questionId } = req.body;
+    const { question, questionBankId, questionId, oldPublicId } = req.body;
 
-    if (!question || !questionBankId || !questionId) {
+    if (!question) {
       return res.status(400).json({
-        message: "question, questionBankId, and questionId are required",
+        message: "Question text is required",
       });
     }
 
-    // Generate image from HuggingFace
+    // 1. If there's an old image (and we are replacing it), delete it first
+    if (oldPublicId) {
+      try {
+        await deleteFromCloudinary(oldPublicId, "image");
+      } catch (err) {
+        console.warn("Failed to delete old image:", err.message);
+        // Continue anyway
+      }
+    }
+
+    // 2. Generate image from HuggingFace
     const imageBuffer = await generateImageFromPrompt(question);
 
-    // Upload image to Cloudinary
-    const folder = `projects/unidel/question-images/${questionBankId}`;
-    const uploadResult = await uploadToCloudinary(imageBuffer, `question_${questionId}_${Date.now()}.png`, folder);
+    // 3. Upload image to Cloudinary
+    // Use dynamic folder based on bank ID or generic 'drafts'
+    const folderId = questionBankId || "drafts";
+    const folder = `projects/unidel/question-images/${folderId}`;
+    const uploadResult = await uploadToCloudinary(
+      imageBuffer,
+      `question_${questionId || Date.now()}_highlight.png`,
+      folder,
+    );
 
-    // Save image URL to the question in the question bank
-    const questionBank = await QuestionBank.findById(questionBankId);
-    if (!questionBank) {
-      return res.status(404).json({ message: "Question bank not found" });
+    const attachmentData = {
+      url: uploadResult.url,
+      publicId: uploadResult.public_id,
+      type: "image",
+    };
+
+    // 4. If linked to an existing Question Bank, update it in DB
+    if (questionBankId && questionId) {
+      const questionBank = await QuestionBank.findById(questionBankId);
+      if (!questionBank) {
+        return res.status(404).json({ message: "Question bank not found" });
+      }
+
+      const qIndex = questionBank.questions.findIndex(
+        (q) => q._id.toString() === questionId,
+      );
+      if (qIndex === -1) {
+        return res.status(404).json({ message: "Question not found in bank" });
+      }
+
+      // Check if DB has an old image to delete that wasn't passed in body (safety net)
+      const existingAttachment = questionBank.questions[qIndex].attachment;
+      if (
+        existingAttachment?.publicId &&
+        existingAttachment.publicId !== oldPublicId
+      ) {
+        try {
+          await deleteFromCloudinary(existingAttachment.publicId, "image");
+        } catch (e) {
+          console.warn("Cleanup error", e);
+        }
+      }
+
+      questionBank.questions[qIndex].attachment = attachmentData;
+      await questionBank.save();
+
+      return res.status(200).json({
+        message: "Image generated and saved successfully",
+        attachment: attachmentData,
+        question: questionBank.questions[qIndex],
+      });
     }
 
-    const qIndex = questionBank.questions.findIndex((q) => q._id.toString() === questionId);
-    if (qIndex === -1) {
-      return res.status(404).json({ message: "Question not found in bank" });
-    }
-
-    questionBank.questions[qIndex].imageUrl = uploadResult.url;
-    await questionBank.save();
-
+    // 5. If draft mode (no IDs), just return data for frontend to handle
     res.status(200).json({
-      message: "Image generated and saved successfully",
-      imageUrl: uploadResult.url,
-      question: questionBank.questions[qIndex],
+      message: "Image generated successfully",
+      attachment: attachmentData,
     });
   } catch (error) {
     console.error("Generate image for question error:", error);
-    res.status(500).json({ message: "Failed to generate image", error: error.message });
+    res
+      .status(500)
+      .json({ message: "Failed to generate image", error: error.message });
   }
 };

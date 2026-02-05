@@ -2,10 +2,13 @@ import { HfInference } from "@huggingface/inference";
 
 const hf = new HfInference(process.env.HF_TOKEN);
 
-// Use models that are widely supported and reliable
-// Use models that are widely supported and reliable
-const TEXT_MODEL = "moonshotai/Kimi-K2.5"; // User requested model
-const IMAGE_MODEL = "zai-org/GLM-Image";
+const TEXT_MODEL = "moonshotai/Kimi-K2.5";
+// const TEXT_MODEL = "Qwen/Qwen3-Coder-Next";
+// const TEXT_MODEL = "MiniMaxAI/MiniMax-M2.1";
+// const TEXT_MODEL = "Qwen/Qwen3-235B-A3B-Instruct";
+
+// const IMAGE_MODEL = "together";
+const IMAGE_MODEL = "black-forest-labs/FLUX.1-schnell";
 
 export async function generateQuestionsFromText(
   content,
