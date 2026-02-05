@@ -7,6 +7,7 @@ import Exam from "../models/exam.model.js";
 import Submission from "../models/submission.model.js";
 import Course from "../models/course.model.js";
 import Department from "../models/department.model.js";
+import QuestionBank from "../models/question.model.js";
 import {
   generateCSV,
   generateXLSX,
@@ -546,6 +547,77 @@ const handleCoursePerformance = async (userId, contextId, branding) => {
   };
 };
 
+const handleQuestionBankExport = async (userId, contextId, branding) => {
+  const questionBank = await QuestionBank.findById(contextId)
+    .populate("courseId", "courseCode courseTitle")
+    .populate("lecturerId", "fullname email");
+
+  if (!questionBank) throw new Error("Question bank not found");
+
+  const data = questionBank.questions.map((q, idx) => ({
+    sn: idx + 1,
+    question: q.question,
+    options: q.options.join(" | "), // Join options for CSV/Excel compatibility
+    correctAnswer: q.correctAnswer,
+    marks: q.marks,
+    difficulty: q.difficulty,
+    topic: q.topic || "N/A",
+  }));
+
+  const columns = [
+    { header: "S/N", key: "sn" },
+    { header: "Question", key: "question" },
+    { header: "Options", key: "options" },
+    { header: "Correct Answer", key: "correctAnswer" },
+    { header: "Marks", key: "marks" },
+    { header: "Difficulty", key: "difficulty" },
+    { header: "Topic", key: "topic" },
+  ];
+
+  const summary = {
+    title: questionBank.title,
+    description: questionBank.description || "N/A",
+    course: `${questionBank.courseId?.courseCode} - ${questionBank.courseId?.courseTitle}`,
+    lecturer: questionBank.lecturerId?.fullname || "N/A",
+    totalQuestions: questionBank.questions.length,
+    status: questionBank.status,
+  };
+
+  // PDF Specific Data
+  const pdfQuestions = questionBank.questions.map((q, idx) => ({
+    number: idx + 1,
+    text: q.question,
+    options: q.options,
+    correctAnswer: q.correctAnswer,
+    marks: q.marks,
+    difficulty: q.difficulty,
+  }));
+
+  return {
+    data,
+    columns,
+    title: `Question Bank: ${questionBank.title}`,
+    subtitle: `${questionBank.courseId?.courseCode} | ${new Date().toLocaleDateString()}`,
+    options: {
+      branding,
+      summary,
+      templateName: "question-bank-export",
+      pdfData: {
+        DOCUMENT_TITLE: "Question Bank Export",
+        DOCUMENT_SUBTITLE: `${questionBank.title} (${questionBank.courseId?.courseCode})`,
+        SUMMARY: [
+          { label: "Title", value: questionBank.title },
+          { label: "Course", value: summary.course },
+          { label: "Lecturer", value: summary.lecturer },
+          { label: "Questions", value: summary.totalQuestions },
+          { label: "Status", value: summary.status.toUpperCase() },
+        ],
+        QUESTIONS: pdfQuestions,
+      },
+    },
+  };
+};
+
 const handleExamAnalysis = async (contextId, branding) => {
   const exam = await Exam.findById(contextId)
     .populate("courseId", "courseCode courseTitle")
@@ -1017,6 +1089,13 @@ export const generateReport = async (req, res) => {
         break;
       case "student-roster":
         reportData = await handleStudentRoster(userId, contextId, branding);
+        break;
+      case "question-bank-export":
+        reportData = await handleQuestionBankExport(
+          userId,
+          contextId,
+          branding,
+        );
         break;
 
       // Admin Reports

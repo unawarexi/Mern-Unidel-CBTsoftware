@@ -32,6 +32,7 @@ import {
   extractTextFromFile,
   bulkUploadQuestions,
   improveQuestionsWithAI,
+  improveQuestionsContent,
   generateImageForQuestion,
 } from "../controllers/file-extraction.controller.js";
 import { upload } from "../services/cloudinary.service.js";
@@ -57,6 +58,14 @@ router.post(
   authorize("lecturer"),
   upload.single("file"),
   generateQuestionsFromFile,
+);
+
+// Improve draft questions content
+router.post(
+  "/improve-content",
+  protect,
+  authorize("lecturer"),
+  improveQuestionsContent,
 );
 
 // ==================== QUESTION BANK ROUTES ====================
