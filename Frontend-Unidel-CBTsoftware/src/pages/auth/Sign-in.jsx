@@ -3,7 +3,7 @@ import React, { useEffect } from "react";
 import { GraduationCap, Shield, Clock } from "lucide-react";
 import { Images } from "../../constants/image-strings";
 import { useNavigate, Link } from "react-router-dom";
-import { useAuthLogin, useAuthLogout } from "../../store/auth-store";
+import { useAuthLogin } from "../../store/auth-store";
 import useAuthStore from "../../store/auth-store";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -33,7 +33,6 @@ const SignIn = () => {
   const { isDarkMode } = useThemeStore();
 
   // redirect if already authenticated
-  const { logout: performLogout } = useAuthLogout();
 
   // redirect if already authenticated
   useEffect(() => {

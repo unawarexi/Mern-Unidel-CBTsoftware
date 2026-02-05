@@ -70,54 +70,12 @@ const App = () => {
           >
             <Routes>
               {/* Auth routes */}
-              <Route
-                path="/portal-signin"
-                element={
-                  <GuestOnly>
-                    <SignIn />
-                  </GuestOnly>
-                }
-              />
-              <Route
-                path="/admin-signin"
-                element={
-                  <GuestOnly>
-                    <AdminSignIn />
-                  </GuestOnly>
-                }
-              />
-              <Route
-                path="/signin-agent"
-                element={
-                  <GuestOnly>
-                    <AgentSignIn />
-                  </GuestOnly>
-                }
-              />
-              <Route
-                path="/agent-signup"
-                element={
-                  <GuestOnly>
-                    <AgentSignUp />
-                  </GuestOnly>
-                }
-              />
-              <Route
-                path="/lecturer-signin"
-                element={
-                  <GuestOnly>
-                    <LecturerSignIn />
-                  </GuestOnly>
-                }
-              />
-              <Route
-                path="/forgot-password"
-                element={
-                  <GuestOnly>
-                    <ForgotPassword />
-                  </GuestOnly>
-                }
-              />
+              <Route path="/portal-signin" element={<SignIn />} />
+              <Route path="/admin-signin" element={<AdminSignIn />} />
+              <Route path="/signin-agent" element={<AgentSignIn />} />
+              <Route path="/agent-signup" element={<AgentSignUp />} />
+              <Route path="/lecturer-signin" element={<LecturerSignIn />} />
+              <Route path="/forgot-password" element={<ForgotPassword />} />
               <Route path="/reset-password" element={<ResetPassword />} />
               <Route
                 path="/auth/selection"

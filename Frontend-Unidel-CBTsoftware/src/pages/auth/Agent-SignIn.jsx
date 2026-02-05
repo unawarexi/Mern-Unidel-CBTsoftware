@@ -3,7 +3,7 @@ import React, { useEffect } from "react";
 import { UserCheck, Lock, Globe, Users, Briefcase } from "lucide-react";
 import { Images } from "../../constants/image-strings";
 import { Link, useNavigate } from "react-router-dom";
-import { useAuthLogin, useAuthLogout } from "../../store/auth-store";
+import { useAuthLogin } from "../../store/auth-store";
 import useAuthStore from "../../store/auth-store";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -25,8 +25,6 @@ const AgentSignIn = () => {
   const { isAuthenticated, user } = useAuthStore();
   const { isDarkMode } = useThemeStore();
 
-  const { logout: performLogout } = useAuthLogout();
-
   useEffect(() => {
     if (isAuthenticated && user) {
       const role = (user.role || user.type || "").toString().toLowerCase();
@@ -34,11 +32,10 @@ const AgentSignIn = () => {
       if (role === "agent") {
         // Agent portal built, redirect to dashboard
         navigate("/agent", { replace: true });
-      } else {
-        performLogout();
       }
+      // Allow usage of form even if logged in as other role
     }
-  }, [isAuthenticated, user, navigate, performLogout]);
+  }, [isAuthenticated, user, navigate]);
 
   const {
     register,

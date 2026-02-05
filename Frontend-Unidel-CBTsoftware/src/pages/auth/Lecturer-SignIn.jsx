@@ -3,7 +3,7 @@ import React, { useEffect } from "react";
 import { BookOpen, FileText, Users } from "lucide-react";
 import { Images } from "../../constants/image-strings";
 import { Link, useNavigate } from "react-router-dom";
-import { useAuthLogin, useAuthLogout } from "../../store/auth-store";
+import { useAuthLogin } from "../../store/auth-store";
 import useAuthStore from "../../store/auth-store";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -26,8 +26,6 @@ const LecturerSignIn = () => {
   const { login, isLoading } = useAuthLogin();
   const { isAuthenticated, user } = useAuthStore();
   const { isDarkMode } = useThemeStore();
-
-  const { logout: performLogout } = useAuthLogout();
 
   useEffect(() => {
     if (isAuthenticated && user) {
