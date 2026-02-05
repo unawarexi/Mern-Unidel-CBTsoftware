@@ -36,6 +36,8 @@ const useExamStore = create((set) => ({
   extractedText: "",
   isLoading: false,
   error: null,
+  abortController: null,
+  setAbortController: (controller) => set({ abortController: controller }),
 
   // UI helpers
   toast: { visible: false, message: "", type: "success", duration: 3000 },
@@ -107,17 +109,32 @@ export const useGenerateQuestionsAction = () => {
   const { setGeneratedQuestions, setError, showToast, showLoader, hideLoader } =
     useExamStore();
   const generateQuestionsMutation = useGenerateQuestionsFromFile();
+  // We need to store the controller to be able to abort it
+  // Since this hook is called in component, we can use a ref or state
+  // But to expose it to the UI, we might need a store-level controller if distinct components need access
+  // For simplicity, we'll assume the component that calls generate also calls cancel
+  // But wait, React Query mutations accept a signal? No, we pass it to the mutation function.
+  // We can use a ref in the component, OR we can store the controller in the store.
+  // Let's store the controller in the store to be safe and accessible.
+
+  // Actually, let's add an abort action to the store
+  const { setAbortController, abortController } = useExamStore();
 
   const generateQuestions = async ({ file, numberOfQuestions, difficulty }) => {
     console.log("[STORE] useGenerateQuestionsAction called");
     setError(null);
     showLoader();
 
+    // Create new controller
+    const controller = new AbortController();
+    setAbortController(controller);
+
     try {
       const data = await generateQuestionsMutation.mutateAsync({
         file,
         numberOfQuestions,
         difficulty,
+        signal: controller.signal,
       });
       setGeneratedQuestions(data.questions || []);
       showToast(
@@ -126,17 +143,32 @@ export const useGenerateQuestionsAction = () => {
       );
       return data;
     } catch (error) {
-      console.error("[STORE] useGenerateQuestionsAction error:", error);
-      setError(error.message);
-      showToast(error.message || "Failed to generate questions", "error");
-      throw error;
+      if (error.name === "AbortError") {
+        console.log("Generation cancelled");
+        showToast("Generation cancelled", "info");
+      } else {
+        console.error("[STORE] useGenerateQuestionsAction error:", error);
+        setError(error.message);
+        showToast(error.message || "Failed to generate questions", "error");
+        throw error;
+      }
     } finally {
+      hideLoader();
+      setAbortController(null);
+    }
+  };
+
+  const cancelGeneration = () => {
+    if (abortController) {
+      abortController.abort();
+      setAbortController(null);
       hideLoader();
     }
   };
 
   return {
     generateQuestions,
+    cancelGeneration,
     isLoading: generateQuestionsMutation.isLoading,
     error: generateQuestionsMutation.error,
   };

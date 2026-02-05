@@ -1,4 +1,5 @@
-const API_ROOT = import.meta.env.VITE_API_BASE_URL || "http://localhost:3000/api";
+const API_ROOT =
+  import.meta.env.VITE_API_BASE_URL || "http://localhost:3000/api";
 const BASE_URL = `${API_ROOT}/exams`;
 
 // ========== FILE EXTRACTION & AI GENERATION ==========
@@ -22,17 +23,28 @@ export const extractTextFromFile = async (file) => {
   return response.json();
 };
 
-export const generateQuestionsFromFile = async ({ file, numberOfQuestions, difficulty }) => {
-  console.log("[API] generateQuestionsFromFile called", { file, numberOfQuestions, difficulty });
+export const generateQuestionsFromFile = async ({
+  file,
+  numberOfQuestions,
+  difficulty,
+  signal,
+}) => {
+  console.log("[API] generateQuestionsFromFile called", {
+    file,
+    numberOfQuestions,
+    difficulty,
+  });
   const formData = new FormData();
   formData.append("file", file);
-  if (numberOfQuestions) formData.append("numberOfQuestions", numberOfQuestions);
+  if (numberOfQuestions)
+    formData.append("numberOfQuestions", numberOfQuestions);
   if (difficulty) formData.append("difficulty", difficulty);
 
   const response = await fetch(`${BASE_URL}/generate-from-file`, {
     method: "POST",
     credentials: "include",
     body: formData,
+    signal, // Pass abort signal to fetch
   });
 
   if (!response.ok) {
@@ -68,10 +80,13 @@ export const getLecturerQuestionBanks = async ({ status, courseId } = {}) => {
   if (status) params.append("status", status);
   if (courseId) params.append("courseId", courseId);
 
-  const response = await fetch(`${BASE_URL}/question-bank?${params.toString()}`, {
-    method: "GET",
-    credentials: "include",
-  });
+  const response = await fetch(
+    `${BASE_URL}/question-bank?${params.toString()}`,
+    {
+      method: "GET",
+      credentials: "include",
+    },
+  );
 
   if (!response.ok) {
     const error = await response.json();
@@ -132,12 +147,15 @@ export const addQuestionToBank = async ({ id, question }) => {
 
 export const updateQuestionInBank = async ({ id, questionId, data }) => {
   console.log("[API] updateQuestionInBank called", { id, questionId, data });
-  const response = await fetch(`${BASE_URL}/question-bank/${id}/questions/${questionId}`, {
-    method: "PUT",
-    headers: { "Content-Type": "application/json" },
-    credentials: "include",
-    body: JSON.stringify(data),
-  });
+  const response = await fetch(
+    `${BASE_URL}/question-bank/${id}/questions/${questionId}`,
+    {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      credentials: "include",
+      body: JSON.stringify(data),
+    },
+  );
 
   if (!response.ok) {
     const error = await response.json();
@@ -149,10 +167,13 @@ export const updateQuestionInBank = async ({ id, questionId, data }) => {
 
 export const deleteQuestionFromBank = async ({ id, questionId }) => {
   console.log("[API] deleteQuestionFromBank called", { id, questionId });
-  const response = await fetch(`${BASE_URL}/question-bank/${id}/questions/${questionId}`, {
-    method: "DELETE",
-    credentials: "include",
-  });
+  const response = await fetch(
+    `${BASE_URL}/question-bank/${id}/questions/${questionId}`,
+    {
+      method: "DELETE",
+      credentials: "include",
+    },
+  );
 
   if (!response.ok) {
     const error = await response.json();
@@ -289,7 +310,9 @@ export const createExamFromQuestionBank = async (data) => {
   if (!response.ok) {
     const error = await response.json();
     console.error("[API] createExamFromQuestionBank error:", error);
-    throw new Error(error.message || "Failed to create exam from question bank");
+    throw new Error(
+      error.message || "Failed to create exam from question bank",
+    );
   }
   return response.json();
 };
@@ -390,8 +413,16 @@ export const deleteExam = async (id) => {
   return response.json();
 };
 
-export const generateImageForQuestion = async ({ question, questionBankId, questionId }) => {
-  console.log("[API] generateImageForQuestion called", { question, questionBankId, questionId });
+export const generateImageForQuestion = async ({
+  question,
+  questionBankId,
+  questionId,
+}) => {
+  console.log("[API] generateImageForQuestion called", {
+    question,
+    questionBankId,
+    questionId,
+  });
   const response = await fetch(`${BASE_URL}/question-image`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
