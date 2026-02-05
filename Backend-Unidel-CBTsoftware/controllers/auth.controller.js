@@ -1,12 +1,11 @@
 import crypto from "crypto";
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
+import { v4 as uuidv4 } from "uuid";
 import Admin from "../models/admin.model.js";
 import Lecturer from "../models/lecturer.model.js";
 import Student from "../models/student.model.js";
 import Agent from "../models/agent.model.js";
-import { generateToken } from "../core/helpers/helper-functions.js";
-import { generateAdminId } from "../core/helpers/helper-functions.js";
 import * as Mailer from "../services/mailer.service.js";
 import EmailContentGenerator from "../core/mail/mail-content.js";
 import { emitToRoom } from "../services/socketIO.service.js";
@@ -14,6 +13,9 @@ import { emitToRoom } from "../services/socketIO.service.js";
 import {
   trackLoginAttempt,
   isLoginLocked,
+  createSession,
+  deleteSession,
+  getSession,
   cacheUserProfile,
   getCachedUserProfile,
   invalidateUserCache,
@@ -31,35 +33,117 @@ const getUserModel = (role) => {
   return models[role];
 };
 
+/**
+ * Generate Access Token - Short lived (15m)
+ * Contains user ID (primary), all roles, current session ID, and identity map
+ */
+const generateAccessToken = (user, sessionId, allRoles, identities) => {
+  return jwt.sign(
+    {
+      userId: user._id, // Primary ID (used for login)
+      roles: allRoles,
+      identities: identities, // Map of role -> userId
+      sessionId: sessionId,
+    },
+    process.env.JWT_SECRET,
+    {
+      expiresIn: "15m",
+    },
+  );
+};
+
+/**
+ * Generate Refresh Token - Long lived (7d)
+ * Contains session ID and User ID
+ */
+const generateRefreshToken = (user, sessionId, roles, identities) => {
+  return jwt.sign(
+    {
+      sessionId: sessionId,
+      userId: user._id,
+      roles: roles,
+      identities: identities,
+    },
+    process.env.JWT_REFRESH_SECRET || process.env.JWT_SECRET,
+    {
+      expiresIn: "7d",
+    },
+  );
+};
+
 // Send token response
-const sendTokenResponse = (user, statusCode, res) => {
-  const token = generateToken(user._id, user.role);
+const sendTokenResponse = async (
+  user,
+  allRoles,
+  identities,
+  sessionId,
+  statusCode,
+  res,
+) => {
+  const accessToken = generateAccessToken(
+    user,
+    sessionId,
+    allRoles,
+    identities,
+  );
+  const refreshToken = generateRefreshToken(
+    user,
+    sessionId,
+    allRoles,
+    identities,
+  );
 
-  // Determine if we should use secure cookies (HTTPS only)
-  // Only use secure in production AND if not running locally (mocking prod)
-  const isLocalhost =
-    process.env.FRONTEND_URL?.includes("localhost") ||
-    process.env.FRONTEND_URL?.includes("127.0.0.1");
-  const isSecure = process.env.NODE_ENV === "production" && !isLocalhost;
+  // Store session metadata in Redis
+  await createSession(user._id.toString(), sessionId, {
+    roles: allRoles,
+    identities: identities,
+    lastIp: res.req.ip,
+    userAgent: res.req.get("User-Agent"),
+  });
 
-  // Set token as secure httpOnly cookie so browser sends it with subsequent requests
-  const cookieOptions = {
+  const isProduction = process.env.NODE_ENV === "production";
+
+  // Access Token Cookie
+  res.cookie("access_token", accessToken, {
     httpOnly: true,
-    secure: isSecure,
+    secure: isProduction,
     sameSite: "lax",
-    maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
-  };
+    maxAge: 15 * 60 * 1000, // 15 minutes
+  });
 
-  res.cookie("token", token, cookieOptions);
+  // Refresh Token Cookie
+  res.cookie("refresh_token", refreshToken, {
+    httpOnly: true,
+    secure: isProduction,
+    sameSite: "lax",
+    path: "/api/auth/refresh-token",
+    maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
+  });
+
+  // Legacy / compatibility support: Clear old cookies
+  const clearOptions = {
+    httpOnly: true,
+    secure: isProduction,
+    sameSite: "lax",
+    maxAge: 0,
+  };
+  [
+    "token",
+    "token_admin",
+    "token_student",
+    "token_lecturer",
+    "token_agent",
+  ].forEach((c) => {
+    res.cookie(c, "", clearOptions);
+  });
 
   res.status(statusCode).json({
     success: true,
-    // Token is sent via httpOnly cookie
     user: {
       id: user._id,
       fullname: user.fullname,
       email: user.email,
-      role: user.role,
+      roles: allRoles,
       image: user.image,
       isFirstLogin: user.isFirstLogin,
     },
@@ -67,8 +151,6 @@ const sendTokenResponse = (user, statusCode, res) => {
 };
 
 // @desc    Agent Signup
-// @route   POST /api/auth/agent/signup
-// @access  Public
 export const agentSignup = async (req, res) => {
   try {
     const { fullname, email, password, organisation } = req.body;
@@ -80,7 +162,6 @@ export const agentSignup = async (req, res) => {
       });
     }
 
-    // Check if agent exists
     const existingAgent = await Agent.findOne({ email });
     if (existingAgent) {
       return res.status(400).json({
@@ -89,11 +170,9 @@ export const agentSignup = async (req, res) => {
       });
     }
 
-    // Hash password
     const salt = await bcrypt.genSalt(10);
     const hashedPassword = await bcrypt.hash(password, salt);
 
-    // Create agent
     const agent = await Agent.create({
       fullname,
       email,
@@ -101,10 +180,9 @@ export const agentSignup = async (req, res) => {
       organisation,
       role: "agent",
       isFirstLogin: false,
-      isVerified: false, // requires admin verification
+      isVerified: false,
     });
 
-    // Send notification to admin (non-blocking)
     try {
       const admins = await Admin.find({ role: "admin" }).select("email");
       const mailGen = new EmailContentGenerator();
@@ -114,18 +192,14 @@ export const agentSignup = async (req, res) => {
         organisation: agent.organisation,
       });
 
-      // Send to all admins
       for (const admin of admins) {
         await Mailer.sendTemplatedMail(admin.email, emailContent);
       }
-
-      // Real-time notification
       emitToRoom("admin_notifications", "agent:new", agent);
     } catch (err) {
       console.error("Error sending admin notification:", err);
     }
 
-    // Do NOT log them in automatically. They are pending.
     res.status(201).json({
       success: true,
       message: "Registration successful. Please wait for admin verification.",
@@ -135,123 +209,127 @@ export const agentSignup = async (req, res) => {
   }
 };
 
-// @desc    Login (Admin, Lecturer, Student, Agent)
-// @route   POST /api/auth/login
-// @access  Public
+// @desc    Login (Universal)
 export const login = async (req, res) => {
   try {
-    // accept email OR identifier fields plus role & password
-    const {
-      email,
-      password,
-      role,
-      studentId,
-      matricNumber,
-      matnumber,
-      employeeId,
-      adminId,
-    } = req.body;
+    const { email, password, role } = req.body;
 
-    // require at least role and password
-    if (!role || !password) {
-      console.log("LOGIN FAIL: Missing role or password", {
-        role,
-        hasPassword: !!password,
-      });
-      return res.status(400).json({
-        success: false,
-        message: "Please provide role and password",
-      });
-    }
+    let userEmail = email;
 
-    const loginIdentifier =
-      email || studentId || matricNumber || matnumber || employeeId || adminId;
+    if (!userEmail) {
+      const { studentId, matricNumber, matnumber, employeeId, adminId } =
+        req.body;
 
-    console.log("LOGIN ATTEMPT:", { role, loginIdentifier });
-
-    if (loginIdentifier) {
-      const locked = await isLoginLocked(loginIdentifier);
-      if (locked) {
-        console.log("LOGIN LOCKED:", loginIdentifier);
-        return res.status(429).json({
-          success: false,
-          message: "Too many failed login attempts. Please try again later.",
+      let foundUser = null;
+      if (role === "student")
+        foundUser = await Student.findOne({
+          matricNumber: (studentId || matricNumber || matnumber || "")
+            .trim()
+            .toUpperCase(),
         });
+      else if (role === "lecturer")
+        foundUser = await Lecturer.findOne({
+          employeeId: (employeeId || "").trim().toUpperCase(),
+        });
+      else if (role === "admin")
+        foundUser = await Admin.findOne({
+          adminId: (adminId || "").trim().toUpperCase(),
+        });
+
+      if (foundUser) {
+        userEmail = foundUser.email;
+      } else {
+        return res
+          .status(401)
+          .json({ success: false, message: "Invalid credentials" });
       }
     }
 
-    const Model = getUserModel(role);
-    if (!Model) {
-      console.log("LOGIN FAIL: Invalid role", role);
-      return res.status(400).json({
+    if (await isLoginLocked(userEmail)) {
+      return res.status(429).json({
         success: false,
-        message: "Invalid role",
+        message: "Too many failed login attempts. Try again later.",
       });
     }
 
-    // build flexible query: prefer email, fall back to role-specific identifier
-    const orQueries = [];
-    if (email) orQueries.push({ email });
-    if (role === "student") {
-      const sId = studentId || matricNumber || matnumber;
-      if (sId) orQueries.push({ matricNumber: sId.trim().toUpperCase() });
-    }
-    if (role === "lecturer" && employeeId)
-      orQueries.push({ employeeId: employeeId.trim().toUpperCase() });
-    if (role === "admin" && adminId)
-      orQueries.push({ adminId: adminId.trim().toUpperCase() });
+    const [admin, lecturer, student, agent] = await Promise.all([
+      Admin.findOne({ email: userEmail }).select("+password"),
+      Lecturer.findOne({ email: userEmail }).select("+password"),
+      Student.findOne({ email: userEmail }).select("+password"),
+      Agent.findOne({ email: userEmail }).select("+password"),
+    ]);
 
-    console.log("LOGIN QUERY:", orQueries);
+    const usersFound = [];
+    if (admin) usersFound.push({ type: "admin", user: admin });
+    if (lecturer) usersFound.push({ type: "lecturer", user: lecturer });
+    if (student) usersFound.push({ type: "student", user: student });
+    if (agent) usersFound.push({ type: "agent", user: agent });
 
-    if (orQueries.length === 0) {
-      return res.status(400).json({
-        success: false,
-        message: "Please provide an email or identifier for the specified role",
-      });
+    if (usersFound.length === 0) {
+      return res
+        .status(401)
+        .json({ success: false, message: "Invalid credentials" });
     }
 
-    const user = await Model.findOne({ $or: orQueries }).select("+password");
-    if (!user) {
-      console.log("LOGIN FAIL: User not found");
-      return res.status(401).json({
-        success: false,
-        message: "Invalid credentials",
-      });
-    }
+    let validUser = null;
+    let isMatch = false;
 
-    // Check password
-    const isMatch = await bcrypt.compare(password, user.password);
-    if (!isMatch) {
-      console.log("LOGIN FAIL: Password mismatch");
-      // Track failed login attempt
-      if (loginIdentifier) {
-        await trackLoginAttempt(loginIdentifier, false);
+    if (role) {
+      const target = usersFound.find((u) => u.type === role);
+      if (target) {
+        isMatch = await bcrypt.compare(password, target.user.password);
+        if (isMatch) validUser = target.user;
       }
-      return res.status(401).json({
-        success: false,
-        message: "Invalid credentials",
-      });
     }
 
-    // Reset login attempts on successful login
-    if (loginIdentifier) {
-      await trackLoginAttempt(loginIdentifier, true);
+    if (!validUser) {
+      for (const u of usersFound) {
+        if (role && u.type === role) continue;
+
+        if (await bcrypt.compare(password, u.user.password)) {
+          validUser = u.user;
+          isMatch = true;
+          break;
+        }
+      }
     }
 
-    console.log("LOGIN SUCCESS:", user._id);
+    if (!validUser) {
+      await trackLoginAttempt(userEmail, false);
+      return res
+        .status(401)
+        .json({ success: false, message: "Invalid credentials" });
+    }
 
-    // Check if first login
-    if (user.isFirstLogin) {
+    await trackLoginAttempt(userEmail, true);
+
+    const allRoles = usersFound.map((u) => u.type);
+    const identities = {};
+    usersFound.forEach((u) => {
+      identities[u.type] = u.user._id;
+    });
+
+    const sessionId = uuidv4();
+
+    // Pass session logic here
+    if (validUser.isFirstLogin) {
       return res.status(200).json({
         success: true,
         requirePasswordChange: true,
         message: "Please change your password on first login",
-        userId: user._id,
-        role: user.role,
+        userId: validUser._id,
+        role: validUser.role,
       });
     }
 
-    sendTokenResponse(user, 200, res);
+    return sendTokenResponse(
+      validUser,
+      allRoles,
+      identities,
+      sessionId,
+      200,
+      res,
+    );
   } catch (error) {
     console.error("LOGIN ERROR:", error);
     res.status(500).json({ success: false, message: error.message });
@@ -259,8 +337,6 @@ export const login = async (req, res) => {
 };
 
 // @desc    Request Password Reset
-// @route   POST /api/auth/forgot-password
-// @access  Public
 export const forgotPassword = async (req, res) => {
   try {
     const { email, role } = req.body;
@@ -282,7 +358,6 @@ export const forgotPassword = async (req, res) => {
 
     const user = await Model.findOne({ email });
 
-    // Always return success to prevent user enumeration
     if (!user) {
       return res.status(200).json({
         success: true,
@@ -290,7 +365,6 @@ export const forgotPassword = async (req, res) => {
       });
     }
 
-    // Generate reset token
     const resetToken = crypto.randomBytes(32).toString("hex");
     const hashedToken = crypto
       .createHash("sha256")
@@ -298,13 +372,11 @@ export const forgotPassword = async (req, res) => {
       .digest("hex");
 
     user.resetPasswordToken = hashedToken;
-    user.resetPasswordExpires = Date.now() + 15 * 60 * 1000; // 15 mins
+    user.resetPasswordExpires = Date.now() + 15 * 60 * 1000;
     await user.save();
 
-    // Create reset URL
     const resetUrl = `${process.env.FRONTEND_URL}/reset-password?token=${resetToken}&role=${role}`;
 
-    // Send email with reset link
     try {
       const mailGen = new EmailContentGenerator();
       const emailContent = mailGen.passwordResetRequest({
@@ -327,11 +399,8 @@ export const forgotPassword = async (req, res) => {
 };
 
 // @desc    Reset Password
-// @route   POST /api/auth/reset-password
-// @access  Public
 export const resetPassword = async (req, res) => {
   try {
-    // accept token field under multiple names and allow role to be optional
     const tokenRaw = req.body.token || req.body.resetToken;
     const role = req.body.role;
     const newPassword = req.body.newPassword;
@@ -343,7 +412,6 @@ export const resetPassword = async (req, res) => {
       });
     }
 
-    // Hash token to compare with DB
     const hashedToken = crypto
       .createHash("sha256")
       .update(tokenRaw)
@@ -352,7 +420,6 @@ export const resetPassword = async (req, res) => {
     let user = null;
     let Model = null;
 
-    // If role provided, search only that collection (faster). Otherwise search all models.
     if (role) {
       Model = getUserModel(role);
       if (Model) {
@@ -362,7 +429,6 @@ export const resetPassword = async (req, res) => {
         });
       }
     } else {
-      // fallback: try all known models
       const potentialModels = [Admin, Lecturer, Student, Agent];
       for (const M of potentialModels) {
         const found = await M.findOne({
@@ -383,7 +449,6 @@ export const resetPassword = async (req, res) => {
       });
     }
 
-    // Hash new password
     const salt = await bcrypt.genSalt(10);
     user.password = await bcrypt.hash(newPassword, salt);
     user.resetPasswordToken = undefined;
@@ -391,7 +456,6 @@ export const resetPassword = async (req, res) => {
     user.isFirstLogin = false;
     await user.save();
 
-    // Send confirmation email
     try {
       const mailGen = new EmailContentGenerator();
       const emailContent = mailGen.passwordChangedConfirmation({
@@ -416,8 +480,6 @@ export const resetPassword = async (req, res) => {
 };
 
 // @desc    Change Password on First Login
-// @route   POST /api/auth/change-password-first-login
-// @access  Public
 export const changePasswordFirstLogin = async (req, res) => {
   try {
     const { userId, role, newPassword } = req.body;
@@ -439,13 +501,11 @@ export const changePasswordFirstLogin = async (req, res) => {
       });
     }
 
-    // First-login flow: set provided new password (no old password verification required)
     const salt = await bcrypt.genSalt(10);
     user.password = await bcrypt.hash(newPassword, salt);
     user.isFirstLogin = false;
     await user.save();
 
-    // Send confirmation email
     try {
       const mailGen = new EmailContentGenerator();
       const emailContent = mailGen.passwordChangedConfirmation({
@@ -460,15 +520,28 @@ export const changePasswordFirstLogin = async (req, res) => {
       console.error("Error sending password changed confirmation:", err);
     }
 
-    sendTokenResponse(user, 200, res);
+    // Re-fetch all roles for this email
+    const [admin, lecturer, student, agent] = await Promise.all([
+      Admin.findOne({ email: user.email }),
+      Lecturer.findOne({ email: user.email }),
+      Student.findOne({ email: user.email }),
+      Agent.findOne({ email: user.email }),
+    ]);
+    const usersFound = [];
+    if (admin) usersFound.push({ type: "admin", user: admin });
+    if (lecturer) usersFound.push({ type: "lecturer", user: lecturer });
+    if (student) usersFound.push({ type: "student", user: student });
+    if (agent) usersFound.push({ type: "agent", user: agent });
+    const allRoles = usersFound.map((u) => u.type);
+
+    const sessionId = uuidv4();
+    sendTokenResponse(user, allRoles, sessionId, 200, res);
   } catch (error) {
     res.status(500).json({ success: false, message: error.message });
   }
 };
 
 // @desc    Change Password (Authenticated User)
-// @route   PUT /api/auth/change-password
-// @access  Private
 export const changePassword = async (req, res) => {
   try {
     const { currentPassword, newPassword } = req.body;
@@ -490,7 +563,6 @@ export const changePassword = async (req, res) => {
       });
     }
 
-    // Verify current password
     const isMatch = await bcrypt.compare(currentPassword, user.password);
     if (!isMatch) {
       return res.status(401).json({
@@ -499,12 +571,10 @@ export const changePassword = async (req, res) => {
       });
     }
 
-    // Hash new password
     const salt = await bcrypt.genSalt(10);
     user.password = await bcrypt.hash(newPassword, salt);
     await user.save();
 
-    // Send confirmation email
     try {
       const mailGen = new EmailContentGenerator();
       const emailContent = mailGen.passwordChangedConfirmation({
@@ -529,11 +599,8 @@ export const changePassword = async (req, res) => {
 };
 
 // @desc    Get Current User
-// @route   GET /api/auth/me
-// @access  Private
 export const getCurrentUser = async (req, res) => {
   try {
-    // Check cache first
     const cachedUser = await getCachedUserProfile(req.user.userId);
     if (cachedUser) {
       return res.status(200).json({
@@ -544,9 +611,16 @@ export const getCurrentUser = async (req, res) => {
     }
 
     const Model = getUserModel(req.user.role);
-    const user = await Model.findById(req.user.userId)
-      .select("-password -resetPasswordToken -resetPasswordExpires")
-      .populate("courses", "courseName courseCode");
+    let query = Model.findById(req.user.userId).select(
+      "-password -resetPasswordToken -resetPasswordExpires",
+    );
+
+    // Only populate courses for roles that have them
+    if (["student", "lecturer"].includes(req.user.role)) {
+      query = query.populate("courses", "courseName courseCode");
+    }
+
+    const user = await query;
 
     if (!user) {
       return res.status(404).json({
@@ -555,7 +629,6 @@ export const getCurrentUser = async (req, res) => {
       });
     }
 
-    // Cache user profile
     await cacheUserProfile(req.user.userId, user);
 
     res.status(200).json({
@@ -568,8 +641,6 @@ export const getCurrentUser = async (req, res) => {
 };
 
 // @desc    Update Current User Profile
-// @route   PUT /api/auth/me
-// @access  Private
 export const updateProfile = async (req, res) => {
   try {
     const { fullname, email } = req.body;
@@ -584,7 +655,6 @@ export const updateProfile = async (req, res) => {
       });
     }
 
-    // Check if email is being changed and if it's already taken
     if (email && email !== user.email) {
       const existingUser = await Model.findOne({ email });
       if (existingUser) {
@@ -599,8 +669,6 @@ export const updateProfile = async (req, res) => {
     if (fullname) user.fullname = fullname;
 
     await user.save();
-
-    // Invalidate user cache
     await invalidateUserCache(req.user.userId);
 
     res.status(200).json({
@@ -614,18 +682,43 @@ export const updateProfile = async (req, res) => {
 };
 
 // @desc    Logout
-// @route   POST /api/auth/logout
-// @access  Private
 export const logout = async (req, res) => {
   try {
-    // Invalidate user sessions in Redis
-    await deleteAllUserSessions(req.user.userId);
+    const refreshToken = req.cookies.refresh_token;
+    if (refreshToken) {
+      try {
+        const decoded = jwt.verify(
+          refreshToken,
+          process.env.JWT_REFRESH_SECRET || process.env.JWT_SECRET,
+        );
+        if (decoded.userId && decoded.sessionId) {
+          await deleteSession(decoded.userId, decoded.sessionId);
+        }
+      } catch (e) {
+        /* ignore */
+      }
+    } else if (req.user && req.user.userId) {
+      // Fallback if no cookie but req.user exists
+      await deleteAllUserSessions(req.user.userId);
+    }
 
-    // Clear cookie
-    res.cookie("token", "", {
+    const cookieOptions = {
       httpOnly: true,
+      secure: process.env.NODE_ENV === "production",
       expires: new Date(0),
+      sameSite: "lax",
+    };
+
+    res.cookie("access_token", "", cookieOptions);
+    res.cookie("refresh_token", "", {
+      ...cookieOptions,
+      path: "/api/auth/refresh-token",
     });
+    res.cookie("token", "", cookieOptions);
+    res.cookie("token_admin", "", cookieOptions);
+    res.cookie("token_student", "", cookieOptions);
+    res.cookie("token_lecturer", "", cookieOptions);
+    res.cookie("token_agent", "", cookieOptions);
 
     res.status(200).json({
       success: true,
@@ -637,21 +730,80 @@ export const logout = async (req, res) => {
 };
 
 // @desc    Refresh Token
-// @route   POST /api/auth/refresh-token
-// @access  Private
 export const refreshToken = async (req, res) => {
   try {
-    const Model = getUserModel(req.user.role);
-    const user = await Model.findById(req.user.userId);
+    const refreshToken = req.cookies.refresh_token;
 
-    if (!user) {
-      return res.status(404).json({
-        success: false,
-        message: "User not found",
-      });
+    if (!refreshToken) {
+      return res
+        .status(401)
+        .json({ success: false, message: "No refresh token" });
     }
 
-    sendTokenResponse(user, 200, res);
+    // Verify JWT
+    let decoded;
+    try {
+      decoded = jwt.verify(
+        refreshToken,
+        process.env.JWT_REFRESH_SECRET || process.env.JWT_SECRET,
+      );
+    } catch (e) {
+      return res
+        .status(403)
+        .json({ success: false, message: "Invalid refresh token" });
+    }
+
+    // Check Session in Redis
+    let session = await getSession(decoded.userId, decoded.sessionId);
+
+    // Stateless Fallback: If Redis is down/empty, use token payload if available
+    if (!session && decoded.roles && decoded.identities) {
+      // Mock session object from token claims
+      session = {
+        roles: decoded.roles,
+        identities: decoded.identities,
+      };
+      // Note: We lose revocation check here, but maintain availability
+    }
+
+    if (!session) {
+      return res
+        .status(403)
+        .json({ success: false, message: "Session expired or invalid" });
+    }
+
+    // Get User to issue new token
+    const roles = session.roles || [];
+    const identities = session.identities || {};
+    let user = null;
+
+    // Try to find the user using the identity map from session
+    // We prefer the 'primary' user ID if available, otherwise just pick the first valid role
+
+    // We used decoded.userId as the primary in previous steps.
+    // Let's verify if that user still exists.
+    for (const r of roles) {
+      const id = identities[r];
+      if (id) {
+        const Model = getUserModel(r);
+        user = await Model.findById(id);
+        if (user) break;
+      }
+    }
+
+    if (!user) {
+      return res
+        .status(403)
+        .json({ success: false, message: "User not found" });
+    }
+
+    // Rotate tokens
+    const newSessionId = uuidv4();
+    // Update session with new ID but keep data
+    await createSession(user._id.toString(), newSessionId, session);
+    await deleteSession(user._id.toString(), decoded.sessionId);
+
+    return sendTokenResponse(user, roles, identities, newSessionId, 200, res);
   } catch (error) {
     res.status(500).json({ success: false, message: error.message });
   }

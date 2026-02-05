@@ -21,17 +21,28 @@ const getUserModel = (role) => {
 export const protect = async (req, res, next) => {
   let token;
 
+  // New Access Token Cookie
+  if (req.cookies && req.cookies.access_token) {
+    token = req.cookies.access_token;
+  }
+
   // Check for token in Authorization header
   if (
+    !token &&
     req.headers.authorization &&
     req.headers.authorization.startsWith("Bearer")
   ) {
     token = req.headers.authorization.split(" ")[1];
   }
 
-  // Also accept token from httpOnly cookie (if set)
-  if (!token && req.cookies && req.cookies.token) {
-    token = req.cookies.token;
+  // Legacy Check: Also accept token from httpOnly cookie (including role-specific ones)
+  if (!token && req.cookies) {
+    token =
+      req.cookies.token_admin ||
+      req.cookies.token_student ||
+      req.cookies.token_lecturer ||
+      req.cookies.token_agent ||
+      req.cookies.token;
   }
 
   // Make sure token exists
@@ -46,16 +57,33 @@ export const protect = async (req, res, next) => {
     // Verify token
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
 
-    // support different token payload shapes
-    const userId =
+    // Normalize payload
+    let userId =
       decoded.userId ||
       decoded.id ||
       decoded._id ||
       (decoded.user && decoded.user.userId);
-    const role =
-      decoded.role || decoded.roleName || (decoded.user && decoded.user.role);
 
-    if (!userId || !role) {
+    // Determine Role
+    // 1. Check X-Active-Role header first
+    const headerRole = req.headers["x-active-role"];
+    let activeRole = null;
+
+    if (decoded.roles && Array.isArray(decoded.roles)) {
+      // New Token Format
+      if (headerRole && decoded.roles.includes(headerRole)) {
+        activeRole = headerRole;
+      } else {
+        // Default to first role if header missing or invalid
+        activeRole = decoded.roles[0];
+      }
+    } else {
+      // Legacy Token Format
+      activeRole =
+        decoded.role || decoded.roleName || (decoded.user && decoded.user.role);
+    }
+
+    if (!userId || !activeRole) {
       console.error("Invalid token payload:", decoded);
       return res.status(401).json({
         success: false,
@@ -63,17 +91,22 @@ export const protect = async (req, res, next) => {
       });
     }
 
-    // Get user from token
-    const Model = getUserModel(role);
+    // Resolve User ID for the specific role
+    let targetUserId = userId;
+    if (decoded.identities && decoded.identities[activeRole]) {
+      targetUserId = decoded.identities[activeRole];
+    }
+
+    const Model = getUserModel(activeRole);
     if (!Model) {
-      console.error("No model found for role from token:", role);
+      console.error("No model found for role from token:", activeRole);
       return res.status(401).json({
         success: false,
         message: "Invalid user role in token",
       });
     }
 
-    const user = await Model.findById(userId).select("-password");
+    const user = await Model.findById(targetUserId).select("-password");
 
     if (!user) {
       return res.status(401).json({
@@ -82,31 +115,44 @@ export const protect = async (req, res, next) => {
       });
     }
 
-    // Attach user to request object (provide multiple id shapes for compatibility)
+    // Attach user to request object
     req.user = {
       _id: user._id,
       userId: user._id,
       id: user._id,
-      role: user.role,
+      role: activeRole, // The active role for this request
+      roles: decoded.roles || [activeRole], // All available roles
       email: user.email,
       fullname: user.fullname,
+      sessionId: decoded.sessionId, // Track session ID if available
     };
 
     // Set Sentry User Context
-    Sentry.configureScope((scope) => {
-      scope.setUser({
-        id: user._id,
-        email: user.email,
-        role: user.role,
+    if (Sentry && typeof Sentry.configureScope === "function") {
+      Sentry.configureScope((scope) => {
+        scope.setUser({
+          id: user._id,
+          email: user.email,
+          role: activeRole,
+        });
       });
-    });
+    } else {
+      // Fallback or specific new SDK method if needed
+      // console.warn("Sentry.configureScope not available");
+    }
 
     next();
   } catch (error) {
-    console.error("Auth protect error:", error);
+    const message =
+      error.name === "TokenExpiredError"
+        ? "Token expired"
+        : "Not authorized to access this route";
+    if (error.name !== "TokenExpiredError")
+      console.error("Auth protect error:", error);
+
     return res.status(401).json({
       success: false,
-      message: "Not authorized to access this route",
+      message,
     });
   }
 };
@@ -115,15 +161,25 @@ export const protect = async (req, res, next) => {
 export const optionalProtect = async (req, res, next) => {
   let token;
 
+  if (req.cookies && req.cookies.access_token) {
+    token = req.cookies.access_token;
+  }
+
   if (
+    !token &&
     req.headers.authorization &&
     req.headers.authorization.startsWith("Bearer")
   ) {
     token = req.headers.authorization.split(" ")[1];
   }
 
-  if (!token && req.cookies && req.cookies.token) {
-    token = req.cookies.token;
+  if (!token && req.cookies) {
+    token =
+      req.cookies.token_admin ||
+      req.cookies.token_student ||
+      req.cookies.token_lecturer ||
+      req.cookies.token_agent ||
+      req.cookies.token;
   }
 
   if (!token || token === "null" || token === "undefined") {
@@ -132,42 +188,62 @@ export const optionalProtect = async (req, res, next) => {
 
   try {
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
-    const userId =
+
+    let userId =
       decoded.userId ||
       decoded.id ||
       decoded._id ||
       (decoded.user && decoded.user.userId);
-    const role =
-      decoded.role || decoded.roleName || (decoded.user && decoded.user.role);
+    let activeRole = null;
+    const headerRole = req.headers["x-active-role"];
 
-    if (userId && role) {
-      const Model = getUserModel(role);
+    if (decoded.roles && Array.isArray(decoded.roles)) {
+      if (headerRole && decoded.roles.includes(headerRole)) {
+        activeRole = headerRole;
+      } else {
+        activeRole = decoded.roles[0];
+      }
+    } else {
+      activeRole =
+        decoded.role || decoded.roleName || (decoded.user && decoded.user.role);
+    }
+
+    if (userId && activeRole) {
+      const Model = getUserModel(activeRole);
       if (Model) {
-        const user = await Model.findById(userId).select("-password");
+        let targetUserId = userId;
+        if (decoded.identities && decoded.identities[activeRole]) {
+          targetUserId = decoded.identities[activeRole];
+        }
+
+        const user = await Model.findById(targetUserId).select("-password");
         if (user) {
           req.user = {
             _id: user._id,
             userId: user._id,
             id: user._id,
-            role: user.role,
+            role: activeRole,
+            roles: decoded.roles || [activeRole],
             email: user.email,
             fullname: user.fullname,
+            sessionId: decoded.sessionId,
           };
 
           // Set Sentry User Context
-          Sentry.configureScope((scope) => {
-            scope.setUser({
-              id: user._id,
-              email: user.email,
-              role: user.role,
+          if (Sentry && typeof Sentry.configureScope === "function") {
+            Sentry.configureScope((scope) => {
+              scope.setUser({
+                id: user._id,
+                email: user.email,
+                role: activeRole,
+              });
             });
-          });
+          }
         }
       }
     }
     next();
   } catch (error) {
-    // If token is invalid, we just proceed without user
     next();
   }
 };
@@ -176,14 +252,14 @@ export const optionalProtect = async (req, res, next) => {
 export const authorize = (...roles) => {
   return (req, res, next) => {
     // Superadmin has access to everything by default
-    if (req.user.role === "superadmin") {
+    if (req.user && req.user.role === "superadmin") {
       return next();
     }
 
-    if (!roles.includes(req.user.role)) {
+    if (!req.user || !roles.includes(req.user.role)) {
       return res.status(403).json({
         success: false,
-        message: `User role '${req.user.role}' is not authorized to access this route`,
+        message: `User role '${req.user ? req.user.role : "ghost"}' is not authorized to access this route`,
       });
     }
     next();
