@@ -3,7 +3,13 @@ import { motion, AnimatePresence } from "framer-motion";
 import { BadgeCheck, X, AlertTriangle, Info } from "../../constants/icons";
 import { toastVariants } from "../../core/animation/animations";
 
-const Toast = ({ visible, message, type = "success", duration = 3000, onHide }) => {
+const Toast = ({
+  visible,
+  message,
+  type = "success",
+  duration = 3000,
+  onHide,
+}) => {
   useEffect(() => {
     if (visible) {
       const timer = setTimeout(() => {
@@ -130,7 +136,7 @@ const Toast = ({ visible, message, type = "success", duration = 3000, onHide }) 
         )}
       </AnimatePresence>
 
-      <style jsx>{`
+      <style>{`
         @media (min-width: 640px) {
           .toast-container {
             max-width: 400px !important;
@@ -151,8 +157,26 @@ const Toast = ({ visible, message, type = "success", duration = 3000, onHide }) 
 
         @media (max-width: 639px) {
           .toast-container {
-            max-width: 85% !important;
-            font-size: 12px !important;
+            max-width: 90% !important;
+            min-height: 36px !important;
+            padding: 6px 10px !important;
+            border-radius: 16px !important;
+            gap: 8px !important;
+            bottom: 20px !important; /* Move it up a bit */
+          }
+          /* Target the inner text paragraph for mobile */
+          .toast-container p {
+            font-size: 11px !important;
+            line-height: 14px !important;
+          }
+           /* Target the icon container for mobile */
+          .toast-container > div:first-child {
+             padding: 5px !important;
+          }
+          /* Target the inner icon svg */
+          .toast-container > div:first-child svg {
+             width: 14px !important;
+             height: 14px !important;
           }
         }
       `}</style>

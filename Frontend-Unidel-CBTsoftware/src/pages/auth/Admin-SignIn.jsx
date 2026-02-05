@@ -32,16 +32,10 @@ const AdminSignIn = () => {
       // If already logged in as Admin, go to dashboard
       if (role === "admin" || role === "superadmin") {
         navigate("/admin", { replace: true });
-      } else {
-        // If logged in as something else (Student/Lecturer), auto-logout
-        // This cleaning the session so they can sign in as Admin
-        console.log(
-          "[Auth] Mismatched role detected, performing auto-logout for clean switch",
-        );
-        performLogout();
       }
+      // Otherwise stay on page to allow new login
     }
-  }, [isAuthenticated, user, navigate, performLogout]);
+  }, [isAuthenticated, user, navigate]);
 
   const {
     register,

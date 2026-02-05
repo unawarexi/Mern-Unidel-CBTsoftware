@@ -34,15 +34,10 @@ const LecturerSignIn = () => {
       // If Lecturer, go to lecturer dashboard
       if (role === "lecturer") {
         navigate("/lecturer", { replace: true });
-      } else {
-        // If logged in as Admin/Student, auto-logout
-        console.log(
-          "[Auth] Mismatched role detected, performing auto-logout for clean switch",
-        );
-        performLogout();
       }
+      // Otherwise stay on page to allow new login
     }
-  }, [isAuthenticated, user, navigate, performLogout]);
+  }, [isAuthenticated, user, navigate]);
 
   const {
     register,
