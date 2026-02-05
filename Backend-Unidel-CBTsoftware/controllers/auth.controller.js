@@ -35,10 +35,17 @@ const getUserModel = (role) => {
 const sendTokenResponse = (user, statusCode, res) => {
   const token = generateToken(user._id, user.role);
 
+  // Determine if we should use secure cookies (HTTPS only)
+  // Only use secure in production AND if not running locally (mocking prod)
+  const isLocalhost =
+    process.env.FRONTEND_URL?.includes("localhost") ||
+    process.env.FRONTEND_URL?.includes("127.0.0.1");
+  const isSecure = process.env.NODE_ENV === "production" && !isLocalhost;
+
   // Set token as secure httpOnly cookie so browser sends it with subsequent requests
   const cookieOptions = {
     httpOnly: true,
-    secure: process.env.NODE_ENV === "production",
+    secure: isSecure,
     sameSite: "lax",
     maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
   };
