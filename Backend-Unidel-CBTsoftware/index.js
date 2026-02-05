@@ -45,6 +45,7 @@ import careerApplicationRoutes from "./routes/career-application.routes.js";
 import agentRoutes from "./routes/agent.routes.js";
 import paymentRoutes from "./routes/payment.routes.js";
 import { startExamScheduler } from "./core/utils/time-lapse.util.js";
+import { initializeWebSocket } from "./services/socketIO.service.js";
 
 // Create Express app
 const app = express();
@@ -133,6 +134,12 @@ const startServer = async () => {
     const PORT = process.env.PORT ?? 3000;
     const server = app.listen(PORT, () => {
       console.log(`Server started on port ${PORT}`);
+
+      // Initialize Socket.IO
+      const frontendUrl =
+        process.env.FRONTEND_URL?.replace(/\/$/, "") || "http://localhost:5173";
+      initializeWebSocket(server, [frontendUrl, "http://localhost:5173"]);
+      console.log("Socket.IO initialized with origin:", frontendUrl);
 
       // Start exam scheduler after server starts
       startExamScheduler();
