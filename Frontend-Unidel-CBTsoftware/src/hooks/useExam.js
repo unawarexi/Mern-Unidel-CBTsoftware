@@ -25,6 +25,7 @@ import {
   deleteExam,
   generateImageForQuestion,
   bulkUploadQuestions,
+  improveQuestionsContent,
 } from "../core/apis/exam-api";
 
 // ========== REACT QUERY HOOKS - FILE EXTRACTION & AI ==========
@@ -79,7 +80,9 @@ export const useUpdateQuestionBank = () => {
     mutationFn: updateQuestionBank,
     onSuccess: (data, variables) => {
       queryClient.invalidateQueries({ queryKey: ["questionBanks"] });
-      queryClient.invalidateQueries({ queryKey: ["questionBank", variables.id] });
+      queryClient.invalidateQueries({
+        queryKey: ["questionBank", variables.id],
+      });
     },
   });
 };
@@ -89,7 +92,9 @@ export const useAddQuestionToBank = () => {
   return useMutation({
     mutationFn: addQuestionToBank,
     onSuccess: (data, variables) => {
-      queryClient.invalidateQueries({ queryKey: ["questionBank", variables.id] });
+      queryClient.invalidateQueries({
+        queryKey: ["questionBank", variables.id],
+      });
       queryClient.invalidateQueries({ queryKey: ["questionBanks"] });
     },
   });
@@ -100,7 +105,9 @@ export const useUpdateQuestionInBank = () => {
   return useMutation({
     mutationFn: updateQuestionInBank,
     onSuccess: (data, variables) => {
-      queryClient.invalidateQueries({ queryKey: ["questionBank", variables.id] });
+      queryClient.invalidateQueries({
+        queryKey: ["questionBank", variables.id],
+      });
       queryClient.invalidateQueries({ queryKey: ["questionBanks"] });
     },
   });
@@ -111,7 +118,9 @@ export const useDeleteQuestionFromBank = () => {
   return useMutation({
     mutationFn: deleteQuestionFromBank,
     onSuccess: (data, variables) => {
-      queryClient.invalidateQueries({ queryKey: ["questionBank", variables.id] });
+      queryClient.invalidateQueries({
+        queryKey: ["questionBank", variables.id],
+      });
       queryClient.invalidateQueries({ queryKey: ["questionBanks"] });
     },
   });
@@ -146,6 +155,12 @@ export const useImproveQuestionsWithAI = () => {
       queryClient.invalidateQueries({ queryKey: ["questionBank", variables] });
       queryClient.invalidateQueries({ queryKey: ["questionBanks"] });
     },
+  });
+};
+
+export const useImproveQuestionsContent = () => {
+  return useMutation({
+    mutationFn: improveQuestionsContent,
   });
 };
 

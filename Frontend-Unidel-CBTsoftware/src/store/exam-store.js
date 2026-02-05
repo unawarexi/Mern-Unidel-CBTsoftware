@@ -26,18 +26,20 @@ import {
   useDeleteExam,
   useGenerateImageForQuestion,
   useBulkUploadQuestions,
+  useImproveQuestionsContent,
 } from "../hooks/useExam";
 
 const useExamStore = create((set) => ({
   // Client-side state
   selectedQuestionBank: null,
   selectedExam: null,
-  generatedQuestions: [],
-  extractedText: "",
-  isLoading: false,
-  error: null,
-  abortController: null,
-  setAbortController: (controller) => set({ abortController: controller }),
+  generationHistory: [],
+  setGenerationHistory: (history) => set({ generationHistory: history }),
+  addToGenerationHistory: (item) =>
+    set((state) => ({
+      generationHistory: [item, ...state.generationHistory],
+    })),
+  clearGenerationHistory: () => set({ generationHistory: [] }),
 
   // UI helpers
   toast: { visible: false, message: "", type: "success", duration: 3000 },
@@ -106,8 +108,14 @@ export const useExtractTextAction = () => {
 };
 
 export const useGenerateQuestionsAction = () => {
-  const { setGeneratedQuestions, setError, showToast, showLoader, hideLoader } =
-    useExamStore();
+  const {
+    setGeneratedQuestions,
+    setError,
+    showToast,
+    showLoader,
+    hideLoader,
+    addToGenerationHistory,
+  } = useExamStore();
   const generateQuestionsMutation = useGenerateQuestionsFromFile();
   // We need to store the controller to be able to abort it
   // Since this hook is called in component, we can use a ref or state
@@ -141,6 +149,17 @@ export const useGenerateQuestionsAction = () => {
         `${data.questions?.length || 0} questions generated successfully`,
         "success",
       );
+
+      // Add to history
+      if (data.questions && data.questions.length > 0) {
+        addToGenerationHistory({
+          id: Date.now(),
+          filename: file.name,
+          timestamp: Date.now(),
+          questions: data.questions,
+        });
+      }
+
       return data;
     } catch (error) {
       if (error.name === "AbortError") {
@@ -487,6 +506,39 @@ export const useImproveQuestionsAction = () => {
   };
 };
 
+export const useImproveQuestionsContentAction = () => {
+  const { setLoading, setError, showToast, showLoader, hideLoader } =
+    useExamStore();
+  const improveMutation = useImproveQuestionsContent();
+
+  const improveContent = async (questions) => {
+    console.log("[STORE] useImproveQuestionsContentAction called");
+    setLoading(true);
+    setError(null);
+    showLoader();
+
+    try {
+      const result = await improveMutation.mutateAsync(questions);
+      showToast("Questions improved successfully", "success");
+      return result;
+    } catch (error) {
+      console.error("[STORE] useImproveQuestionsContentAction error:", error);
+      setError(error.message);
+      showToast(error.message || "Failed to improve questions", "error");
+      throw error;
+    } finally {
+      setLoading(false);
+      hideLoader();
+    }
+  };
+
+  return {
+    improveContent,
+    isLoading: improveMutation.isLoading,
+    error: improveMutation.error,
+  };
+};
+
 // ========== ADMIN APPROVAL HOOKS ==========
 
 export const useGetPendingApprovalsAction = () => {
@@ -823,7 +875,12 @@ export const useGenerateImageForQuestionAction = () => {
   const { showToast, showLoader, hideLoader, setError } = useExamStore();
   const mutation = useGenerateImageForQuestion();
 
-  const generateImage = async ({ question, questionBankId, questionId }) => {
+  const generateImage = async ({
+    question,
+    questionBankId,
+    questionId,
+    oldPublicId,
+  }) => {
     setError(null);
     showLoader();
     try {
@@ -831,6 +888,7 @@ export const useGenerateImageForQuestionAction = () => {
         question,
         questionBankId,
         questionId,
+        oldPublicId,
       });
       showToast("Image generated successfully", "success");
       return result;

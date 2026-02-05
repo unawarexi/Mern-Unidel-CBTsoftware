@@ -16,7 +16,9 @@ import {
   useCreateQuestionBankAction,
   useGetLecturerQuestionBanksAction,
   useGenerateQuestionsAction,
+  useImproveQuestionsContentAction,
   useImproveQuestionsAction,
+  useGenerateImageForQuestionAction,
 } from "../../../store/exam-store.js";
 import { useGetLecturerCoursesAction } from "../../../store/user-store";
 import useAuthStore from "../../../store/auth-store";
@@ -87,6 +89,10 @@ const CreateQuestions = () => {
     useGenerateQuestionsAction();
   const { improveQuestions, isLoading: isImproving } =
     useImproveQuestionsAction();
+  const { improveContent, isLoading: isImprovingContent } =
+    useImproveQuestionsContentAction();
+  const { generateImage, isLoading: isImageGenerating } =
+    useGenerateImageForQuestionAction();
   const { showToast } = useExamStore.getState();
 
   // React Hook Form for meta fields
@@ -228,6 +234,52 @@ const CreateQuestions = () => {
       newOptions[index] = value;
       return { ...prev, options: newOptions };
     });
+  };
+
+  // Handler for improving draft questions
+  const handleImproveDraft = async () => {
+    if (formData.questions.length === 0) return;
+
+    try {
+      const result = await improveContent(formData.questions);
+      if (result && result.questions) {
+        setFormData((prev) => ({ ...prev, questions: result.questions }));
+      }
+    } catch (error) {
+      console.error("Improve draft failed", error);
+    }
+  };
+
+  const [generatingImages, setGeneratingImages] = useState({});
+
+  // ... (previous code)
+
+  // Handler for AI Image Generation
+  const handleGenerateImage = async (index, questionObj) => {
+    setGeneratingImages((prev) => ({ ...prev, [index]: true }));
+
+    try {
+      const data = await generateImage({
+        question: questionObj.question,
+        questionBankId: selectedBankId,
+        questionId: questionObj._id,
+        oldPublicId: questionObj.attachment?.publicId,
+      });
+
+      // Update question with new attachment
+      const newQuestions = [...formData.questions];
+      newQuestions[index] = {
+        ...newQuestions[index],
+        attachment: data.attachment, // Backend returns { attachment: { url, publicId, type } }
+      };
+
+      setFormData((prev) => ({ ...prev, questions: newQuestions }));
+    } catch (error) {
+      console.error("Image generation failed", error);
+      // Toast is handled by store
+    } finally {
+      setGeneratingImages((prev) => ({ ...prev, [index]: false }));
+    }
   };
 
   // --- Bulk Upload Handler (now handled in BulkUpload component) ---
@@ -780,6 +832,27 @@ const CreateQuestions = () => {
                   Questions Added ({formData.questions.length})
                 </h2>
 
+                <button
+                  type="button"
+                  onClick={handleImproveDraft}
+                  disabled={
+                    isImprovingContent || formData.questions.length === 0
+                  }
+                  className="mb-6 px-4 py-2 bg-purple-600 text-white rounded-lg text-sm font-medium hover:bg-purple-700 disabled:opacity-50 flex items-center gap-2"
+                >
+                  {isImprovingContent ? (
+                    <>
+                      <span className="animate-spin w-4 h-4 border-2 border-white border-t-transparent rounded-full"></span>
+                      Improving...
+                    </>
+                  ) : (
+                    <>
+                      <Sparkles className="w-4 h-4" />
+                      Improve Questions with AI
+                    </>
+                  )}
+                </button>
+
                 <div className="space-y-4">
                   {formData.questions.map((q, index) => (
                     <motion.div
@@ -800,16 +873,94 @@ const CreateQuestions = () => {
                             isDarkMode ? "text-white" : "text-slate-800",
                           )}
                         >
-                          Q{index + 1}. {q.question}
+                          Q{index + 1}.
                         </h3>
-                        <button
-                          onClick={() => handleRemoveQuestion(index)}
-                          className="text-red-500 hover:text-red-700 transition-colors"
-                        >
-                          <Trash2 className="w-5 h-5" />
-                        </button>
+                        <div className="flex gap-2">
+                          <button
+                            type="button"
+                            onClick={() => handleRemoveQuestion(index)}
+                            className="text-slate-400 hover:text-red-500 transition-colors"
+                          >
+                            <Trash2 className="w-5 h-5" />
+                          </button>
+                        </div>
                       </div>
-                      <div className="space-y-1 ml-4">
+
+                      <p
+                        className={cn(
+                          "font-medium mb-3 text-lg",
+                          isDarkMode ? "text-slate-200" : "text-slate-700",
+                        )}
+                      >
+                        {q.question}
+                      </p>
+
+                      {/* AI Image Generation Section */}
+                      <div className="mb-4">
+                        {q.attachment?.url ? (
+                          <div className="relative group inline-block">
+                            <img
+                              src={q.attachment.url}
+                              alt="Question Illustration"
+                              className="h-48 w-auto rounded-lg border shadow-sm object-cover"
+                            />
+                            <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity rounded-lg flex items-center justify-center gap-2">
+                              <button
+                                type="button"
+                                onClick={() => handleGenerateImage(index, q)}
+                                className="p-2 bg-white rounded-full hover:bg-gray-100 text-blue-600"
+                                title="Regenerate Image"
+                              >
+                                <Sparkles className="w-4 h-4" />
+                              </button>
+                              <button
+                                type="button"
+                                onClick={() => {
+                                  const newQuestions = [...formData.questions];
+                                  newQuestions[index].attachment = null;
+                                  setFormData((prev) => ({
+                                    ...prev,
+                                    questions: newQuestions,
+                                  }));
+                                }}
+                                className="p-2 bg-white rounded-full hover:bg-gray-100 text-red-600"
+                                title="Remove Image"
+                              >
+                                <Trash2 className="w-4 h-4" />
+                              </button>
+                            </div>
+                            <p className="text-xs text-center mt-1 text-slate-500 italic">
+                              "Use the image to answer the question"
+                            </p>
+                          </div>
+                        ) : (
+                          <button
+                            type="button"
+                            onClick={() => handleGenerateImage(index, q)}
+                            disabled={generatingImages[index]}
+                            className={cn(
+                              "text-xs flex items-center gap-1 px-3 py-1.5 rounded-full border transition-all",
+                              isDarkMode
+                                ? "border-indigo-500/30 text-indigo-400 hover:bg-indigo-500/10"
+                                : "border-indigo-200 text-indigo-600 hover:bg-indigo-50",
+                            )}
+                          >
+                            {generatingImages[index] ? (
+                              <>
+                                <span className="animate-spin w-3 h-3 border-2 border-indigo-500 border-t-transparent rounded-full"></span>
+                                Generating...
+                              </>
+                            ) : (
+                              <>
+                                <Sparkles className="w-3 h-3" />
+                                Generate AI Illustration
+                              </>
+                            )}
+                          </button>
+                        )}
+                      </div>
+
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-2 pl-4">
                         {q.options.map((opt, i) => (
                           <p
                             key={i}

@@ -28,6 +28,8 @@ import useThemeStore from "../../../store/theme-store";
 import { cn } from "../../../core/lib/cn";
 import { LecturerIcons } from "../components/icons";
 import LecturerPage from "../components/LecturerPage";
+import AIIndication from "../components/AI-indication";
+import ExportQuestion from "./Export-question";
 const ImportExport = () => {
   const navigate = useNavigate();
   // eslint-disable-next-line no-unused-vars
@@ -39,7 +41,7 @@ const ImportExport = () => {
   const [dragActive, setDragActive] = useState(false);
   const [extractedText, setExtractedText] = useState("");
   const [generatedQuestions, setGeneratedQuestions] = useState([]);
-  const [history, setHistory] = useState([]);
+  const { generationHistory: history } = useExamStore();
   const [showPreview, setShowPreview] = useState(false);
 
   const [importConfig, setImportConfig] = useState({
@@ -47,12 +49,6 @@ const ImportExport = () => {
     difficulty: "medium",
     includeExplanations: false,
     randomizeOptions: true,
-  });
-
-  const [exportConfig, setExportConfig] = useState({
-    format: "pdf",
-    includeAnswers: true,
-    includeMetadata: true,
   });
 
   const [showImportModal, setShowImportModal] = useState(false);
@@ -155,14 +151,12 @@ const ImportExport = () => {
         difficulty: importConfig.difficulty,
       });
       setGeneratedQuestions(result.questions || []);
-      if (result.history) {
-        setHistory(result.history);
-      }
+
       showToast("Questions generated successfully", "success");
-      // Route to create questions page with generated questions
-      navigate("/lecturer/questions/manage", {
+      // Stay on page to review
+      /* navigate("/lecturer/questions/manage", {
         state: { generatedQuestions: result.questions },
-      });
+      }); */
     } catch (error) {
       setGeneratedQuestions([]);
       showToast(
@@ -213,14 +207,6 @@ const ImportExport = () => {
     }
   };
 
-  const handleExport = (format) => {
-    // This would integrate with your backend export functionality
-    showToast(
-      `Export as ${format.toUpperCase()} functionality will be implemented with backend integration`,
-      "info",
-    );
-  };
-
   const getFileIcon = (fileType) => {
     if (fileType?.includes("pdf"))
       return <FileText className="w-8 h-8 text-red-500" />;
@@ -241,6 +227,11 @@ const ImportExport = () => {
       subtitle="Import from documents or export your question banks"
       icon={LecturerIcons.ImportExport}
     >
+      <AIIndication
+        isGenerating={isGenerating}
+        isExtracting={isExtracting}
+        onCancel={isGenerating ? cancelGeneration : undefined}
+      />
       <div className="space-y-6">
         {/* Tabs */}
         <div
@@ -665,64 +656,6 @@ const ImportExport = () => {
                     Preview
                   </h3>
 
-                  {isGenerating && (
-                    <motion.div
-                      initial={{ opacity: 0, scale: 0.95 }}
-                      animate={{ opacity: 1, scale: 1 }}
-                      className={cn(
-                        "rounded-xl p-6 mb-6 text-center border-2",
-                        isDarkMode
-                          ? "bg-slate-800 border-blue-500/50"
-                          : "bg-white border-blue-100",
-                      )}
-                    >
-                      <div className="flex flex-col items-center justify-center space-y-4">
-                        <div className="relative">
-                          <div className="absolute inset-0 bg-blue-500 blur-lg opacity-20 rounded-full animate-pulse"></div>
-                          <Sparkles className="w-12 h-12 text-blue-500 animate-spin-slow" />
-                        </div>
-                        <h3
-                          className={cn(
-                            "text-xl font-bold",
-                            isDarkMode ? "text-white" : "text-slate-800",
-                          )}
-                        >
-                          AI is crafting your questions...
-                        </h3>
-                        <p
-                          className={cn(
-                            "text-sm max-w-sm mx-auto",
-                            isDarkMode ? "text-slate-400" : "text-slate-500",
-                          )}
-                        >
-                          This process involves deep analysis of your content.
-                          For large documents, this might take a minute.
-                        </p>
-
-                        <div className="w-full max-w-md space-y-2">
-                          <ProgressBar
-                            value={85} // Simulated indefinite progress
-                            color="gradient"
-                            size="md"
-                            className="w-full"
-                            showLabel={false}
-                          />
-                          <p className="text-xs text-blue-500 font-medium animate-pulse">
-                            Processing content & generating options...
-                          </p>
-                        </div>
-
-                        <button
-                          onClick={cancelGeneration}
-                          className="mt-2 px-4 py-2 bg-red-50 text-red-600 rounded-lg text-sm font-semibold hover:bg-red-100 transition-colors flex items-center gap-2 border border-red-200"
-                        >
-                          <X className="w-4 h-4" />
-                          Cancel Request
-                        </button>
-                      </div>
-                    </motion.div>
-                  )}
-
                   {extractedText && (
                     <div className="space-y-4">
                       <div className="flex items-center justify-between">
@@ -814,6 +747,15 @@ const ImportExport = () => {
                             >
                               Q{index + 1}. {q.question}
                             </p>
+                            {q.image && (
+                              <div className="mb-3">
+                                <img
+                                  src={q.image}
+                                  alt={`Illustration for question ${index + 1}`}
+                                  className="rounded-lg max-h-48 object-cover border border-slate-200 dark:border-slate-700"
+                                />
+                              </div>
+                            )}
                             <div className="space-y-1 ml-4">
                               {q.options?.map((opt, i) => (
                                 <p
@@ -834,206 +776,7 @@ const ImportExport = () => {
               )}
             </div>
           ) : (
-            <div className="space-y-6">
-              {/* Export Options */}
-              <div
-                className={cn(
-                  "rounded-lg p-6 space-y-4",
-                  isDarkMode ? "bg-slate-800" : "bg-slate-50",
-                )}
-              >
-                <h3
-                  className={cn(
-                    "font-semibold flex items-center gap-2",
-                    isDarkMode ? "text-white" : "text-slate-800",
-                  )}
-                >
-                  <Settings
-                    className={cn(
-                      "w-5 h-5",
-                      isDarkMode ? "text-blue-400" : "text-blue-900",
-                    )}
-                  />
-                  Export Settings
-                </h3>
-
-                <div>
-                  <label
-                    className={cn(
-                      "block text-sm font-semibold mb-2",
-                      isDarkMode ? "text-slate-300" : "text-slate-700",
-                    )}
-                  >
-                    Export Format
-                  </label>
-                  <select
-                    value={exportConfig.format}
-                    onChange={(e) =>
-                      setExportConfig((prev) => ({
-                        ...prev,
-                        format: e.target.value,
-                      }))
-                    }
-                    className={cn(
-                      "w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-900 focus:border-transparent",
-                      isDarkMode
-                        ? "bg-slate-900 border-slate-700 text-white"
-                        : "bg-white border-slate-300 text-slate-900",
-                    )}
-                  >
-                    <option value="pdf">PDF Document</option>
-                    <option value="word">Word Document (.docx)</option>
-                    <option value="excel">Excel Spreadsheet (.xlsx)</option>
-                    <option value="json">JSON Format</option>
-                    <option value="csv">CSV Format</option>
-                  </select>
-                </div>
-
-                <div className="space-y-2">
-                  <label className="flex items-center gap-2 cursor-pointer">
-                    <input
-                      type="checkbox"
-                      checked={exportConfig.includeAnswers}
-                      onChange={(e) =>
-                        setExportConfig((prev) => ({
-                          ...prev,
-                          includeAnswers: e.target.checked,
-                        }))
-                      }
-                      className={cn(
-                        "w-4 h-4 rounded focus:ring-blue-900",
-                        isDarkMode ? "text-blue-400" : "text-blue-900",
-                      )}
-                    />
-                    <span
-                      className={cn(
-                        "text-sm",
-                        isDarkMode ? "text-slate-300" : "text-slate-700",
-                      )}
-                    >
-                      Include correct answers
-                    </span>
-                  </label>
-
-                  <label className="flex items-center gap-2 cursor-pointer">
-                    <input
-                      type="checkbox"
-                      checked={exportConfig.includeMetadata}
-                      onChange={(e) =>
-                        setExportConfig((prev) => ({
-                          ...prev,
-                          includeMetadata: e.target.checked,
-                        }))
-                      }
-                      className={cn(
-                        "w-4 h-4 rounded focus:ring-blue-900",
-                        isDarkMode ? "text-blue-400" : "text-blue-900",
-                      )}
-                    />
-                    <span
-                      className={cn(
-                        "text-sm",
-                        isDarkMode ? "text-slate-300" : "text-slate-700",
-                      )}
-                    >
-                      Include metadata (difficulty, marks, topics)
-                    </span>
-                  </label>
-                </div>
-              </div>
-
-              {/* Export Buttons */}
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <motion.button
-                  whileHover={{ scale: 1.02 }}
-                  whileTap={{ scale: 0.98 }}
-                  onClick={() => handleExport("pdf")}
-                  className="p-6 bg-gradient-to-br from-red-500 to-red-600 text-white rounded-xl shadow-lg hover:shadow-xl transition-all"
-                >
-                  <FileText className="w-8 h-8 mx-auto mb-2" />
-                  <p className="font-semibold">Export as PDF</p>
-                  <p className="text-xs text-red-100 mt-1">
-                    Formatted document with questions
-                  </p>
-                </motion.button>
-
-                <motion.button
-                  whileHover={{ scale: 1.02 }}
-                  whileTap={{ scale: 0.98 }}
-                  onClick={() => handleExport("word")}
-                  className="p-6 bg-gradient-to-br from-blue-500 to-blue-600 text-white rounded-xl shadow-lg hover:shadow-xl transition-all"
-                >
-                  <FileText className="w-8 h-8 mx-auto mb-2" />
-                  <p className="font-semibold">Export as Word</p>
-                  <p className="text-xs text-blue-100 mt-1">
-                    Editable .docx document
-                  </p>
-                </motion.button>
-
-                <motion.button
-                  whileHover={{ scale: 1.02 }}
-                  whileTap={{ scale: 0.98 }}
-                  onClick={() => handleExport("excel")}
-                  className="p-6 bg-gradient-to-br from-green-500 to-green-600 text-white rounded-xl shadow-lg hover:shadow-xl transition-all"
-                >
-                  <FileSpreadsheet className="w-8 h-8 mx-auto mb-2" />
-                  <p className="font-semibold">Export as Excel</p>
-                  <p className="text-xs text-green-100 mt-1">
-                    Spreadsheet format for analysis
-                  </p>
-                </motion.button>
-
-                <motion.button
-                  whileHover={{ scale: 1.02 }}
-                  whileTap={{ scale: 0.98 }}
-                  onClick={() => handleExport("json")}
-                  className="p-6 bg-gradient-to-br from-purple-500 to-purple-600 text-white rounded-xl shadow-lg hover:shadow-xl transition-all"
-                >
-                  <File className="w-8 h-8 mx-auto mb-2" />
-                  <p className="font-semibold">Export as JSON</p>
-                  <p className="text-xs text-purple-100 mt-1">
-                    Raw data for developers
-                  </p>
-                </motion.button>
-              </div>
-
-              {/* Info Box */}
-              <div
-                className={cn(
-                  "border rounded-lg p-4 flex gap-3 mt-6",
-                  isDarkMode
-                    ? "bg-blue-500/10 border-blue-500/30"
-                    : "bg-blue-50 border-blue-200",
-                )}
-              >
-                <AlertCircle
-                  className={cn(
-                    "w-5 h-5 flex-shrink-0 mt-0.5",
-                    isDarkMode ? "text-blue-400" : "text-blue-600",
-                  )}
-                />
-                <div>
-                  <p
-                    className={cn(
-                      "text-sm font-semibold",
-                      isDarkMode ? "text-blue-400" : "text-blue-900",
-                    )}
-                  >
-                    Export Information
-                  </p>
-                  <p
-                    className={cn(
-                      "text-sm mt-1",
-                      isDarkMode ? "text-blue-300" : "text-blue-700",
-                    )}
-                  >
-                    Your question bank will be exported with all selected
-                    options. The file will be downloaded to your device
-                    automatically.
-                  </p>
-                </div>
-              </div>
-            </div>
+            <ExportQuestion />
           )}
         </div>
 

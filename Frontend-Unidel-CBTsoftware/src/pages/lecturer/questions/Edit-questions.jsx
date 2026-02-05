@@ -13,6 +13,7 @@ import {
   Sparkles,
   Eye,
   EyeOff,
+  Image as ImageIcon,
 } from "lucide-react";
 import {
   useGetQuestionBankByIdAction,
@@ -23,6 +24,8 @@ import {
   useSubmitForApprovalAction,
   useDeleteQuestionBankAction,
   useImproveQuestionsAction,
+  useGenerateImageForQuestionAction,
+  useImproveQuestionsContentAction,
 } from "../../../store/exam-store.js";
 import useThemeStore from "../../../store/theme-store";
 import { cn } from "../../../core/lib/cn";
@@ -61,6 +64,10 @@ const EditQuestions = ({ questionBankId, onClose }) => {
   const { deleteQuestionBank } = useDeleteQuestionBankAction();
   const { improveQuestions, isLoading: isImproving } =
     useImproveQuestionsAction();
+  const { generateImage, isLoading: isGeneratingImage } =
+    useGenerateImageForQuestionAction();
+  const { improveContent, isLoading: isImprovingContent } =
+    useImproveQuestionsContentAction();
 
   useEffect(() => {
     if (questionBank) {
@@ -196,6 +203,65 @@ const EditQuestions = ({ questionBankId, onClose }) => {
       refetch();
     } catch (error) {
       console.error("Error improving questions:", error);
+    }
+  };
+
+  const handleGenerateImage = async () => {
+    if (!editingQuestionIndex && editingQuestionIndex !== 0) {
+      alert("Please save the question first before generating an image.");
+      return;
+    }
+
+    const questionId = questionBank.questions[editingQuestionIndex]._id;
+    try {
+      const result = await generateImage({
+        question: currentQuestion.question,
+        questionBankId,
+        questionId,
+        oldPublicId: currentQuestion.imagePublicId, // Assuming this exists or is null
+      });
+
+      // Update local state with new image
+      if (result.imageUrl) {
+        setCurrentQuestion((prev) => ({
+          ...prev,
+          image: result.imageUrl,
+          imagePublicId: result.publicId,
+        }));
+        refetch(); // Refresh to ensure sync
+      }
+    } catch (error) {
+      console.error("Error generating image:", error);
+    }
+  };
+
+  const handleImproveCurrentQuestion = async () => {
+    if (!currentQuestion.question) return;
+
+    try {
+      // Create a temporary question object structure expected by the API
+      const questionsToImprove = [
+        {
+          ...currentQuestion,
+          id: "temp-id",
+        },
+      ];
+
+      const result = await improveContent({ questions: questionsToImprove });
+
+      if (result && result.questions && result.questions.length > 0) {
+        const improved = result.questions[0];
+        setCurrentQuestion((prev) => ({
+          ...prev,
+          question: improved.question,
+          options: improved.options,
+          correctAnswer: improved.correctAnswer,
+          // Keep other fields like marks/difficulty if not returned
+        }));
+        // showToast("Question improved by AI", "success");
+      }
+    } catch (error) {
+      console.error("Error improving question content:", error);
     }
   };
 
@@ -447,14 +513,64 @@ const EditQuestions = ({ questionBankId, onClose }) => {
               </div>
 
               <div>
-                <label
-                  className={cn(
-                    "block text-sm font-semibold mb-2",
-                    isDarkMode ? "text-slate-300" : "text-slate-700",
-                  )}
-                >
-                  Question *
-                </label>
+                <div className="flex justify-between items-center mb-2">
+                  <label
+                    className={cn(
+                      "block text-sm font-semibold",
+                      isDarkMode ? "text-slate-300" : "text-slate-700",
+                    )}
+                  >
+                    Question *
+                  </label>
+                  <div className="flex gap-2">
+                    <motion.button
+                      whileHover={{ scale: 1.05 }}
+                      whileTap={{ scale: 0.95 }}
+                      onClick={handleImproveCurrentQuestion}
+                      disabled={isImprovingContent || !currentQuestion.question}
+                      className="text-xs bg-purple-500 text-white px-3 py-1.5 rounded-md flex items-center gap-1.5 disabled:opacity-50 hover:bg-purple-600 transition-colors"
+                    >
+                      {isImprovingContent ? (
+                        <div className="animate-spin rounded-full h-3 w-3 border-b-2 border-white"></div>
+                      ) : (
+                        <Sparkles className="w-3 h-3" />
+                      )}
+                      AI Improve
+                    </motion.button>
+                    {!isAddingNew && (
+                      <motion.button
+                        whileHover={{ scale: 1.05 }}
+                        whileTap={{ scale: 0.95 }}
+                        onClick={handleGenerateImage}
+                        disabled={isGeneratingImage}
+                        className="text-xs bg-pink-500 text-white px-3 py-1.5 rounded-md flex items-center gap-1.5 disabled:opacity-50 hover:bg-pink-600 transition-colors"
+                      >
+                        {isGeneratingImage ? (
+                          <div className="animate-spin rounded-full h-3 w-3 border-b-2 border-white"></div>
+                        ) : (
+                          <ImageIcon className="w-3 h-3" />
+                        )}
+                        Generate Illustration
+                      </motion.button>
+                    )}
+                  </div>
+                </div>
+
+                {currentQuestion.image && (
+                  <div className="mb-4 relative group">
+                    <img
+                      src={currentQuestion.image}
+                      alt="Question Illustration"
+                      className="w-full h-48 object-cover rounded-lg border border-slate-200 dark:border-slate-700"
+                    />
+                    <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center rounded-lg">
+                      <p className="text-white text-sm font-semibold">
+                        Question Illustration
+                      </p>
+                    </div>
+                  </div>
+                )}
+
                 <textarea
                   value={currentQuestion.question}
                   onChange={(e) =>
@@ -470,6 +586,7 @@ const EditQuestions = ({ questionBankId, onClose }) => {
                       ? "bg-slate-900 border-slate-700 text-white"
                       : "bg-white border-slate-300 text-slate-900",
                   )}
+                  placeholder="Enter your question here..."
                 />
                 {errors.question && (
                   <p className="text-red-500 text-sm mt-1 flex items-center gap-1">

@@ -228,6 +228,23 @@ export const improveQuestionsWithAI = async (id) => {
   return response.json();
 };
 
+export const improveQuestionsContent = async (questions) => {
+  console.log("[API] improveQuestionsContent called", questions.length);
+  const response = await fetch(`${BASE_URL}/improve-content`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    credentials: "include",
+    body: JSON.stringify({ questions }),
+  });
+
+  if (!response.ok) {
+    const error = await response.json();
+    console.error("[API] improveQuestionsContent error:", error);
+    throw new Error(error.message || "Failed to improve questions");
+  }
+  return response.json();
+};
+
 // ========== ADMIN APPROVAL API FUNCTIONS ==========
 
 export const getPendingApprovals = async () => {
@@ -417,17 +434,24 @@ export const generateImageForQuestion = async ({
   question,
   questionBankId,
   questionId,
+  oldPublicId,
 }) => {
   console.log("[API] generateImageForQuestion called", {
     question,
     questionBankId,
     questionId,
+    oldPublicId,
   });
   const response = await fetch(`${BASE_URL}/question-image`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     credentials: "include",
-    body: JSON.stringify({ question, questionBankId, questionId }),
+    body: JSON.stringify({
+      question,
+      questionBankId,
+      questionId,
+      oldPublicId,
+    }),
   });
   if (!response.ok) {
     const error = await response.json();

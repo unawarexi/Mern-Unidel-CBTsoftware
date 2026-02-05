@@ -13,6 +13,7 @@ import useExamStore from "../../../store/exam-store";
 import useThemeStore from "../../../store/theme-store";
 import { LecturerIcons } from "../components/icons";
 import LecturerPage from "../components/LecturerPage";
+import { cn } from "../../../core/lib/cn";
 
 const QuestionTypes = () => {
   const { id } = useParams();
