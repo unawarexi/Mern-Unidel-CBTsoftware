@@ -29,7 +29,8 @@ const LecturerSignIn = () => {
 
   useEffect(() => {
     if (isAuthenticated && user) {
-      const role = (user.role || user.type || "").toString().toLowerCase();
+      const rawRole = user.roles?.[0] || user.role || user.type || "";
+      const role = rawRole.toString().toLowerCase();
 
       // If Lecturer, go to lecturer dashboard
       if (role === "lecturer") {
@@ -69,15 +70,38 @@ const LecturerSignIn = () => {
         return;
       }
 
-      const role = (result.user.role || result.user.type || "")
-        .toString()
-        .toLowerCase();
-      const target =
-        role === "admin"
-          ? "/admin"
-          : role === "lecturer"
-            ? "/lecturer"
-            : "/student";
+      console.log("Login Result:", result); // Debugging
+
+      if (result?.requirePasswordChange || result?.user?.isFirstLogin) {
+        navigate("/reset-password", {
+          state: {
+            message: "Please change your password",
+            userId: result.user?.id || result?.userId,
+            role: "lecturer",
+          },
+        });
+        return;
+      }
+
+      // Robust role check
+      const user = result.user || result.data || {};
+      const rawRole = user.roles?.[0] || user.role || user.type || "";
+      const role = rawRole.toString().toLowerCase();
+
+      console.log(`Determined Role: ${role}`); // Debugging
+
+      let target = "/";
+      if (role === "admin" || role === "superadmin") {
+        target = "/admin";
+      } else if (role === "lecturer") {
+        target = "/lecturer";
+      } else if (role === "student") {
+        target = "/student";
+      } else if (role === "agent") {
+        target = "/agent";
+      }
+
+      console.log(`Redirecting to: ${target}`); // Debugging
       navigate(target, { replace: true });
     } catch (error) {
       // handled by store toast

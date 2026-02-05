@@ -13,6 +13,7 @@ import useAuthStore from "../../../store/auth-store";
 import useThemeStore from "../../../store/theme-store";
 import { cn } from "../../../core/lib/cn";
 import { StudentIcons } from "../components/icons";
+import RoleSwitcher from "../../../components/auth/RoleSwitcher";
 
 const StudentNavbar = () => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -68,6 +69,9 @@ const StudentNavbar = () => {
           {/* Right Section */}
           <div className="flex items-center gap-2 sm:gap-4">
             {/* Theme Toggle */}
+            {/* Role Switcher */}
+            <RoleSwitcher />
+
             <button
               onClick={toggleDarkMode}
               className={cn(

@@ -27,7 +27,8 @@ const AdminSignIn = () => {
 
   useEffect(() => {
     if (isAuthenticated && user) {
-      const role = (user.role || user.type || "").toString().toLowerCase();
+      const rawRole = user.roles?.[0] || user.role || user.type || "";
+      const role = rawRole.toString().toLowerCase();
 
       // If already logged in as Admin, go to dashboard
       if (role === "admin" || role === "superadmin") {
@@ -55,6 +56,8 @@ const AdminSignIn = () => {
       const payload = { ...data, role: "admin" };
       const result = await login(payload);
 
+      console.log("Login Result:", result); // Debugging
+
       if (result?.requirePasswordChange || result?.user?.isFirstLogin) {
         navigate("/reset-password", {
           state: {
@@ -66,15 +69,25 @@ const AdminSignIn = () => {
         return;
       }
 
-      const role = (result.user.role || result.user.type || "")
-        .toString()
-        .toLowerCase();
-      const target =
-        role === "admin"
-          ? "/admin"
-          : role === "lecturer"
-            ? "/lecturer"
-            : "/student";
+      // Robust role check
+      const user = result.user || result.data;
+      const rawRole = user?.roles?.[0] || user?.role || user?.type || "";
+      const role = rawRole.toString().toLowerCase();
+
+      console.log(`Determined Role: ${role}`); // Debugging
+
+      let target = "/";
+      if (role === "admin" || role === "superadmin") {
+        target = "/admin";
+      } else if (role === "lecturer") {
+        target = "/lecturer";
+      } else if (role === "student") {
+        target = "/student";
+      } else if (role === "agent") {
+        target = "/agent";
+      }
+
+      console.log(`Redirecting to: ${target}`); // Debugging
       navigate(target, { replace: true });
     } catch (error) {
       // error handled via toast

@@ -20,13 +20,13 @@ import Skeleton from "react-loading-skeleton";
 import "react-loading-skeleton/dist/skeleton.css";
 import AdminPage, { AdminCard } from "../components/AdminPage";
 import { AdminIcons } from "../components/icons";
-import { useAuthLogout } from "../../../store/auth-store";
+import useAuthStore from "../../../store/auth-store";
 import useThemeStore from "../../../store/theme-store";
 import { cn } from "../../../core/lib/cn";
 
 const AdminProfile = () => {
   const { isDarkMode } = useThemeStore();
-  const { logout } = useAuthLogout();
+  const logout = useAuthStore((state) => state.logout);
   const [editMode, setEditMode] = useState(false);
   const [saving, setSaving] = useState(false);
   const [saveSuccess, setSaveSuccess] = useState(false);

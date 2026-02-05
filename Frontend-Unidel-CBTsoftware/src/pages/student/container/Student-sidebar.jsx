@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useNavigate, Link } from "react-router-dom";
-import { useAuthLogout } from "../../../store/auth-store";
+import useAuthStore, { useAuthLogout } from "../../../store/auth-store";
 import useThemeStore from "../../../store/theme-store";
 import { cn } from "../../../core/lib/cn";
 import { StudentIcons } from "../components/icons";

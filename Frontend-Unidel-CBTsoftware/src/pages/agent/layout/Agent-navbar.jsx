@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { Search, Calendar, HelpCircle, Bell, Sun, Moon } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
-import { useAuthLogout } from "../../../store/auth-store";
+
 import useAuthStore from "../../../store/auth-store";
 import useThemeStore from "../../../store/theme-store";
 import { cn } from "../../../core/lib/cn";
@@ -11,7 +11,7 @@ const AgentNavbar = () => {
   const [profileDropdownOpen, setProfileDropdownOpen] = useState(false);
   const { user } = useAuthStore();
   const { isDarkMode, toggleDarkMode } = useThemeStore();
-  const { logout } = useAuthLogout();
+  const logout = useAuthStore((state) => state.logout);
   const navigate = useNavigate();
 
   const handleLogout = async () => {

@@ -19,7 +19,7 @@ import {
   ShieldCheck,
 } from "lucide-react";
 import { useNavigate, Link } from "react-router-dom";
-import { useAuthLogout } from "../../../store/auth-store";
+import useAuthStore, { useAuthLogout } from "../../../store/auth-store";
 import useThemeStore from "../../../store/theme-store";
 import { cn } from "../../../core/lib/cn";
 

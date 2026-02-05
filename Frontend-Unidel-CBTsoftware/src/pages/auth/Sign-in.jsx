@@ -37,7 +37,8 @@ const SignIn = () => {
   // redirect if already authenticated
   useEffect(() => {
     if (isAuthenticated && user) {
-      const role = (user.role || user.type || "").toString().toLowerCase();
+      const rawRole = user.roles?.[0] || user.role || user.type || "";
+      const role = rawRole.toString().toLowerCase();
 
       // If User is Student, go to student dashboard
       if (role === "student") {
@@ -79,6 +80,8 @@ const SignIn = () => {
 
       const result = await login(payload);
 
+      console.log("Login Result:", result); // Debugging
+
       if (result?.requirePasswordChange || result?.user?.isFirstLogin) {
         navigate("/reset-password", {
           state: {
@@ -90,15 +93,23 @@ const SignIn = () => {
         return;
       }
 
-      const role = (result.user.role || result.user.type || "")
-        .toString()
-        .toLowerCase();
-      const target =
-        role === "admin"
-          ? "/admin"
-          : role === "lecturer"
-            ? "/lecturer"
-            : "/student";
+      // Robust role check
+      const user = result.user || result.data || {};
+      const rawRole = user.roles?.[0] || user.role || user.type || "";
+      const role = rawRole.toString().toLowerCase();
+
+      console.log(`Determined Role: ${role}`); // Debugging
+
+      let target = "/";
+      if (role === "admin") {
+        target = "/admin";
+      } else if (role === "lecturer") {
+        target = "/lecturer";
+      } else if (role === "student") {
+        target = "/student";
+      }
+
+      console.log(`Redirecting to: ${target}`); // Debugging
       navigate(target, { replace: true });
     } catch (error) {
       // errors are shown by store toasts

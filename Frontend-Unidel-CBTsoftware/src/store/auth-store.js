@@ -75,7 +75,8 @@ export const useAuthStore = create((set) => ({
       return;
     }
 
-    const role = (user?.role || user?.type || "").toString().toLowerCase();
+    const rawRole = user?.roles?.[0] || user?.role || user?.type || "";
+    const role = rawRole.toString().toLowerCase();
 
     // Determine redirect route based on role
     let redirectRoute = "/portal-signin";

@@ -27,7 +27,8 @@ const AgentSignIn = () => {
 
   useEffect(() => {
     if (isAuthenticated && user) {
-      const role = (user.role || user.type || "").toString().toLowerCase();
+      const rawRole = user.roles?.[0] || user.role || user.type || "";
+      const role = rawRole.toString().toLowerCase();
 
       if (role === "agent") {
         // Agent portal built, redirect to dashboard
@@ -54,8 +55,23 @@ const AgentSignIn = () => {
     try {
       // Agent role
       const payload = { ...data, role: "agent" };
-      await login(payload);
-      navigate("/agent", { replace: true });
+      const result = await login(payload);
+
+      console.log("Login Result:", result); // Debugging
+
+      // Robust role check
+      const user = result.user || result.data || {};
+      const rawRole = user.roles?.[0] || user.role || user.type || "";
+      const role = rawRole.toString().toLowerCase();
+
+      console.log(`Determined Role: ${role}`); // Debugging
+
+      if (role === "agent") {
+        navigate("/agent", { replace: true });
+      } else {
+        // Fallback or specific logic if needed
+        navigate("/agent", { replace: true });
+      }
     } catch (error) {
       // error handled via toast
     }

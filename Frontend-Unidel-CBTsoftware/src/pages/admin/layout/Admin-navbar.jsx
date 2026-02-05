@@ -12,17 +12,18 @@ import {
   Moon,
 } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
-import { useAuthLogout } from "../../../store/auth-store";
+
 import useAuthStore from "../../../store/auth-store";
 import useThemeStore from "../../../store/theme-store";
 import { cn } from "../../../core/lib/cn";
+import RoleSwitcher from "../../../components/auth/RoleSwitcher";
 
 const AdminNavbar = () => {
   const [currentDateTime, setCurrentDateTime] = useState(new Date());
   const [profileDropdownOpen, setProfileDropdownOpen] = useState(false);
   const { user } = useAuthStore();
   const { isDarkMode, toggleDarkMode } = useThemeStore();
-  const { logout } = useAuthLogout();
+  const logout = useAuthStore((state) => state.logout);
   const navigate = useNavigate();
 
   const handleLogout = async () => {
@@ -132,6 +133,9 @@ const AdminNavbar = () => {
 
           {/* Right Section - Icons & Profile */}
           <div className="flex items-center justify-end space-x-1.5 sm:space-x-3 flex-1">
+            {/* Role Switcher */}
+            <RoleSwitcher />
+
             <div className="hidden md:flex items-center space-x-0.5 sm:space-x-1">
               {/* Theme Toggle Button */}
               <button
