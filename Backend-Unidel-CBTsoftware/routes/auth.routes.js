@@ -36,6 +36,6 @@ router.get("/me", protect, getCurrentUser);
 router.put("/me", protect, updateProfile);
 router.put("/change-password", protect, changePassword);
 router.post("/logout", protect, logout);
-router.post("/refresh-token", protect, refreshToken);
+router.post("/refresh-token", refreshToken);
 
 export default router;

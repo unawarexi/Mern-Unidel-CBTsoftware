@@ -11,7 +11,9 @@ export const GuestOnly = ({ children }) => {
 
   useEffect(() => {
     if (isAuthenticated && user) {
-      const role = (user.role || user.type || "").toString().toLowerCase();
+      // Support for array of roles (backend might return roles: ['admin'])
+      const rawRole = user.roles?.[0] || user.role || user.type || "";
+      const role = rawRole.toString().toLowerCase();
       let target = "/";
 
       if (role === "admin" || role === "superadmin") {
@@ -56,7 +58,9 @@ export const ProtectedRoute = ({ children, allowedRoles = [] }) => {
   }
 
   // Check role permissions
-  const role = (user.role || user.type || "").toString().toLowerCase();
+  // Check role permissions
+  const rawRole = user.roles?.[0] || user.role || user.type || "";
+  const role = rawRole.toString().toLowerCase();
 
   // Debug role matching
   console.log(
