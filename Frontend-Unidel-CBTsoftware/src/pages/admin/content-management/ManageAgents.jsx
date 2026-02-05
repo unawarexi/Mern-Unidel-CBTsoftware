@@ -10,7 +10,7 @@ import {
   Building,
 } from "lucide-react";
 import { useGetAgents, useUpdateAgentStatus } from "../../../hooks/useAgent";
-import { Button, Input } from "../../../components/ui";
+import { Button, Input, Modal } from "../../../components/ui";
 import { FullPageSpinner } from "../../../components/Spinners";
 import useThemeStore from "../../../store/theme-store";
 import { cn } from "../../../core/lib/cn";
@@ -44,10 +44,32 @@ const ManageAgents = () => {
     queryClient.invalidateQueries({ queryKey: ["agents"] });
   });
 
-  const handleStatusUpdate = (id, status) => {
-    if (window.confirm(`Are you sure you want to ${status} this agent?`)) {
-      updateStatus({ id, status });
+  const [modalConfig, setModalConfig] = useState({
+    isOpen: false,
+    agentId: null,
+    actionType: null, // "approved" | "rejected"
+    agentName: "",
+  });
+
+  const handleStatusUpdate = (id, status, name) => {
+    setModalConfig({
+      isOpen: true,
+      agentId: id,
+      actionType: status,
+      agentName: name,
+    });
+  };
+
+  const confirmAction = () => {
+    const { agentId, actionType } = modalConfig;
+    if (agentId && actionType) {
+      updateStatus({ id: agentId, status: actionType });
+      setModalConfig({ ...modalConfig, isOpen: false });
     }
+  };
+
+  const closeModal = () => {
+    setModalConfig({ ...modalConfig, isOpen: false });
   };
 
   if (isLoading) return <FullPageSpinner />;
@@ -101,7 +123,7 @@ const ManageAgents = () => {
           "p-4 rounded-xl border shadow-sm space-y-4 md:space-y-0 md:flex md:items-center md:justify-between sticky top-0 z-10 backdrop-blur-md",
           isDarkMode
             ? "bg-gray-800/80 border-gray-700"
-            : "bg-white/80 border-gray-200",
+            : "bg-white border-gray-300 shadow-sm",
         )}
       >
         <div className="flex flex-wrap gap-2">
@@ -112,8 +134,8 @@ const ManageAgents = () => {
               className={cn(
                 "px-4 py-2 text-sm font-medium rounded-lg transition-colors capitalize",
                 filterStatus === status
-                  ? "bg-blue-600 text-white"
-                  : "bg-gray-100 text-gray-700 hover:bg-gray-200 dark:bg-gray-700 dark:text-gray-300 dark:hover:bg-gray-600",
+                  ? "bg-blue-600 text-white shadow-sm"
+                  : "bg-gray-100 text-gray-700 hover:bg-gray-200 border border-gray-200 dark:border-transparent dark:bg-gray-700 dark:text-gray-300 dark:hover:bg-gray-600",
               )}
             >
               {status}
@@ -132,7 +154,7 @@ const ManageAgents = () => {
               "w-full pl-9 pr-4 py-2 rounded-lg border text-sm outline-none transition-all focus:ring-2",
               isDarkMode
                 ? "bg-gray-900 border-gray-700 text-white focus:ring-blue-500 focus:border-transparent placeholder:text-gray-500"
-                : "bg-white border-gray-200 text-gray-900 focus:ring-blue-500 focus:border-transparent placeholder:text-gray-400",
+                : "bg-gray-50 border-gray-300 text-gray-900 focus:ring-blue-500 focus:border-blue-500 placeholder:text-gray-500",
             )}
           />
         </div>
@@ -141,10 +163,10 @@ const ManageAgents = () => {
       {/* Table */}
       <div
         className={cn(
-          "rounded-xl border overflow-hidden",
+          "rounded-xl border overflow-hidden shadow-sm",
           isDarkMode
             ? "border-gray-700 bg-gray-800"
-            : "border-gray-200 bg-white",
+            : "border-gray-300 bg-white",
         )}
       >
         <div className="overflow-x-auto">
@@ -154,15 +176,15 @@ const ManageAgents = () => {
                 "text-xs uppercase border-b",
                 isDarkMode
                   ? "bg-gray-900/50 text-gray-400 border-gray-700"
-                  : "bg-gray-50 text-gray-500 border-gray-200",
+                  : "bg-gray-100 text-gray-700 border-gray-300 font-bold",
               )}
             >
               <tr>
-                <th className="px-6 py-4 font-medium">Agent Details</th>
-                <th className="px-6 py-4 font-medium">Organisation</th>
-                <th className="px-6 py-4 font-medium">Status</th>
-                <th className="px-6 py-4 font-medium">Subscription</th>
-                <th className="px-6 py-4 font-medium text-right">Actions</th>
+                <th className="px-6 py-4 font-bold">Agent Details</th>
+                <th className="px-6 py-4 font-bold">Organisation</th>
+                <th className="px-6 py-4 font-bold">Status</th>
+                <th className="px-6 py-4 font-bold">Subscription</th>
+                <th className="px-6 py-4 font-bold text-right">Actions</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-200 dark:divide-gray-700">
@@ -183,11 +205,11 @@ const ManageAgents = () => {
                   >
                     <td className="px-6 py-4">
                       <div className="flex items-center gap-3">
-                        <div className="size-10 rounded-full bg-blue-100 dark:bg-blue-900/30 flex items-center justify-center text-blue-600 dark:text-blue-400 font-semibold">
+                        <div className="size-10 rounded-full bg-blue-100 dark:bg-blue-900/30 flex items-center justify-center text-blue-700 dark:text-blue-400 font-bold">
                           {agent.fullname.charAt(0).toUpperCase()}
                         </div>
                         <div>
-                          <div className="font-medium text-gray-900 dark:text-white">
+                          <div className="font-semibold text-gray-900 dark:text-white">
                             {agent.fullname}
                           </div>
                           <div className="text-xs text-gray-500 flex items-center gap-1">
@@ -196,7 +218,7 @@ const ManageAgents = () => {
                         </div>
                       </div>
                     </td>
-                    <td className="px-6 py-4 text-gray-600 dark:text-gray-300">
+                    <td className="px-6 py-4 text-gray-700 dark:text-gray-300 font-medium">
                       <div className="flex items-center gap-2">
                         <Building className="size-4 text-gray-400" />
                         {agent.organisation}
@@ -207,7 +229,7 @@ const ManageAgents = () => {
                     </td>
                     <td className="px-6 py-4">
                       <div className="flex flex-col">
-                        <span className="font-medium text-gray-900 dark:text-white capitalize">
+                        <span className="font-semibold text-gray-900 dark:text-white capitalize">
                           {agent.subscriptionType || "N/A"}
                         </span>
                         <span className="text-xs text-gray-500">
@@ -221,9 +243,13 @@ const ManageAgents = () => {
                           <Button
                             size="sm"
                             variant="primary" // Assuming primary assumes 'success' logic or just green
-                            className="bg-green-600 hover:bg-green-700 text-white"
+                            className="bg-green-600 hover:bg-green-700 text-white shadow-sm"
                             onClick={() =>
-                              handleStatusUpdate(agent._id, "approved")
+                              handleStatusUpdate(
+                                agent._id,
+                                "approved",
+                                agent.fullname,
+                              )
                             }
                             disabled={isUpdating}
                           >
@@ -234,8 +260,13 @@ const ManageAgents = () => {
                           <Button
                             size="sm"
                             variant="destructive"
+                            className="shadow-sm"
                             onClick={() =>
-                              handleStatusUpdate(agent._id, "rejected")
+                              handleStatusUpdate(
+                                agent._id,
+                                "rejected",
+                                agent.fullname,
+                              )
                             }
                             disabled={isUpdating}
                           >
@@ -251,6 +282,44 @@ const ManageAgents = () => {
           </table>
         </div>
       </div>
+      <Modal
+        isOpen={modalConfig.isOpen}
+        onClose={closeModal}
+        title={
+          modalConfig.actionType === "approved"
+            ? "Approve Agent"
+            : "Decline Agent"
+        }
+        description={`Are you sure you want to ${
+          modalConfig.actionType === "approved" ? "approve" : "decline"
+        } ${modalConfig.agentName}? This action can be reversed later.`}
+        footer={
+          <div className="flex justify-end gap-3">
+            <Button variant="outline" onClick={closeModal}>
+              Cancel
+            </Button>
+            <Button
+              variant={
+                modalConfig.actionType === "approved"
+                  ? "primary"
+                  : "destructive"
+              }
+              onClick={confirmAction}
+              isLoading={isUpdating}
+            >
+              {modalConfig.actionType === "approved" ? "Approve" : "Decline"}
+            </Button>
+          </div>
+        }
+      >
+        <div className="py-4">
+          <p className="text-sm text-gray-500 dark:text-gray-400">
+            {modalConfig.actionType === "approved"
+              ? "This agent will gain access to the agent portal and be able to register students."
+              : "This agent will be denied access. You can approve them later if needed."}
+          </p>
+        </div>
+      </Modal>
     </div>
   );
 };

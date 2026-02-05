@@ -16,40 +16,19 @@ import {
 import useThemeStore from "../../../store/theme-store";
 import { cn } from "../../../core/lib/cn";
 
+import {
+  useGetAllAdminsAction,
+  useCreateAdminAction,
+  useUpdateAdminAction,
+  useDeleteAdminAction,
+} from "../../../store/user-store";
+
 const AdminsManagement = () => {
   const { isDarkMode } = useThemeStore();
-  const [admins, setAdmins] = useState([
-    {
-      id: 1,
-      name: "John Administrator",
-      email: "john.admin@system.edu",
-      role: "Super Admin",
-      permissions: "Full Access",
-      status: "Active",
-      lastLogin: "2024-12-18 14:30",
-      createdDate: "2023-01-15",
-    },
-    {
-      id: 2,
-      name: "Alice Manager",
-      email: "alice@system.edu",
-      role: "Admin",
-      permissions: "User Management",
-      status: "Active",
-      lastLogin: "2024-12-19 09:15",
-      createdDate: "2023-05-20",
-    },
-    {
-      id: 3,
-      name: "Bob Moderator",
-      email: "bob@system.edu",
-      role: "Moderator",
-      permissions: "Content Review",
-      status: "Inactive",
-      lastLogin: "2024-11-30 16:45",
-      createdDate: "2023-08-10",
-    },
-  ]);
+  const { admins, isLoading: isLoadingAdmins } = useGetAllAdminsAction();
+  const { createAdmin, isLoading: isCreating } = useCreateAdminAction();
+  const { updateAdmin, isLoading: isUpdating } = useUpdateAdminAction();
+  const { deleteAdmin, isLoading: isDeleting } = useDeleteAdminAction();
 
   const [showModal, setShowModal] = useState(false);
   const [showUploadModal, setShowUploadModal] = useState(false);
@@ -61,7 +40,7 @@ const AdminsManagement = () => {
     name: "",
     email: "",
     role: "Admin",
-    permissions: "",
+    permissions: "Full Access",
     status: "Active",
   });
 
@@ -74,37 +53,25 @@ const AdminsManagement = () => {
     "Test Management",
   ];
 
-  const handleAddAdmin = () => {
-    if (editingAdmin) {
-      setAdmins(
-        admins.map((a) =>
-          a.id === editingAdmin.id
-            ? {
-                ...editingAdmin,
-                ...formData,
-                lastLogin: editingAdmin.lastLogin,
-              }
-            : a,
-        ),
-      );
-    } else {
-      const newAdmin = {
-        id: admins.length + 1,
-        ...formData,
-        lastLogin: "Never",
-        createdDate: new Date().toISOString().split("T")[0],
-      };
-      setAdmins([...admins, newAdmin]);
+  const handleAddAdmin = async () => {
+    try {
+      if (editingAdmin) {
+        await updateAdmin(editingAdmin.id, formData);
+      } else {
+        await createAdmin(formData);
+      }
+      setShowModal(false);
+      setFormData({
+        name: "",
+        email: "",
+        role: "Admin",
+        permissions: "Full Access",
+        status: "Active",
+      });
+      setEditingAdmin(null);
+    } catch (error) {
+      console.error("Failed to save admin:", error);
     }
-    setShowModal(false);
-    setFormData({
-      name: "",
-      email: "",
-      role: "Admin",
-      permissions: "",
-      status: "Active",
-    });
-    setEditingAdmin(null);
   };
 
   const handleEdit = (admin) => {
@@ -113,19 +80,19 @@ const AdminsManagement = () => {
       name: admin.name,
       email: admin.email,
       role: admin.role,
-      permissions: admin.permissions,
-      status: admin.status,
+      permissions: admin.permissions || "Full Access",
+      status: admin.status || "Active",
     });
     setShowModal(true);
   };
 
-  const handleDelete = (id) => {
+  const handleDelete = async (id) => {
     if (
       confirm(
         "Are you sure you want to remove this administrator? This action cannot be undone.",
       )
     ) {
-      setAdmins(admins.filter((a) => a.id !== id));
+      await deleteAdmin(id);
     }
   };
 
@@ -140,9 +107,14 @@ const AdminsManagement = () => {
   };
 
   const filteredAdmins = admins.filter((admin) => {
-    const matchesSearch =
-      admin.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      admin.email.toLowerCase().includes(searchTerm.toLowerCase());
+    const nameMatch = admin.name
+      ?.toLowerCase()
+      .includes(searchTerm.toLowerCase());
+    const emailMatch = admin.email
+      ?.toLowerCase()
+      .includes(searchTerm.toLowerCase());
+    const matchesSearch = nameMatch || emailMatch;
+
     const matchesStatus =
       filterStatus === "All" || admin.status === filterStatus;
     const matchesRole = filterRole === "All" || admin.role === filterRole;
@@ -450,122 +422,159 @@ const AdminsManagement = () => {
               </thead>
               <tbody>
                 <AnimatePresence>
-                  {filteredAdmins.map((admin, index) => (
-                    <motion.tr
-                      key={admin.id}
-                      initial={{ opacity: 0, x: -20 }}
-                      animate={{ opacity: 1, x: 0 }}
-                      exit={{ opacity: 0, x: 20 }}
-                      transition={{ delay: index * 0.05 }}
-                      className={cn(
-                        "border-b transition-colors",
-                        isDarkMode
-                          ? "border-slate-800 hover:bg-slate-800/30"
-                          : "border-slate-100 hover:bg-slate-50",
-                      )}
-                    >
-                      <td className="px-6 py-4">
-                        <div className="flex items-center gap-3">
-                          <div className="w-10 h-10 rounded-full bg-orange-500 flex items-center justify-center text-white font-bold text-sm">
-                            {admin.name
-                              .split(" ")
-                              .map((n) => n[0])
-                              .join("")}
-                          </div>
-                          <div>
-                            <p
-                              className={cn(
-                                "font-medium",
-                                isDarkMode ? "text-white" : "text-slate-900",
-                              )}
-                            >
-                              {admin.name}
-                            </p>
-                            <p
-                              className={cn(
-                                "text-sm",
-                                isDarkMode ? "text-slate-400" : "text-gray-500",
-                              )}
-                            >
-                              {admin.email}
-                            </p>
-                          </div>
-                        </div>
-                      </td>
-                      <td className="px-6 py-4">
-                        <span
-                          className={`inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs font-medium ${
-                            admin.role === "Super Admin"
-                              ? "bg-red-100 text-red-700 border border-red-200"
-                              : admin.role === "Admin"
-                                ? "bg-orange-100 text-orange-700 border border-orange-200"
-                                : "bg-blue-100 text-blue-700 border border-blue-200"
-                          }`}
-                        >
-                          <Shield size={12} />
-                          {admin.role}
-                        </span>
-                      </td>
-                      <td className="px-6 py-4">
-                        <span
-                          className={cn(
-                            "text-sm",
-                            isDarkMode ? "text-slate-400" : "text-slate-600",
-                          )}
-                        >
-                          {admin.permissions}
-                        </span>
-                      </td>
-                      <td className="px-6 py-4">
-                        <div className="text-sm">
+                  {isLoadingAdmins ? (
+                    <tr>
+                      <td colSpan="6" className="text-center py-8">
+                        <div className="flex flex-col items-center justify-center">
+                          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-orange-500 mb-2"></div>
                           <p
                             className={cn(
-                              isDarkMode ? "text-slate-400" : "text-slate-600",
+                              "text-sm",
+                              isDarkMode ? "text-slate-400" : "text-gray-500",
                             )}
                           >
-                            {admin.lastLogin}
+                            Loading administrators...
                           </p>
                         </div>
                       </td>
-                      <td className="px-6 py-4">
-                        <span
-                          className={`px-3 py-1 rounded-full text-xs font-medium ${admin.status === "Active" ? "bg-green-100 text-green-700 border border-green-200" : "bg-gray-100 text-gray-700 border border-gray-200"}`}
+                    </tr>
+                  ) : filteredAdmins.length === 0 ? (
+                    <tr>
+                      <td colSpan="6" className="text-center py-8">
+                        <p
+                          className={cn(
+                            "text-sm",
+                            isDarkMode ? "text-slate-400" : "text-gray-500",
+                          )}
                         >
-                          {admin.status}
-                        </span>
+                          No administrators found.
+                        </p>
                       </td>
-                      <td className="px-6 py-4">
-                        <div className="flex gap-2">
-                          <motion.button
-                            whileHover={{ scale: 1.1 }}
-                            whileTap={{ scale: 0.9 }}
-                            onClick={() => handleEdit(admin)}
+                    </tr>
+                  ) : (
+                    filteredAdmins.map((admin, index) => (
+                      <motion.tr
+                        key={admin.id}
+                        initial={{ opacity: 0, x: -20 }}
+                        animate={{ opacity: 1, x: 0 }}
+                        exit={{ opacity: 0, x: 20 }}
+                        transition={{ delay: index * 0.05 }}
+                        className={cn(
+                          "border-b transition-colors",
+                          isDarkMode
+                            ? "border-slate-800 hover:bg-slate-800/30"
+                            : "border-slate-100 hover:bg-slate-50",
+                        )}
+                      >
+                        <td className="px-6 py-4">
+                          <div className="flex items-center gap-3">
+                            <div className="w-10 h-10 rounded-full bg-orange-500 flex items-center justify-center text-white font-bold text-sm">
+                              {(admin.name || "User")
+                                .split(" ")
+                                .map((n) => n[0])
+                                .join("")}
+                            </div>
+                            <div>
+                              <p
+                                className={cn(
+                                  "font-medium",
+                                  isDarkMode ? "text-white" : "text-slate-900",
+                                )}
+                              >
+                                {admin.name || "Unknown User"}
+                              </p>
+                              <p
+                                className={cn(
+                                  "text-sm",
+                                  isDarkMode
+                                    ? "text-slate-400"
+                                    : "text-gray-500",
+                                )}
+                              >
+                                {admin.email || "No Email"}
+                              </p>
+                            </div>
+                          </div>
+                        </td>
+                        <td className="px-6 py-4">
+                          <span
+                            className={`inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs font-medium ${
+                              admin.role === "Super Admin"
+                                ? "bg-red-100 text-red-700 border border-red-200"
+                                : admin.role === "Admin"
+                                  ? "bg-orange-100 text-orange-700 border border-orange-200"
+                                  : "bg-blue-100 text-blue-700 border border-blue-200"
+                            }`}
+                          >
+                            <Shield size={12} />
+                            {admin.role}
+                          </span>
+                        </td>
+                        <td className="px-6 py-4">
+                          <span
                             className={cn(
-                              "p-2 rounded-lg transition-colors",
-                              isDarkMode
-                                ? "hover:bg-blue-500/20 text-blue-400"
-                                : "hover:bg-blue-100 text-blue-900",
+                              "text-sm",
+                              isDarkMode ? "text-slate-400" : "text-slate-600",
                             )}
                           >
-                            <Edit2 size={18} />
-                          </motion.button>
-                          <motion.button
-                            whileHover={{ scale: 1.1 }}
-                            whileTap={{ scale: 0.9 }}
-                            onClick={() => handleDelete(admin.id)}
-                            className={cn(
-                              "p-2 rounded-lg transition-colors",
-                              isDarkMode
-                                ? "hover:bg-red-500/20 text-red-400"
-                                : "hover:bg-red-100 text-red-600",
-                            )}
+                            {admin.permissions}
+                          </span>
+                        </td>
+                        <td className="px-6 py-4">
+                          <div className="text-sm">
+                            <p
+                              className={cn(
+                                isDarkMode
+                                  ? "text-slate-400"
+                                  : "text-slate-600",
+                              )}
+                            >
+                              {admin.lastLogin}
+                            </p>
+                          </div>
+                        </td>
+                        <td className="px-6 py-4">
+                          <span
+                            className={`px-3 py-1 rounded-full text-xs font-medium ${admin.status === "Active" ? "bg-green-100 text-green-700 border border-green-200" : "bg-gray-100 text-gray-700 border border-gray-200"}`}
                           >
-                            <Trash2 size={18} />
-                          </motion.button>
-                        </div>
-                      </td>
-                    </motion.tr>
-                  ))}
+                            {admin.status}
+                          </span>
+                        </td>
+                        <td className="px-6 py-4">
+                          <div className="flex gap-2">
+                            <motion.button
+                              whileHover={{ scale: 1.1 }}
+                              whileTap={{ scale: 0.9 }}
+                              onClick={() => handleEdit(admin)}
+                              disabled={isDeleting}
+                              className={cn(
+                                "p-2 rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed",
+                                isDarkMode
+                                  ? "hover:bg-blue-500/20 text-blue-400"
+                                  : "hover:bg-blue-100 text-blue-900",
+                              )}
+                            >
+                              <Edit2 size={18} />
+                            </motion.button>
+                            <motion.button
+                              whileHover={{ scale: 1.1 }}
+                              whileTap={{ scale: 0.9 }}
+                              onClick={() => handleDelete(admin.id)}
+                              disabled={isDeleting}
+                              className={cn(
+                                "p-2 rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed",
+                                isDarkMode
+                                  ? "hover:bg-red-500/20 text-red-400"
+                                  : "hover:bg-red-100 text-red-600",
+                              )}
+                            >
+                              <Trash2 size={18} />
+                            </motion.button>
+                          </div>
+                        </td>
+                      </motion.tr>
+                    ))
+                  )}
                 </AnimatePresence>
               </tbody>
             </table>
@@ -800,9 +809,16 @@ const AdminsManagement = () => {
                       whileHover={{ scale: 1.02 }}
                       whileTap={{ scale: 0.98 }}
                       onClick={handleAddAdmin}
-                      className="flex-1 bg-orange-500 hover:bg-orange-600 text-white px-4 py-2 rounded-lg font-medium transition-colors"
+                      disabled={isCreating || isUpdating}
+                      className={cn(
+                        "flex-1 bg-orange-500 hover:bg-orange-600 text-white px-4 py-2 rounded-lg font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed",
+                      )}
                     >
-                      {editingAdmin ? "Update" : "Add"} Administrator
+                      {isCreating || isUpdating
+                        ? "Saving..."
+                        : editingAdmin
+                          ? "Update Administrator"
+                          : "Add Administrator"}
                     </motion.button>
                     <motion.button
                       whileHover={{ scale: 1.02 }}
@@ -818,8 +834,9 @@ const AdminsManagement = () => {
                           status: "Active",
                         });
                       }}
+                      disabled={isCreating || isUpdating}
                       className={cn(
-                        "flex-1 px-4 py-2 rounded-lg font-medium transition-colors",
+                        "flex-1 px-4 py-2 rounded-lg font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed",
                         isDarkMode
                           ? "bg-slate-800 hover:bg-slate-700 text-white"
                           : "bg-gray-200 hover:bg-gray-300 text-slate-900",
