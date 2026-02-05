@@ -14,12 +14,14 @@ import {
   Loader,
   Sparkles,
   Settings,
+  Clock,
 } from "lucide-react";
 import {
   useExtractTextAction,
   useGenerateQuestionsAction,
   useCreateQuestionBankAction,
 } from "../../../store/exam-store.js";
+import ProgressBar from "../../../components/ui/ProgressBar";
 import { useGetLecturerCoursesAction } from "../../../store/user-store";
 import useExamStore from "../../../store/exam-store";
 import useThemeStore from "../../../store/theme-store";
@@ -37,6 +39,7 @@ const ImportExport = () => {
   const [dragActive, setDragActive] = useState(false);
   const [extractedText, setExtractedText] = useState("");
   const [generatedQuestions, setGeneratedQuestions] = useState([]);
+  const [history, setHistory] = useState([]);
   const [showPreview, setShowPreview] = useState(false);
 
   const [importConfig, setImportConfig] = useState({
@@ -63,8 +66,11 @@ const ImportExport = () => {
   const fileInputRef = useRef(null);
 
   const { extractText, isLoading: isExtracting } = useExtractTextAction();
-  const { generateQuestions, isLoading: isGenerating } =
-    useGenerateQuestionsAction();
+  const {
+    generateQuestions,
+    cancelGeneration,
+    isLoading: isGenerating,
+  } = useGenerateQuestionsAction();
   const { createQuestionBank, isLoading: isCreatingBank } =
     useCreateQuestionBankAction();
   const { showToast } = useExamStore.getState();
@@ -141,6 +147,7 @@ const ImportExport = () => {
 
   const handleGenerateQuestions = async () => {
     if (!file) return;
+    setShowPreview(true); // Ensure preview area is visible for loading state
     try {
       const result = await generateQuestions({
         file,
@@ -148,6 +155,9 @@ const ImportExport = () => {
         difficulty: importConfig.difficulty,
       });
       setGeneratedQuestions(result.questions || []);
+      if (result.history) {
+        setHistory(result.history);
+      }
       showToast("Questions generated successfully", "success");
       // Route to create questions page with generated questions
       navigate("/lecturer/questions/manage", {
@@ -374,6 +384,90 @@ const ImportExport = () => {
                 </div>
               </div>
 
+              {/* History Section - Highlighted */}
+              {history.length > 0 && (
+                <motion.div
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  className={cn(
+                    "rounded-xl p-6 space-y-4 border-2 shadow-sm relative overflow-hidden",
+                    isDarkMode
+                      ? "bg-slate-800 border-indigo-500/30"
+                      : "bg-indigo-50/50 border-indigo-100",
+                  )}
+                >
+                  <div
+                    className={cn(
+                      "absolute top-0 left-0 w-1 h-full",
+                      isDarkMode ? "bg-indigo-500" : "bg-indigo-400",
+                    )}
+                  />
+                  <h3
+                    className={cn(
+                      "font-bold text-lg flex items-center gap-2",
+                      isDarkMode ? "text-white" : "text-indigo-900",
+                    )}
+                  >
+                    <Clock className="w-5 h-5 text-indigo-500" />
+                    Previous Answers (Cache)
+                  </h3>
+                  <p
+                    className={cn(
+                      "text-sm mb-4",
+                      isDarkMode ? "text-indigo-300" : "text-indigo-700",
+                    )}
+                  >
+                    You can restore these previously generated questions
+                    (Available for 30 mins)
+                  </p>
+                  <div className="space-y-3">
+                    {history.map((item) => (
+                      <div
+                        key={item.id}
+                        className={cn(
+                          "p-4 rounded-lg flex items-center justify-between border transition-all hover:shadow-md",
+                          isDarkMode
+                            ? "bg-slate-900 border-slate-700 hover:border-indigo-500/50"
+                            : "bg-white border-indigo-100 hover:border-indigo-300",
+                        )}
+                      >
+                        <div className="flex flex-col">
+                          <span
+                            className={cn(
+                              "font-semibold",
+                              isDarkMode ? "text-white" : "text-slate-800",
+                            )}
+                          >
+                            {item.filename ||
+                              `Questions - ${new Date(item.timestamp || Date.now()).toLocaleTimeString()}`}
+                          </span>
+                          <span
+                            className={cn(
+                              "text-xs",
+                              isDarkMode ? "text-slate-400" : "text-slate-500",
+                            )}
+                          >
+                            {item.questions?.length || 0} questions
+                          </span>
+                        </div>
+                        <button
+                          onClick={() => {
+                            setGeneratedQuestions(item.questions);
+                            showToast(
+                              "Restored questions from history",
+                              "success",
+                            );
+                          }}
+                          className="text-sm font-semibold text-indigo-500 hover:text-indigo-600 px-3 py-1.5 rounded-md hover:bg-indigo-50 transition-colors"
+                        >
+                          Restore
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                </motion.div>
+              )}
+
               {/* Import Configuration */}
               {file && (
                 <motion.div
@@ -407,7 +501,6 @@ const ImportExport = () => {
                       <input
                         type="number"
                         min="1"
-                        max="100"
                         value={importConfig.numberOfQuestions}
                         onChange={(e) =>
                           setImportConfig((prev) => ({
@@ -571,16 +664,77 @@ const ImportExport = () => {
                   >
                     Preview
                   </h3>
+
+                  {isGenerating && (
+                    <motion.div
+                      initial={{ opacity: 0, scale: 0.95 }}
+                      animate={{ opacity: 1, scale: 1 }}
+                      className={cn(
+                        "rounded-xl p-6 mb-6 text-center border-2",
+                        isDarkMode
+                          ? "bg-slate-800 border-blue-500/50"
+                          : "bg-white border-blue-100",
+                      )}
+                    >
+                      <div className="flex flex-col items-center justify-center space-y-4">
+                        <div className="relative">
+                          <div className="absolute inset-0 bg-blue-500 blur-lg opacity-20 rounded-full animate-pulse"></div>
+                          <Sparkles className="w-12 h-12 text-blue-500 animate-spin-slow" />
+                        </div>
+                        <h3
+                          className={cn(
+                            "text-xl font-bold",
+                            isDarkMode ? "text-white" : "text-slate-800",
+                          )}
+                        >
+                          AI is crafting your questions...
+                        </h3>
+                        <p
+                          className={cn(
+                            "text-sm max-w-sm mx-auto",
+                            isDarkMode ? "text-slate-400" : "text-slate-500",
+                          )}
+                        >
+                          This process involves deep analysis of your content.
+                          For large documents, this might take a minute.
+                        </p>
+
+                        <div className="w-full max-w-md space-y-2">
+                          <ProgressBar
+                            value={85} // Simulated indefinite progress
+                            color="gradient"
+                            size="md"
+                            className="w-full"
+                            showLabel={false}
+                          />
+                          <p className="text-xs text-blue-500 font-medium animate-pulse">
+                            Processing content & generating options...
+                          </p>
+                        </div>
+
+                        <button
+                          onClick={cancelGeneration}
+                          className="mt-2 px-4 py-2 bg-red-50 text-red-600 rounded-lg text-sm font-semibold hover:bg-red-100 transition-colors flex items-center gap-2 border border-red-200"
+                        >
+                          <X className="w-4 h-4" />
+                          Cancel Request
+                        </button>
+                      </div>
+                    </motion.div>
+                  )}
+
                   {extractedText && (
-                    <div className="space-y-2">
-                      <p
-                        className={cn(
-                          "text-sm font-semibold",
-                          isDarkMode ? "text-slate-300" : "text-slate-700",
-                        )}
-                      >
-                        Extracted Text:
-                      </p>
+                    <div className="space-y-4">
+                      <div className="flex items-center justify-between">
+                        <p
+                          className={cn(
+                            "text-sm font-semibold",
+                            isDarkMode ? "text-slate-300" : "text-slate-700",
+                          )}
+                        >
+                          Extracted Text:
+                        </p>
+                      </div>
                       <div
                         className={cn(
                           "rounded-lg p-4 max-h-64 overflow-y-auto",
@@ -596,6 +750,7 @@ const ImportExport = () => {
                           {extractedText}
                         </p>
                       </div>
+
                       <motion.button
                         whileHover={{ scale: 1.02 }}
                         whileTap={{ scale: 0.98 }}
